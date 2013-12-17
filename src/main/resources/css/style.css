@@ -25,6 +25,9 @@ label {
   position: absolute;
   top: 5px;
   right: 5px;
+  border-radius: 10px;
+  padding: 3px 6px;
+  text-align: center;
 }
 
 
