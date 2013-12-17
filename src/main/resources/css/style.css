@@ -1,20 +1,22 @@
-body {
+/* overrides */
+
+.btn {
+  font-weight: bold;
 }
 
+/* classes */
+
 label {
-	font-size: 20px;
-	font-weight: bold;
+  font-size: 20px;
+  font-weight: bold;
 }
 
 .currency.small {
   font-size: 12px;
 }
 
-.balance-value {
-	font-size: 20px;
-	color: #444;
-}
 
+/* layout */
 
 .header, .footer {
   background: #ecf0f1;
@@ -26,6 +28,11 @@ label {
 
 .header .buttons {
   margin-top: 10px;
+}
+
+.header .balance-value {
+  font-size: 20px;
+  color: #444;
 }
 
 .sidebar {

@@ -68,10 +68,11 @@ public class Main extends Application {
 
             // load fonts
             // TODO: put this somewhere else
-            Font.loadFont(getClass().getResource("/fonts/lato/lato-regular.woff").toExternalForm(), 10);
-            Font.loadFont(getClass().getResource("/fonts/lato/lato-bold.woff").toExternalForm(), 10);
-            Font.loadFont(getClass().getResource("/fonts/lato/lato-black.woff").toExternalForm(), 10);
-            Font.loadFont(getClass().getResource("/fonts/lato/lato-italic.woff").toExternalForm(), 10);
+            Font.loadFont(getClass().getResource("/fonts/lato-regular.woff").toExternalForm(), 10);
+            Font.loadFont(getClass().getResource("/fonts/lato-bold.woff").toExternalForm(), 10);
+            Font.loadFont(getClass().getResource("/fonts/lato-black.woff").toExternalForm(), 10);
+            Font.loadFont(getClass().getResource("/fonts/lato-italic.woff").toExternalForm(), 10);
+            Font.loadFont(getClass().getResource("/fonts/fontawesome-webfont.eot").toExternalForm(), 10);
 
             getChildren().add(browser);
         }
