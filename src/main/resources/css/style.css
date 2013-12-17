@@ -1,13 +1,38 @@
 body {
-	background: #eee;
 }
 
 label {
-	font-size: 24px;
+	font-size: 20px;
 	font-weight: bold;
 }
 
+.currency.small {
+  font-size: 12px;
+}
+
 .balance-value {
-	font-size: 24px;
+	font-size: 20px;
 	color: #444;
+}
+
+
+.header, .footer {
+  background: #ecf0f1;
+  padding: 12px 16px;
+}
+
+.header {
+}
+
+.header .buttons {
+  margin-top: 10px;
+}
+
+.sidebar {
+}
+
+.footer {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
 }

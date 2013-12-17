@@ -8,15 +8,24 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="main container-fluid">
+  <div class="container-fluid">
     <div class="header row-fluid">
-    	<span class="balance"><label class="balance-label">Balance:</label> <span class="balance-value">133.7</span> BTC</span>
+    	<span class="balance"><label class="balance-label">Balance:</label> <span class="balance-value">133.7</span> <span class="currency small">BTC</span></span>
+      <div class="buttons">
+        <button class="btn btn-default">Send</button> 
+        <button class="btn btn-default">Receive</button>
+        <button class="btn btn-default">Trade</button>
+      </div>
     </div>
 
     <div class="body row-fluid">
-      <div class="col-md-3"></div>
+      <div class="sidebar col-md-3"></div>
       <div class="col-md-9"></div>
     </div>
+  </div>
+
+  <div class="footer">
+    <span>Connected</span>
   </div>
 </body>
 </html>
