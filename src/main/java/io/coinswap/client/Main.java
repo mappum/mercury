@@ -20,6 +20,8 @@ import java.io.File;
 
 public class Main extends Application {
     public static final String APP_NAME = "Coinswap";
+    public static final int MIN_WIDTH = 750;
+    public static final int MIN_HEIGHT = 500;
 
     public static WalletAppKit bitcoin;
 
@@ -36,7 +38,9 @@ public class Main extends Application {
         bitcoin = new WalletAppKit(MainNetParams.get(), new File("."), APP_NAME);
 
         mainWindow.setTitle(APP_NAME);
-        mainWindow.setScene(new Scene(ui, 750, 500));
+        mainWindow.setScene(new Scene(ui, MIN_WIDTH, MIN_HEIGHT));
+        mainWindow.setMinWidth(MIN_WIDTH);
+        mainWindow.setMinHeight(MIN_HEIGHT);
         mainWindow.show();
     }
 
