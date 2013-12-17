@@ -2,6 +2,7 @@
 
 .btn {
   font-weight: bold;
+  position: relative;
 }
 
 /* classes */
@@ -15,24 +16,52 @@ label {
   font-size: 12px;
 }
 
+.alt {
+  font-size: 0.618em;
+  opacity: 0.618;
+}
+
+.label.super {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
 
 /* layout */
 
 .header, .footer {
   background: #ecf0f1;
-  padding: 8px 16px 16px;
 }
 
 .header {
+  padding: 16px;
+  padding-top: 12px;
 }
 
-.header .buttons {
-  margin-top: 10px;
+.header .lower {
+  margin-top: 14px;
 }
 
-.header .balance-value {
-  font-size: 20px;
-  color: #444;
+.header .right {
+  font-size: 16px;
+}
+.header .right .avatar {
+  position: absolute;
+  top: 4px;
+  left: 5px;
+  border: 1px solid white;
+}
+.header .right .avatar {
+  width: 34px;
+}
+.header .right .avatar-clear {
+  width: 28px;
+  display: inline-block;
+}
+
+.header .balance {
+  font-size: 25px;
 }
 
 .sidebar {
@@ -41,5 +70,7 @@ label {
 .footer {
   width: 100%;
   position: absolute;
+  left: 0;
   bottom: 0;
+  padding: 12px;
 }
