@@ -20,8 +20,8 @@ import java.io.File;
 
 public class Main extends Application {
     public static final String APP_NAME = "Coinswap";
-    public static final int MIN_WIDTH = 750;
-    public static final int MIN_HEIGHT = 500;
+    public static final int MIN_WIDTH = 1080;
+    public static final int MIN_HEIGHT = 620;
 
     public static WalletAppKit bitcoin;
 
