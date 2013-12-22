@@ -15,6 +15,7 @@ import javafx.scene.text.FontSmoothingType;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import javafx.scene.image.Image;
 
 import java.io.File;
 
@@ -41,6 +42,11 @@ public class Main extends Application {
         mainWindow.setScene(new Scene(ui, MIN_WIDTH, MIN_HEIGHT));
         mainWindow.setMinWidth(MIN_WIDTH);
         mainWindow.setMinHeight(MIN_HEIGHT);
+
+        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon128.png")));
+        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon64.png")));
+        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon32.png")));
+
         mainWindow.show();
     }
 
