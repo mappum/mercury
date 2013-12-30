@@ -23,10 +23,12 @@
       <span class="balance"><i class="fa fa-bitcoin"></i>133.7 <span class="alt">($95,194.40)</span></span>
     </div>
     <div class="lower">
-      <button class="send btn btn-default active"><i class="fa fa-bar-chart-o"></i> Overview</button>
-      <button class="send btn btn-default"><i class="fa fa-arrow-right"></i> Send</button>
-      <button class="receive btn btn-default"><i class="fa fa-arrow-left"></i> Receive</button>
-      <button class="trade btn btn-default"><i class="fa fa-exchange"></i> Trade</button>
+      <div class="btn-group" data-toggle="buttons-radio">
+        <button class="send btn btn-default active"><i class="fa fa-list"></i> Transactions</button>
+        <button class="send btn btn-default"><i class="fa fa-arrow-right"></i> Send</button>
+        <button class="receive btn btn-default"><i class="fa fa-arrow-left"></i> Receive</button>
+        <button class="trade btn btn-default"><i class="fa fa-exchange"></i> Trade</button>
+      </div>
     </div>
   </header>
 
@@ -41,5 +43,9 @@
   <footer>
     <span><i class="fa fa-signal text-success"></i>&nbsp;&nbsp;Connected</span>
   </footer>
+
+  <script src="js/jquery-2.0.2.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
