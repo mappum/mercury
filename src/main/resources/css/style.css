@@ -93,3 +93,20 @@ footer {
   bottom: 0;
   padding: 12px;
 }
+
+table.transactions {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+table.transactions tr td:first-child {
+  padding-left: 38px;
+}
+table.transactions tr td:last-child {
+  padding-right: 38px;
+}
+table.transactions td {
+  padding: 6px;
+  font-size: 16px;
+}
