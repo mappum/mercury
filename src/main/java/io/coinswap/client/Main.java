@@ -4,6 +4,9 @@ import com.google.bitcoin.params.*;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -36,32 +39,34 @@ public class Main extends Application {
     @Override
     public void start(Stage mainWindow) {
         ui = new ClientUI();
-        controller = new Controller(ui.engine);
+        ui.engine.getLoadWorker().stateProperty().addListener((ov, oldState, state) -> {
+            controller = new Controller(ui.engine);
 
-        coins = new ArrayList<Coin>();
-        coins.add(new Coin(controller, MainNetParams.get(), dataDir,
-                "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>"));
-        coins.add(new Coin(controller, LitecoinMainNetParams.get(), dataDir,
-                "Litecoin", "LTC", "&#321;"));
-        coins.add(new Coin(controller, DogecoinMainNetParams.get(), dataDir,
-                "Dogecoin", "DOGE", "&#272;"));
-        coins.add(new Coin(controller, TestNet3Params.get(), dataDir,
-                "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>"));
-        coins.add(new Coin(controller, LitecoinTestNetParams.get(), dataDir,
-                "Litecoin Testnet", "LTCt", "&#321;"));
+            coins = new ArrayList<Coin>();
+            coins.add(new Coin(controller, MainNetParams.get(), dataDir,
+                    "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>"));
+            coins.add(new Coin(controller, LitecoinMainNetParams.get(), dataDir,
+                    "Litecoin", "LTC", "&#321;"));
+            coins.add(new Coin(controller, DogecoinMainNetParams.get(), dataDir,
+                    "Dogecoin", "DOGE", "&#272;"));
+            coins.add(new Coin(controller, TestNet3Params.get(), dataDir,
+                    "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>"));
+            coins.add(new Coin(controller, LitecoinTestNetParams.get(), dataDir,
+                    "Litecoin Testnet", "LTCt", "&#321;"));
 
-        for(Coin coin : coins) coin.start();
+            for(Coin coin : coins) coin.start();
 
-        mainWindow.setTitle(APP_NAME);
-        mainWindow.setScene(new Scene(ui, MIN_WIDTH, MIN_HEIGHT));
-        mainWindow.setMinWidth(MIN_WIDTH);
-        mainWindow.setMinHeight(MIN_HEIGHT);
+            mainWindow.setTitle(APP_NAME);
+            mainWindow.setScene(new Scene(ui, MIN_WIDTH, MIN_HEIGHT));
+            mainWindow.setMinWidth(MIN_WIDTH);
+            mainWindow.setMinHeight(MIN_HEIGHT);
 
-        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon128.png")));
-        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon64.png")));
-        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon32.png")));
+            mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon128.png")));
+            mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon64.png")));
+            mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon32.png")));
 
-        mainWindow.show();
+            mainWindow.show();
+        });
     }
 
     @Override
@@ -101,6 +106,7 @@ class ClientUI extends Region {
 
         getChildren().add(browser);
     }
+
     private Node createSpacer() {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
