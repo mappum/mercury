@@ -5,6 +5,28 @@
   position: relative;
 }
 
+.progress {
+  background: white;
+  height: 16px;
+  margin-bottom: 5px;
+}
+
+hr {
+  border-color: #D9DDDE;
+}
+
+.btn-group .btn {
+  border-right: 1px solid rgba(0, 0, 0, 0.04);
+  margin-right: 1px;
+}
+.btn-group .btn-primary {
+  border-right-color: rgba(0, 0, 0, 0.16);
+}
+.btn-group .btn:nth-child(last-child) {
+  border-right: none;
+  margin-right: 0;
+}
+
 /* classes */
 
 label {
@@ -17,8 +39,13 @@ label {
 }
 
 .alt {
-  font-size: 0.618em;
+  font-size: 0.78em;
   color: #76828e;
+}
+
+.symbol {
+  margin-right: 3px;
+  font-weight: bold;
 }
 
 .label.super {
@@ -30,19 +57,48 @@ label {
   text-align: center;
 }
 
+.syncing {
+  background: #f7f7f7;
+}
+
+.coin h3 {
+  font-weight: bold;
+}
+
+.coin .balance {
+  font-size: 20px;
+}
+
+.coin .pairs {
+  font-size: 16px;
+}
+
+.coin .logo {
+  width: 64px;
+  margin-right: 16px;
+}
 
 /* layout */
 
 body {
   height: 100%;
   overflow: hidden;
+  color: #76828e;
+  font-size: 19px;
 }
 
-header, footer {
+h1, h2, h3, h4, strong {
+  color: rgb(44, 62, 80);
+  margin-top: 0;
+}
+
+header, footer, .navbar {
   width: 100%;
   position: fixed;
   left: 0;
-  background: #ecf0f1;
+  background: #243242;
+  color: #eee;
+  border-radius: 0;
 }
 
 header {
@@ -92,6 +148,9 @@ header .balance {
 footer {
   bottom: 0;
   padding: 12px;
+  font-size: 15px;
+  background: #859099;
+  color: white;
 }
 
 table.transactions {
