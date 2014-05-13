@@ -14,7 +14,7 @@ public class Coin {
     protected Controller.Emitter emitter;
 
     public Coin(Controller controller, NetworkParameters params, File directory, String name, String id, String symbol) {
-        this.controller = controller;
+        final Controller c = this.controller = controller;
         this.name = name;
         this.id = id;
         this.symbol = symbol;
@@ -23,7 +23,7 @@ public class Coin {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().addEventListener(new UIDownloadListener(), controller.e);
+                peerGroup().addEventListener(new UIDownloadListener(), c.e);
             }
         };
     }
