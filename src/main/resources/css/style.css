@@ -145,6 +145,7 @@ header .balance {
   top: 120px;
   bottom: 45px;
   width: 100%;
+  padding: 26px 0;
   overflow-y: auto;
 }
 
