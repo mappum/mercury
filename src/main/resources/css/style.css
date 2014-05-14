@@ -62,7 +62,10 @@ label {
 }
 
 .syncing {
-  background: #f7f7f7;
+  background: #fafafa;
+}
+.syncing h3 {
+  color: #999;
 }
 
 .coin h3 {
