@@ -30,4 +30,8 @@ coinswap.Coin = Backbone.Model.extend({
   }
 });
 
+coinswap.CoinCollection = Backbone.Collection.extend({
+  model: coinswap.Coin
+});
+
 })(coinswap);

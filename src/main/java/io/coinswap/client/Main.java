@@ -29,9 +29,10 @@ public class Main extends Application {
 
     public static final File dataDir = new File("./data");
 
-    private static final int MIN_WIDTH = 1024;
-    private static final int MIN_HEIGHT = 620;
-
+    private static final int MIN_WIDTH = 740;
+    private static final int MIN_HEIGHT = 400;
+    private static final int DEFAULT_WIDTH = 800;
+    private static final int DEFAULT_HEIGHT = 720;
 
     private List<Coin> coins;
     private ClientUI ui;
@@ -62,7 +63,7 @@ public class Main extends Application {
             }
 
             mainWindow.setTitle(APP_NAME);
-            mainWindow.setScene(new Scene(ui, MIN_WIDTH, MIN_HEIGHT));
+            mainWindow.setScene(new Scene(ui, DEFAULT_WIDTH, DEFAULT_HEIGHT));
             mainWindow.setMinWidth(MIN_WIDTH);
             mainWindow.setMinHeight(MIN_HEIGHT);
 

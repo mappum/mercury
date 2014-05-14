@@ -1,5 +1,4 @@
 (function(coinswap) {
-
 var months = [
   'January',
   'February',
