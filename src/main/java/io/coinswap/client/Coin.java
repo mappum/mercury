@@ -3,6 +3,7 @@ package io.coinswap.client;
 import com.google.bitcoin.core.DownloadListener;
 import com.google.bitcoin.core.NetworkParameters;
 import com.google.bitcoin.kits.WalletAppKit;
+import com.google.bitcoin.store.BlockStoreException;
 import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +30,10 @@ public class Coin {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().addEventListener(new UIDownloadListener(), c.e);
+               peerGroup().addEventListener(new UIDownloadListener(), c.e);
             }
         };
+        wallet.setUserAgent(Main.APP_NAME, Main.APP_VERSION);
     }
 
     public void start() {
@@ -44,11 +46,24 @@ public class Coin {
 
     class UIDownloadListener extends DownloadListener {
         @Override
-        protected void progress(double pct, int blocksSoFar, Date date) {
-            model.trigger("sync:progress", "{ \"progress\": " + pct +
-                    ", \"blocks\": " + blocksSoFar +
+        protected void progress(double pct, int blocks, Date date) {
+            model.trigger("sync:progress", "{ \"blocks\": " + blocks +
                     ", \"date\": " + date.getTime() + " }");
-            super.progress(pct, blocksSoFar, date);
+            super.progress(pct, blocks, date);
+        }
+
+        @Override
+        protected void startDownload(int blocks) {
+            try {
+                model.trigger("sync:start", wallet.store().getChainHead().getHeight() + blocks + "");
+            } catch(BlockStoreException ex) {
+                model.trigger("sync:start", "0");
+            }
+        }
+
+        @Override
+        protected void doneDownload() {
+            model.trigger("sync:done");
         }
     }
 

@@ -4,9 +4,6 @@ import com.google.bitcoin.params.*;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Worker;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -20,13 +17,16 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
+import netscape.javascript.JSObject;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main extends Application {
-    private static final String APP_NAME = "Coinswap";
+    public static final String APP_NAME = "Coinswap";
+    public static final String APP_VERSION = "0.0.1-SNAPSHOT";
+
     private static final int MIN_WIDTH = 1024;
     private static final int MIN_HEIGHT = 620;
 
@@ -54,7 +54,11 @@ public class Main extends Application {
             coins.add(new Coin(controller, LitecoinTestNetParams.get(), dataDir,
                     "Litecoin Testnet", "LTCt", "&#321;"));
 
-            for(Coin coin : coins) coin.start();
+            JSObject coinCollection = (JSObject) controller.app.get("coins");
+            for(Coin coin : coins) {
+                coin.start();
+                coinCollection.call("add", new Object[]{ coin.model.object });
+            }
 
             mainWindow.setTitle(APP_NAME);
             mainWindow.setScene(new Scene(ui, MIN_WIDTH, MIN_HEIGHT));

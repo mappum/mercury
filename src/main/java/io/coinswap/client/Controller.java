@@ -13,13 +13,16 @@ public class Controller {
     protected WebEngine engine;
     protected int index = 0;
     protected JSObject context;
+    protected Model app;
 
     public Controller(WebEngine engine) {
         this.engine = engine;
 
         JSObject window = (JSObject) engine.executeScript("window");
         window.setMember("console", new Console());
-        this.context = (JSObject) window.getMember("coinswap");
+
+        context = (JSObject) window.getMember("coinswap");
+        app = new Model((JSObject) context.getMember("app"));
 
         e = Platform::runLater;
     }
