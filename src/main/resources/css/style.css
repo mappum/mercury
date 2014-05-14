@@ -27,6 +27,10 @@ hr {
   margin-right: 0;
 }
 
+.btn .fa {
+  margin-right: 0.3em;
+}
+
 /* classes */
 
 label {
