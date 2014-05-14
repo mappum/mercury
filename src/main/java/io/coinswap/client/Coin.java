@@ -8,11 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
 public class Coin {
     private static final Logger log = LoggerFactory.getLogger(Console.class);
+    private static final File checkpointDir = new File("./checkpoints");
 
     protected WalletAppKit wallet;
     protected String name, id, symbol;
@@ -32,9 +36,23 @@ public class Coin {
             protected void onSetupCompleted() {
               peerGroup().addEventListener(new UIDownloadListener(), c.e);
               peerGroup().setMaxConnections(7);
+              peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
             }
         };
         wallet.setUserAgent(Main.APP_NAME, Main.APP_VERSION);
+
+        try {
+            FileInputStream checkpointStream = null;
+            try {
+                File checkpointFile = new File(checkpointDir.getCanonicalPath() + "/" + name + ".checkpoint");
+                checkpointStream = new FileInputStream(checkpointFile);
+                wallet.setCheckpoints(checkpointStream);
+            } catch (FileNotFoundException ex) {
+                log.info("No checkpoint file found for " + name);
+            }
+        } catch(IOException ex) {
+            log.error(ex.getMessage());
+        }
     }
 
     public void start() {

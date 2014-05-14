@@ -27,10 +27,11 @@ public class Main extends Application {
     public static final String APP_NAME = "Coinswap";
     public static final String APP_VERSION = "0.0.1-SNAPSHOT";
 
+    public static final File dataDir = new File("./data");
+
     private static final int MIN_WIDTH = 1024;
     private static final int MIN_HEIGHT = 620;
 
-    private static final File dataDir = new File("./data");
 
     private List<Coin> coins;
     private ClientUI ui;
