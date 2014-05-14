@@ -35,7 +35,7 @@ public class Coin {
             @Override
             protected void onSetupCompleted() {
               peerGroup().addEventListener(new UIDownloadListener(), c.e);
-              peerGroup().setMaxConnections(7);
+              peerGroup().setMaxConnections(6);
               peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
             }
         };
