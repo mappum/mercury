@@ -76,7 +76,7 @@
 
     <h3><%= name %><span class="alt"> - <%= id %></span></h3>
 
-    <% if(initialized) { %>
+    <% if(synced) { %>
       <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %></div>
       <hr>
       <div>
@@ -93,12 +93,14 @@
         </div>
       </div>
 
-    <% } else if(syncing) { %>
+    <% } else if(connected) { %>
       <p><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</p>
       <div class="progress progress-striped active">
         <div class="progress-bar progress-bar-info" style="width: 0"></div>
       </div>
-      <span class="alt">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
+      <% if(typeof syncBlocks !== 'undefined') { %>
+        <span class="alt">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
+      <% } %>
 
     <% } else { %>
       <p><i class="fa fa-clock-o text-warning symbol"></i> Connecting to network...</p>

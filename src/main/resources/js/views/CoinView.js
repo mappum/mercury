@@ -29,7 +29,7 @@ coinswap.CoinView = Backbone.View.extend({
   render: function() {
     this.$el.html(this.template.call(this, this.model.attributes));
 
-    if(!this.model.get('initialized')) this.$el.addClass('syncing');
+    if(!this.model.get('synced')) this.$el.addClass('syncing');
     else this.$el.removeClass('syncing');
   },
 
