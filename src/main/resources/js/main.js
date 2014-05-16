@@ -17,12 +17,14 @@ coinswap.App = Backbone.Model.extend({
 
 coinswap.MainView = Backbone.View.extend({
   events: {},
-
+  
   initialize: function() {
     _.bindAll(this, 'render');
 
     this.listenTo(this.model, 'change:page', this.render);
     this.listenTo(this.model.get('coins'), 'add', this.render);
+
+    this.render();
   },
 
   render: function() {
@@ -30,7 +32,18 @@ coinswap.MainView = Backbone.View.extend({
 
     var page = this.model.get('page');
     console.log('rendering ' + page.id);
-    this[page.id].apply(this, page.args);
+
+    var template = this.templates[page.id];
+    if(template) {
+      var data = this.model.toJSON();
+      data.model = this.model;
+      this.$el.html(template(data));
+    }
+
+    this.delegateEvents();
+
+    if(this[page.id])
+      this[page.id].apply(this, page.args);
   },
 
   home: function() {
