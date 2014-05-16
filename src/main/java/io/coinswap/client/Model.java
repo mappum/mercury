@@ -31,7 +31,6 @@ public class Model {
         emitter.on(event, cb);
     }
 
-
     public void trigger(String event) {
         object.eval("this.trigger('" + event + "')");
     }

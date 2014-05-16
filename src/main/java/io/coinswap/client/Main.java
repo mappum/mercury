@@ -44,18 +44,27 @@ public class Main extends Application {
         ui.engine.getLoadWorker().stateProperty().addListener((ov, oldState, state) -> {
             controller = new Controller(ui.engine);
 
+            // TODO: load pairs from exchange server
             coins = new ArrayList<Coin>();
             coins.add(new Coin(controller, MainNetParams.get(), dataDir,
-                    "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>"));
+                    "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>",
+                    new String[] { "LTC", "DOGE", "BTCt", "LTCt" }));
             coins.add(new Coin(controller, LitecoinMainNetParams.get(), dataDir,
-                    "Litecoin", "LTC", "&#321;"));
+                    "Litecoin", "LTC", "&#321;",
+                    new String[] { "BTC", "DOGE", "LTCt" }));
             coins.add(new Coin(controller, DogecoinMainNetParams.get(), dataDir,
-                    "Dogecoin", "DOGE", "&#272;"));
+                    "Dogecoin", "DOGE", "&#272;",
+                    new String[] { "BTC", "LTC" }));
             coins.add(new Coin(controller, TestNet3Params.get(), dataDir,
-                    "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>"));
+                    "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>",
+                    new String[] { "BTC", "LTCt" }));
             coins.add(new Coin(controller, LitecoinTestNetParams.get(), dataDir,
-                    "Litecoin Testnet", "LTCt", "&#321;"));
+                    "Litecoin Testnet", "LTCt", "&#321;",
+                    new String[] { "BTC", "LTC", "BTCt" }));
 
+            // TODO: sort coins by volume
+
+            // insert coin objects into JS-side collection
             JSObject coinCollection = (JSObject) controller.app.get("coins");
             for(Coin coin : coins) {
                 coin.start();
