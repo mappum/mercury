@@ -16,8 +16,10 @@ coinswap.App = Backbone.Model.extend({
 });
 
 coinswap.MainView = Backbone.View.extend({
-  events: {},
-  
+  events: {
+    'click .dropdown .dropdown-menu li': 'onDropdownSelect'
+  },
+
   initialize: function() {
     _.bindAll(this, 'render');
 
@@ -25,6 +27,19 @@ coinswap.MainView = Backbone.View.extend({
     this.listenTo(this.model.get('coins'), 'add', this.render);
 
     this.render();
+  },
+
+  onDropdownSelect: function(e) {
+    var selection = $(e.currentTarget);
+    var id = selection.find('.value').text();
+    var dropdown = selection.parent().parent();
+    var valueEl = dropdown.find('.dropdown-toggle .value');
+    var value = valueEl.text();
+
+    if(id.toLowerCase() !== value.toLowerCase()) {
+      valueEl.text(id);
+      dropdown.trigger('change', [ id, value, selection ]);
+    }
   },
 
   render: function() {

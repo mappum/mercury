@@ -31,6 +31,11 @@ hr {
   margin-right: 0.3em;
 }
 
+.dropdown-menu>li>a:hover strong,
+.dropdown-menu>li>a:focus strong {
+  color: #fff;
+}
+
 /* classes */
 
 label {
@@ -176,4 +181,13 @@ table.transactions tr td:last-child {
 table.transactions td {
   padding: 6px;
   font-size: 16px;
+}
+
+.dropdown-coin .dropdown-toggle {
+  background-color: rgba(236, 240, 241, 0.6);
+  font-size: 24px;
+  font-weight: bold;
+}
+.dropdown-coin a {
+  cursor: pointer;
 }
