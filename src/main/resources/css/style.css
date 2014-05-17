@@ -140,6 +140,9 @@ header .right .avatar-clear {
 header .balance {
   font-size: 25px;
 }
+header .balance .symbol {
+  font-weight: normal;
+}
 
 .body {
   position: fixed;
