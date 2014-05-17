@@ -38,11 +38,6 @@ hr {
 
 /* classes */
 
-label {
-  font-size: 20px;
-  font-weight: bold;
-}
-
 .currency.small {
   font-size: 12px;
 }
@@ -97,6 +92,7 @@ body {
   overflow: hidden;
   color: #76828e;
   font-size: 19px;
+  padding: 0;
 }
 
 h1, h2, h3, h4, strong {
@@ -154,10 +150,6 @@ header .balance {
   overflow-y: auto;
 }
 
-.content {
-  margin: 6px 32px;
-}
-
 footer {
   bottom: 0;
   padding: 12px;
@@ -183,11 +175,30 @@ table.transactions td {
   font-size: 16px;
 }
 
+.dropdown-toggle {
+  width: 100%;
+  padding: 0.4em 0;
+  border-radius: 5px;
+  display: block;
+  background: rgba(236, 240, 241, 0.6);
+}
+
+.dropdown-coin {
+  width: 132px;
+  line-height: 50px;
+  text-align: center;
+}
 .dropdown-coin .dropdown-toggle {
   background-color: rgba(236, 240, 241, 0.6);
-  font-size: 24px;
+  font-size: 30px;
   font-weight: bold;
 }
 .dropdown-coin a {
   cursor: pointer;
+}
+
+.trade-pair .separator {
+  font-size: 40px;
+  text-align: center;
+  margin-top: 16px;
 }

@@ -17,7 +17,12 @@ coinswap.App = Backbone.Model.extend({
 
 coinswap.MainView = Backbone.View.extend({
   events: {
-    'click .dropdown .dropdown-menu li': 'onDropdownSelect'
+    'click .dropdown .dropdown-menu li': 'onDropdownSelect',
+    'change .trade .dropdown-coin:eq(0)': 'updateDropdowns'
+  },
+
+  templates: {
+    trade: _.template($('#template-trade').html())
   },
 
   initialize: function() {
@@ -69,6 +74,37 @@ coinswap.MainView = Backbone.View.extend({
       var view = new coinswap.CoinView({ model: coin });
       t.$el.append(view.el);
     });
+  },
+
+  trade: function(id) {
+    this.updateDropdowns(id);
+  },
+
+  updateDropdowns: function(id) {
+    if(typeof id === 'object') id = arguments[1];
+
+    var dropdowns = this.$el.find('.dropdown-coin');
+    var menus = dropdowns.find('.dropdown-menu');
+    var coins = this.model.get('coins');
+
+    id = id || 'BTC';
+    dropdowns.eq(0).find('.dropdown-toggle .value').text(id);
+    var coin = coins.get(id);
+    var pairs = coin.get('pairs');
+
+    menus.empty();
+    coins.each(function(coin) {
+      var el = $('<li>').html('<a><strong class="value">'+coin.id+'</strong>' + 
+        ' <span class="alt"> - '+coin.get('name')+'</span></a>');
+      if(pairs.indexOf(coin.id) !== -1) menus.append(el);
+      else menus.eq(0).append(el);
+    });
+
+    id = dropdowns.eq(1).find('.dropdown-toggle .value').text();
+    if(pairs.indexOf(id) === -1)
+      dropdowns.eq(1).find('.dropdown-toggle .value').text(pairs[0]);
+
+    this.delegateEvents();
   }
 });
 
