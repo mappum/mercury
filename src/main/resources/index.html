@@ -39,64 +39,62 @@
 
   </script>
   <script type="text/template" id="template-trade">
-    <div class="container trade">
-      <br>
-      <div class="row trade-pair">
-        <div class="col-sm-2 col-sm-push-3 col-xs-3 col-xs-push-2"><div class="dropdown dropdown-coin pull-left">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value">BTC</span> <span class="caret"></span></a>
-          <ul class="dropdown-menu"></ul>
-        </div></div>
-        <div class="fa fa-exchange separator col-sm-2 col-sm-push-3 col-xs-2 col-xs-push-2"></div>
-        <div class="col-sm-2 col-sm-push-3 col-xs-3 col-xs-push-2"><div class="dropdown dropdown-coin pull-right">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value">BTC</span> <span class="caret"></span></a>
-          <ul class="dropdown-menu"></ul>
-        </div></div>
-      </div>
-      <br><br>
-      <div class="row">
-        <div class="form col-sm-10 col-sm-push-1 well">
-          <div class="row">
-            <div class="btn-group col-xs-12" data-toggle="buttons-radio">
-              <button class="btn btn-default active">Buy</button>
-              <button class="btn btn-default">Sell</button>
+    <br>
+    <div class="row trade-pair">
+      <div class="col-sm-2 col-sm-push-3 col-xs-3 col-xs-push-2"><div class="dropdown dropdown-coin pull-left">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
+        <ul class="dropdown-menu"></ul>
+      </div></div>
+      <div class="fa fa-exchange separator col-sm-2 col-sm-push-3 col-xs-2 col-xs-push-2"></div>
+      <div class="col-sm-2 col-sm-push-3 col-xs-3 col-xs-push-2"><div class="dropdown dropdown-coin pull-right">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
+        <ul class="dropdown-menu"></ul>
+      </div></div>
+    </div>
+    <br><br>
+    <div class="row">
+      <div class="form col-sm-10 col-sm-push-1 well">
+        <div class="row">
+          <div class="btn-group col-xs-12 buysell" data-toggle="buttons-radio">
+            <button class="btn btn-default buy active">Buy</button>
+            <button class="btn btn-default sell">Sell</button>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="form-group col-xs-4 price">
+            <label>Price</label>
+            <div class="input-group">
+              <span class="input-group-addon symbol"></i></span>
+              <input class="form-control" type="text" placeholder="0.00">
             </div>
           </div>
-          <hr>
-          <div class="row">
-            <div class="form-group col-xs-4">
-              <label>Price</label>
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-bitcoin"></i></span>
-                <input class="form-control" type="text">
-              </div>
-            </div>
-            <div class="form-group col-xs-4">
-              <label>Quantity</label>
-              <div class="input-group">
-                <span class="input-group-addon">&#321;</span>
-                <input class="form-control" type="text">
-              </div>
-            </div>
-            <div class="form-group col-xs-4">
-              <label>Total</label>
-              <div class="input-group">
-                <span class="input-group-addon">&#321;</span>
-                <input class="form-control" type="text">
-              </div>
+          <div class="form-group col-xs-4 quantity">
+            <label>Quantity</label>
+            <div class="input-group">
+              <span class="input-group-addon symbol"></span>
+              <input class="form-control" type="text" placeholder="0.00">
             </div>
           </div>
-          <hr>
-          <div class="row">
-            <div class="col-xs-12 text-center">
-              <p>You will sell <strong><span class="symbol">&#321;</span>10.52 <span class="alt">LTC</span></strong></p>
-              <p>for <strong><span class="symbol"><i class="fa fa-bitcoin"></i></span>3.1 <span class="alt">BTC</span></strong></p>
+          <div class="form-group col-xs-4 total">
+            <label>Total</label>
+            <div class="input-group">
+              <span class="input-group-addon symbol"></span>
+              <input class="form-control" type="text" placeholder="0.00">
             </div>
           </div>
-          <hr>
-          <div class="row">
-            <div class="col-xs-12">
-              <button class="btn btn-lg btn-success pull-right">Accept Trade</button>
-            </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-xs-12 text-center overview">
+            <p>You will <span class="type"></span> <strong><span class="symbol"></span><span class="amount"></span> <span class="alt"></span></strong></p>
+            <p>for <strong><span class="symbol"></span><span class="amount"></span> <span class="alt"></span></strong></p>
+          </div>
+        </div>
+        <hr>
+        <div class="row">
+          <div class="col-xs-12">
+            <button class="btn btn-lg btn-success pull-right accept">Accept Trade</button>
           </div>
         </div>
       </div>
@@ -150,6 +148,8 @@
   <script src="js/backbone-min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/models/Coin.js"></script>
+  <script src="js/models/Trade.js"></script>
   <script src="js/views/CoinView.js"></script>
+  <script src="js/views/TradeView.js"></script>
 </body>
 </html>

@@ -205,3 +205,13 @@ table.transactions td {
   text-align: center;
   margin-top: 16px;
 }
+
+.trade .type {
+  font-weight: bold;
+}
+.trade .type.buy {
+  color: green;
+}
+.trade .type.sell {
+  color: red;
+}
