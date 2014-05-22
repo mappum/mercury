@@ -202,8 +202,9 @@ table.transactions td {
 
 .trade-pair .separator {
   font-size: 40px;
+  font-weight: bold;
   text-align: center;
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .trade .type {
@@ -214,4 +215,7 @@ table.transactions td {
 }
 .trade .type.sell {
   color: red;
+}
+.trade .input-group-addon.symbol {
+  background: #f2f7f8;
 }
