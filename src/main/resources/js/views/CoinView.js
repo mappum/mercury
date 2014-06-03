@@ -19,16 +19,16 @@ coinswap.CoinView = Backbone.View.extend({
   className: 'row-fluid well coin',
 
   initialize: function() {
-    this.listenTo(this.model, 'change', this.render);
-    this.listenTo(this.model, 'sync:progress', this.syncProgress);
-
     this.render();
+
+    this.listenTo(this.model, 'change:synced change:connected', this.render);
+    this.listenTo(this.model, 'sync:progress', this.syncProgress);
   },
 
   render: function() {
-    this.$el.html(this.template.call(this, this.model.attributes));
+    this.$el.html(this.template(this.model.attributes));
 
-    if(!this.model.get('synced')) this.$el.addClass('syncing');
+    if(!this.model.get('synced') || !this.model.get('connected')) this.$el.addClass('syncing');
     else this.$el.removeClass('syncing');
   },
 

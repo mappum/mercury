@@ -95,6 +95,7 @@
         <div class="row">
           <div class="col-xs-12">
             <button class="btn btn-lg btn-success pull-right accept">Accept Trade</button>
+            <button class="btn btn-default pull-right cancel">Cancel</button>
           </div>
         </div>
       </div>
@@ -110,7 +111,7 @@
 
     <h3><%= name %><span class="alt"> - <%= id %></span></h3>
 
-    <% if(synced) { %>
+    <% if(synced && connected) { %>
       <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %></div>
       <hr>
       <div>

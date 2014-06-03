@@ -44,9 +44,9 @@ public class Coin {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-              peerGroup().addEventListener(new UIDownloadListener(), c.e);
-              peerGroup().setMaxConnections(6);
-              peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
+                peerGroup().addEventListener(new UIDownloadListener(), c.e);
+                peerGroup().setMaxConnections(6);
+                peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
             }
         };
         wallet.setUserAgent(Main.APP_NAME, Main.APP_VERSION);
@@ -75,10 +75,23 @@ public class Coin {
     }
 
     class UIDownloadListener extends DownloadListener {
+        private boolean done = false,
+                        started = false;
+
         @Override
         public void onPeerConnected(Peer peer, int peerCount) {
             model.trigger("peers:connected", "{ \"peers\": " + peerCount +
                     ", \"maxPeers\": " + wallet.peerGroup().getMaxConnections() + " }");
+
+            // if we are now connected to the network and already synced, tell the JS model we are done downloading
+            if(peerCount == wallet.peerGroup().getMaxConnections()) {
+                try {
+                    if (wallet.store().getChainHead().getHeight() == wallet.chain().getBestChainHeight())
+                        doneDownload();
+                } catch(BlockStoreException ex) {
+                    log.error(ex.getMessage());
+                }
+            }
         }
 
         @Override
@@ -89,8 +102,11 @@ public class Coin {
 
         @Override
         protected void startDownload(int blocks) {
+            if(started) return;
+            started = true;
             try {
-                model.trigger("sync:start", wallet.store().getChainHead().getHeight() + blocks + "");
+                int height = wallet.store().getChainHead().getHeight();
+                model.trigger("sync:start", height + blocks + "");
             } catch(BlockStoreException ex) {
                 log.error(ex.getMessage());
             }
@@ -98,6 +114,9 @@ public class Coin {
 
         @Override
         protected void doneDownload() {
+            if(done) return;
+            done = true;
+            log.info("Done syncing " + name);
             model.trigger("sync:done");
         }
     }
