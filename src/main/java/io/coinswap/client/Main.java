@@ -1,7 +1,6 @@
 package io.coinswap.client;
 
-import com.google.bitcoin.params.*;
-
+import io.coinswap.Coins;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
@@ -22,7 +21,6 @@ import netscape.javascript.JSObject;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Main extends Application {

@@ -1,6 +1,7 @@
-package io.coinswap.client;
+package io.coinswap;
 
 import com.google.bitcoin.params.*;
+import io.coinswap.client.Coin;
 
 import java.io.File;
 import java.util.ArrayList;
