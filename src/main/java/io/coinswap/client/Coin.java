@@ -2,9 +2,8 @@ package io.coinswap.client;
 
 import com.google.bitcoin.core.*;
 import com.google.bitcoin.kits.WalletAppKit;
-import com.google.bitcoin.store.BlockStoreException;
-import com.google.common.base.Joiner;
-import netscape.javascript.JSObject;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Date;
 
 /**
  * Contains the settings and state for one currency. Includes an AltcoinJ wallet,
@@ -22,31 +20,31 @@ public class Coin {
     private static final Logger log = LoggerFactory.getLogger(Console.class);
     private static final File checkpointDir = new File("./checkpoints");
 
+    protected NetworkParameters params;
     protected WalletAppKit wallet;
     protected String name, id, symbol;
     protected String[] pairs;
-    protected CoinModel model;
 
-    public Coin(Controller controller, NetworkParameters params, File directory,
+    private boolean setup;
+    private SettableFuture<Object> setupFuture;
+
+    public Coin(NetworkParameters params, File directory,
                 String name, String id, String symbol, String[] pairs) {
 
+        this.params = params;
         this.name = name;
         this.id = id;
         this.symbol = symbol;
         this.pairs = pairs;
 
-        final Controller c = controller;
-
-        // create the JS object so we can interface with the UI
-        model = new CoinModel(c, name, id, symbol, pairs);
-
         // create the AltcoinJ wallet to interface with the currency
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().addEventListener(new UIDownloadListener(), c.e);
                 peerGroup().setMaxConnections(6);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
+                setup = true;
+                setupFuture.set(null);
             }
         };
         wallet.setUserAgent(Main.APP_NAME, Main.APP_VERSION);
@@ -66,73 +64,21 @@ public class Coin {
         }
     }
 
-    public void start() {
+    public ListenableFuture<Object> start() {
         wallet.startAsync();
+        setupFuture = SettableFuture.create();
+        return setupFuture;
     }
 
     public void stop() {
         wallet.stopAsync();
     }
 
-    class UIDownloadListener extends DownloadListener {
-        private boolean done = false,
-                        started = false;
-
-        @Override
-        public void onPeerConnected(Peer peer, int peerCount) {
-            model.trigger("peers:connected", "{ \"peers\": " + peerCount +
-                    ", \"maxPeers\": " + wallet.peerGroup().getMaxConnections() + " }");
-
-            // if we are now connected to the network and already synced, tell the JS model we are done downloading
-            if(peerCount == wallet.peerGroup().getMaxConnections()) {
-                try {
-                    if (wallet.store().getChainHead().getHeight() == wallet.chain().getBestChainHeight())
-                        doneDownload();
-                } catch(BlockStoreException ex) {
-                    log.error(ex.getMessage());
-                }
-            }
-        }
-
-        @Override
-        protected void progress(double pct, int blocks, Date date) {
-            model.trigger("sync:progress", "{ \"blocks\": " + blocks +
-                    ", \"date\": " + date.getTime() + " }");
-        }
-
-        @Override
-        protected void startDownload(int blocks) {
-            if(started) return;
-            started = true;
-            try {
-                int height = wallet.store().getChainHead().getHeight();
-                model.trigger("sync:start", height + blocks + "");
-            } catch(BlockStoreException ex) {
-                log.error(ex.getMessage());
-            }
-        }
-
-        @Override
-        protected void doneDownload() {
-            if(done) return;
-            done = true;
-            log.info("Done syncing " + name);
-            model.trigger("sync:done");
-        }
+    public boolean isSetup() {
+        return setup;
     }
 
-    public class CoinModel extends Model {
-        public CoinModel(Controller c, String name, String id, String symbol, String[] pairs) {
-            // build JSON string with arguments,
-            // eval to create object via JS constructor,
-            // pass to Model() to initialize Java-side handling of object
-            super((JSObject) c.context.eval(
-                "new this.Coin({ " +
-                    "name: '" + name + "'," +
-                    "id: '" + id + "'," +
-                    "symbol: '" + symbol + "'," +
-                    "pairs: ['" + Joiner.on("','").join(pairs) + "']" +
-                "})"));
-        }
+    public ListenableFuture<Object> getSetupFuture() {
+        return setupFuture;
     }
 }

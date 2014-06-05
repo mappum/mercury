@@ -21,7 +21,9 @@ import netscape.javascript.JSObject;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Main extends Application {
     public static final String APP_NAME = "Coinswap";
@@ -34,41 +36,26 @@ public class Main extends Application {
     private static final int DEFAULT_WIDTH = 800;
     private static final int DEFAULT_HEIGHT = 720;
 
-    private List<Coin> coins;
     private ClientUI ui;
     private Controller controller;
+    private ArrayList<Coin> coins;
+    private Map<String, CoinModel> models;
 
     @Override
     public void start(Stage mainWindow) {
         ui = new ClientUI();
         ui.engine.getLoadWorker().stateProperty().addListener((ov, oldState, state) -> {
             controller = new Controller(ui.engine);
+            coins = Coins.get(dataDir);
+            models = new HashMap<String, CoinModel>();
 
-            // TODO: load pairs from exchange server
-            coins = new ArrayList<Coin>();
-            coins.add(new Coin(controller, MainNetParams.get(), dataDir,
-                    "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>",
-                    new String[] { "LTC", "DOGE", "BTCt", "LTCt" }));
-            coins.add(new Coin(controller, LitecoinMainNetParams.get(), dataDir,
-                    "Litecoin", "LTC", "&#321;",
-                    new String[] { "BTC", "DOGE", "LTCt" }));
-            coins.add(new Coin(controller, DogecoinMainNetParams.get(), dataDir,
-                    "Dogecoin", "DOGE", "&#272;",
-                    new String[] { "BTC", "LTC" }));
-            coins.add(new Coin(controller, TestNet3Params.get(), dataDir,
-                    "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>",
-                    new String[] { "BTC", "LTCt" }));
-            coins.add(new Coin(controller, LitecoinTestNetParams.get(), dataDir,
-                    "Litecoin Testnet", "LTCt", "&#321;",
-                    new String[] { "BTC", "LTC", "BTCt" }));
-
-            // TODO: sort coins by volume
-
-            // insert coin objects into JS-side collection
+            // for each Coin, create JS-side model and insert into JS-side collection
             JSObject coinCollection = (JSObject) controller.app.get("coins");
             for(Coin coin : coins) {
                 coin.start();
-                coinCollection.call("add", new Object[]{ coin.model.object });
+                CoinModel model = new CoinModel(controller, coin);
+                models.put(coin.id, model);
+                coinCollection.call("add", new Object[]{ model.object });
             }
 
             mainWindow.setTitle(APP_NAME);
