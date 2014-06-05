@@ -17,7 +17,7 @@ import java.io.IOException;
  * and a JS-side Coin model for interfacing with UI.
  */
 public class Coin {
-    private static final Logger log = LoggerFactory.getLogger(Console.class);
+    private static final Logger log = LoggerFactory.getLogger(Coin.class);
     private static final File checkpointDir = new File("./checkpoints");
 
     protected NetworkParameters params;
