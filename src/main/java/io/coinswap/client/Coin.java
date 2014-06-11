@@ -78,6 +78,8 @@ public class Coin {
         return setup;
     }
 
+    public WalletAppKit getWallet() { return wallet; }
+
     public ListenableFuture<Object> getSetupFuture() {
         return setupFuture;
     }
