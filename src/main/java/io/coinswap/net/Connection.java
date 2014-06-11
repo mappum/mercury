@@ -85,7 +85,7 @@ public class Connection extends Thread {
     public void run() {
         try {
             String data;
-            while ((data = in.readLine()) != null) {
+            while (socket.isConnected() && (data = in.readLine()) != null) {
                 JSONObject obj = (JSONObject) JSONValue.parse(data);
 
                 List<ReceiveListener> channelListeners;
@@ -98,13 +98,21 @@ public class Connection extends Thread {
 
                 if (channelListeners != null) {
                     for (ReceiveListener listener : channelListeners) {
-                        // TODO: run listeners on different threads
+                        // TODO: run listeners on different threads?
                         listener.onReceive(obj);
                     }
                 }
             }
         } catch (Exception ex) {
             log.error(ex.getMessage());
+        } finally {
+            try {
+                socket.close();
+                in.close();
+                out.close();
+            } catch(IOException ex) {
+                log.error(ex.getMessage());
+            }
         }
     }
 
