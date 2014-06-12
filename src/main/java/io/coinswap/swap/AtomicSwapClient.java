@@ -1,13 +1,11 @@
 package io.coinswap.swap;
 
-import com.google.bitcoin.core.Base58;
-import com.google.bitcoin.core.ECKey;
-import com.google.bitcoin.core.Utils;
-import com.google.bitcoin.core.Wallet;
+import com.google.bitcoin.core.*;
 import com.google.bitcoin.crypto.DeterministicKey;
 import com.google.bitcoin.kits.WalletAppKit;
 import com.google.bitcoin.script.Script;
 import com.google.bitcoin.script.ScriptBuilder;
+import com.google.bitcoin.script.ScriptOpCodes;
 import com.google.bitcoin.utils.Threading;
 import com.google.bitcoin.wallet.KeyChain;
 import io.coinswap.net.Connection;
@@ -39,18 +37,23 @@ public class AtomicSwapClient implements Connection.ReceiveListener {
     // bob = other trader, generates x for hashlock
     private final boolean alice;
 
-    private final WalletAppKit[] wallets;
+    private final io.coinswap.client.Coin[] coins;
     private final Connection connection;
     private final AtomicSwap state;
 
-    public AtomicSwapClient(AtomicSwap state, boolean alice, WalletAppKit[] wallets, Connection connection) {
-        this.state = checkNotNull(state);
-        this.alice = alice;
+    private final int a, b;
 
-        this.wallets = checkNotNull(wallets);
-        checkState(wallets.length == 2);
-        checkNotNull(wallets[0]);
-        checkNotNull(wallets[1]);
+    public AtomicSwapClient(AtomicSwap state, boolean alice, io.coinswap.client.Coin[] coins, Connection connection) {
+        this.state = checkNotNull(state);
+
+        this.alice = alice;
+        a = alice ? 0 : 1;
+        b = a ^ 1;
+
+        this.coins = checkNotNull(coins);
+        checkState(coins.length == 2);
+        checkNotNull(coins[0]);
+        checkNotNull(coins[1]);
 
         this.connection = checkNotNull(connection);
         connection.addListener(state.trade.id, this);
@@ -69,26 +72,76 @@ public class AtomicSwapClient implements Connection.ReceiveListener {
         message.put("channel", state.trade.id);
         message.put("method", AtomicSwapMethod.KEYS_REQUEST);
 
-        int a = alice ? 0 : 1;
-        myKeys = (List<ECKey>)(List<?>) wallets[a].wallet().freshKeys(KeyChain.KeyPurpose.RECEIVE_FUNDS, 3);
+        myKeys = (List<ECKey>)(List<?>)
+            coins[b].getWallet().wallet().freshKeys(KeyChain.KeyPurpose.RECEIVE_FUNDS, 3);
         state.setKeys(alice, myKeys);
         List<String> keyStrings = new ArrayList<String>(3);
         for(ECKey key : myKeys)
             keyStrings.add(Base58.encode(key.getPubKey()));
         message.put("keys", keyStrings);
 
-        if(!alice) {
-            state.setXKey(wallets[a].wallet().freshReceiveKey());
+        if (!alice) {
+            state.setXKey(coins[0].getWallet().wallet().freshReceiveKey());
             message.put("x", Base58.encode(state.getXHash()));
         }
 
         connection.write(message);
     }
 
+    private void sendBailinHash() {
+        try {
+            JSONObject message = new JSONObject();
+            message.put("channel", state.trade.id);
+            message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
+
+            Transaction tx = new Transaction(coins[0].getParams());
+
+            // first output is p2sh 2-of-2 multisig, with keys A1 and B1
+            // amount is how much we are trading to other party
+            List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
+            multiSigKeys.add(state.getKeys(alice).get(0));
+            multiSigKeys.add(state.getKeys(!alice).get(0));
+            Script redeem = ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
+            byte[] redeemHash = Utils.Hash160(redeem.getProgram());
+            Script p2sh = ScriptBuilder.createP2SHOutputScript(redeemHash);
+            tx.addOutput(state.trade.quantities[a], p2sh);
+
+            // second output for Alice's bailin is p2sh pay-to-pubkey, with key B1
+            // for Bob's bailin is hashlocked with x, p2sh pay-to-pubkey, with key A1
+            // amount is the fee for the payout tx
+            Script xScript;
+            if (alice) {
+                xScript = ScriptBuilder.createP2SHOutputScript(state.getXHash());
+            } else {
+                xScript = new ScriptBuilder()
+                        .op(ScriptOpCodes.OP_HASH160)
+                        .data(state.getXHash())
+                        .op(ScriptOpCodes.OP_EQUALVERIFY)
+                        .data(state.getKeys(true).get(0).getPubKey())
+                        .op(ScriptOpCodes.OP_CHECKSIG)
+                        .build();
+            }
+            // TODO: get actual fee amount
+            tx.addOutput(Coin.valueOf(10000), xScript);
+
+            Wallet.SendRequest req = Wallet.SendRequest.forTx(tx);
+            coins[a].getWallet().wallet().completeTx(req);
+
+            state.setBailinTx(alice, tx);
+
+            log.info(tx.toString());
+
+            message.put("hash", Base58.encode(tx.getHash().getBytes()));
+            connection.write(message);
+        } catch(InsufficientMoneyException ex) {
+            log.error(ex.getMessage());
+        }
+    }
+
     @Override
     public void onReceive(Map data) {
         try {
-            state.onReceive(alice, data);
+            state.onReceive(!alice, data);
 
             String method = (String) data.get("method");
 
@@ -98,6 +151,8 @@ public class AtomicSwapClient implements Connection.ReceiveListener {
 
             } else if (method.equals(AtomicSwapMethod.KEYS_REQUEST)) {
                 state.setStep(AtomicSwap.Step.EXCHANGING_BAILIN_HASHES);
+                sendBailinHash();
+
             }
         } catch(Exception ex) {
             log.error(ex.getMessage());

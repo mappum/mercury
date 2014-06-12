@@ -1,8 +1,6 @@
 package io.coinswap.swap;
 
-import com.google.bitcoin.core.Base58;
-import com.google.bitcoin.core.ECKey;
-import com.google.bitcoin.core.Utils;
+import com.google.bitcoin.core.*;
 import com.google.bitcoin.crypto.DeterministicKey;
 import com.google.bitcoin.script.ScriptBuilder;
 import com.google.bitcoin.utils.Threading;
@@ -30,13 +28,16 @@ public class AtomicSwap {
     private byte[] x;
     private byte[] xHash;
 
+    private Sha256Hash[] bailinHashes;
+    private Transaction[] bailinTxs;
+
     public final AtomicSwapTrade trade;
 
     public enum Step {
         STARTING,
         EXCHANGING_KEYS,
         EXCHANGING_BAILIN_HASHES,
-        SIGNING_TRANSACTIONS,
+        EXCHANGING_SIGNATURES,
         BROADCASTING_BAILIN,
         BROADCASTING_PAYOUT,
         BROADCASTING_REFUND,
@@ -47,6 +48,8 @@ public class AtomicSwap {
     public AtomicSwap(AtomicSwapTrade trade) {
         this.trade = checkNotNull(trade);
         keys = new ArrayList[2];
+        bailinHashes = new Sha256Hash[2];
+        bailinTxs = new Transaction[2];
     }
 
     public void cancel() {
@@ -127,17 +130,56 @@ public class AtomicSwap {
 
     public void setXHash(byte[] hash) {
         checkNotNull(hash);
-        checkState(x == null);
 
         lock.lock();
         try {
+            checkState(x == null);
             xHash = hash;
         } finally {
             lock.unlock();
         }
     }
 
-    public void onReceive(boolean alice, Map data) throws Exception {
+    public Sha256Hash getBailinHash(boolean alice) {
+        lock.lock();
+        try {
+            return bailinHashes[alice ? 0 : 1];
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void setBailinHash(boolean alice, Sha256Hash hash) {
+        checkNotNull(hash);
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            checkState(bailinHashes[a] == null);
+            bailinHashes[a] = hash;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void setBailinTx(boolean alice, Transaction tx) {
+        checkNotNull(tx);
+        Sha256Hash hash = tx.getHash();
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            checkState(bailinTxs[a] == null);
+            bailinTxs[a] = tx;
+
+            if(bailinHashes[a] == null) bailinHashes[a] = hash;
+            else checkState(hash.compareTo(bailinHashes[a]) == 0);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void onReceive(boolean fromAlice, Map data) throws Exception {
         String method = (String) checkNotNull(data.get("method"));
 
         if (method.equals(AtomicSwapMethod.VERSION)) {
@@ -146,7 +188,7 @@ public class AtomicSwap {
 
         } else if (method.equals(AtomicSwapMethod.KEYS_REQUEST)) {
             checkState(getStep() == AtomicSwap.Step.EXCHANGING_KEYS);
-            checkState(getKeys(alice) == null);
+            checkState(getKeys(fromAlice) == null);
 
             List<String> keyStrings = (ArrayList<String>) data.get("keys");
             checkState(keyStrings.size() == 3);
@@ -154,12 +196,20 @@ public class AtomicSwap {
             List<ECKey> keys = new ArrayList<ECKey>(3);
             for(String s : keyStrings)
                 keys.add(ECKey.fromPublicOnly(Base58.decode(checkNotNull(s))));
-            setKeys(alice, keys);
+            setKeys(fromAlice, keys);
 
-            if (!alice) {
+            if (!fromAlice) {
                 byte[] xHash = Base58.decode((String) checkNotNull(data.get("x")));
                 setXHash(xHash);
             }
+
+        } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
+            checkState(getStep() == Step.EXCHANGING_BAILIN_HASHES);
+            checkState(getBailinHash(fromAlice) == null);
+
+            byte[] hashBytes = Base58.decode(checkNotNull((String) data.get("hash")));
+            Sha256Hash hash = new Sha256Hash(hashBytes);
+            setBailinHash(fromAlice, hash);
         }
     }
 }
