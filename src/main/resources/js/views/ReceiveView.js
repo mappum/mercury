@@ -3,7 +3,8 @@
 coinswap.ReceiveView = Backbone.View.extend({
   events: {
     'click .dropdown .dropdown-menu li': 'onDropdownSelect',
-    'change .dropdown-coin': 'updateModel'
+    'change .dropdown-coin': 'updateModel',
+    'click .generate': 'newAddress'
   },
 
   template: _.template($('#template-receive').html()),
@@ -48,19 +49,25 @@ coinswap.ReceiveView = Backbone.View.extend({
   },
 
   updateModel: function() {
+    if(this.model)
+      this.stopListening(this.model, 'change:address', this.updateAddress);
+
     var currency = this.$el.find('.dropdown-coin');
     var id = currency.find('.dropdown-toggle .value').text();
     console.log("updateModel: " + id)
     this.model = this.collection.get(id);
+    this.listenTo(this.model, 'change:address', this.updateAddress);
     this.updateAddress();
   },
 
   updateAddress: function() {
-    var t = this;
-    var address = this.model.getAddress(function(address) {
-      var addressEl = t.$el.find('.address');
-      addressEl.val(address);
-    });
+    var address = this.model.get('address');
+    var addressEl = this.$el.find('.address');
+    addressEl.val(address);
+  },
+
+  newAddress: function() {
+    this.model.newAddress();
   }
 });
 

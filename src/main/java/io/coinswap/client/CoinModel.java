@@ -27,31 +27,22 @@ public class CoinModel extends Model {
                 "name: '" + coin.name + "'," +
                 "id: '" + coin.id + "'," +
                 "symbol: '" + coin.symbol + "'," +
-                "pairs: ['" + Joiner.on("','").join(coin.pairs) + "']" +
+                "pairs: ['" + Joiner.on("','").join(coin.pairs) + "']," +
+                "address: \"" + coin.getWallet().wallet().currentReceiveAddress().toString() + "\"" +
             "})"));
 
         this.controller = controller;
         this.coin = coin;
 
-        if(coin.isSetup()) {
-            addDownloadListener();
-        } else {
-            coin.getSetupFuture().addListener(new Runnable() {
-                @Override
-                public void run() {
-                    addDownloadListener();
-                }
-            }, MoreExecutors.sameThreadExecutor());
-        }
-
+        addDownloadListener();
         handleAddressRequests();
     }
 
     private void handleAddressRequests() {
-        on("getAddress", new EventEmitter.Callback() {
+        on("address:new", new EventEmitter.Callback() {
             @Override
             public void f(Object a) {
-                String address = coin.getWallet().wallet().currentReceiveAddress().toString();
+                String address = coin.getWallet().wallet().freshReceiveAddress().toString();
                 trigger("address", "\"" + address + "\"");
             }
         });

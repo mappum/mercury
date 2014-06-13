@@ -4,7 +4,8 @@ coinswap.Coin = Backbone.Model.extend({
   defaults: {
     balance: 0,
     connected: false,
-    synced: false
+    synced: false,
+    address: ''
   },
 
   initialize: function() {
@@ -27,11 +28,14 @@ coinswap.Coin = Backbone.Model.extend({
         synced: true
       });
     });
+
+    this.on('address', function(address) {
+      this.set('address', address);
+    });
   },
 
-  getAddress: function(cb) {
-    this.once('address', cb);
-    this.trigger('getAddress');
+  newAddress: function(cb) {
+    this.trigger('address:new');
   }
 });
 
