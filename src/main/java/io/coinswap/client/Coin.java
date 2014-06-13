@@ -37,6 +37,8 @@ public class Coin {
         this.symbol = symbol;
         this.pairs = pairs;
 
+        setupFuture = SettableFuture.create();
+
         // create the AltcoinJ wallet to interface with the currency
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
@@ -64,10 +66,8 @@ public class Coin {
         }
     }
 
-    public ListenableFuture<Object> start() {
+    public void start() {
         wallet.startAsync();
-        setupFuture = SettableFuture.create();
-        return setupFuture;
     }
 
     public void stop() {

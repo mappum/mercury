@@ -1,6 +1,12 @@
 package io.coinswap.client;
 
+import com.google.bitcoin.kits.WalletAppKit;
+import com.google.common.util.concurrent.MoreExecutors;
 import io.coinswap.Coins;
+import io.coinswap.net.Connection;
+import io.coinswap.swap.AtomicSwap;
+import io.coinswap.swap.AtomicSwapClient;
+import io.coinswap.swap.AtomicSwapTrade;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.HPos;
@@ -16,14 +22,24 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
+import net.minidev.json.JSONObject;
 import netscape.javascript.JSObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Main extends Application {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
+
     public static final String APP_NAME = "Coinswap";
     public static final String APP_VERSION = "0.0.1-SNAPSHOT";
 
@@ -50,10 +66,16 @@ public class Main extends Application {
             // for each Coin, create JS-side model and insert into JS-side collection
             JSObject coinCollection = (JSObject) controller.app.get("coins");
             for(Coin coin : coins) {
+                coin.getSetupFuture().addListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        CoinModel model = new CoinModel(controller, coin);
+                        models.put(coin.id, model);
+                        coinCollection.call("add", new Object[]{ model.object });
+                    }
+                }, controller.e);
+
                 coin.start();
-                CoinModel model = new CoinModel(controller, coin);
-                models.put(coin.id, model);
-                coinCollection.call("add", new Object[]{ model.object });
             }
 
             mainWindow.setTitle(APP_NAME);
