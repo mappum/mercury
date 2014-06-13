@@ -45,6 +45,13 @@ coinswap.ReceiveView = Backbone.View.extend({
       menu.append(el);
     });
 
+    this.qr = new QRCode(this.$el.find('.qr')[0], {
+      text: '',
+      width: 90,
+      height: 90,
+      correctLevel : QRCode.CorrectLevel.M
+    });
+
     this.delegateEvents();
   },
 
@@ -54,7 +61,6 @@ coinswap.ReceiveView = Backbone.View.extend({
 
     var currency = this.$el.find('.dropdown-coin');
     var id = currency.find('.dropdown-toggle .value').text();
-    console.log("updateModel: " + id)
     this.model = this.collection.get(id);
     this.listenTo(this.model, 'change:address', this.updateAddress);
     this.updateAddress();
@@ -64,6 +70,7 @@ coinswap.ReceiveView = Backbone.View.extend({
     var address = this.model.get('address');
     var addressEl = this.$el.find('.address');
     addressEl.val(address);
+    this.qr.makeCode(address);
   },
 
   newAddress: function() {

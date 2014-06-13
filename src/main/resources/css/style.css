@@ -224,7 +224,7 @@ table.transactions td {
   bottom: 0;
 }
 
-.receive .qr img {
+.receive .qr {
   width: 90px;
   height: 90px;
   margin-bottom: 10px;
