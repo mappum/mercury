@@ -4,7 +4,8 @@ coinswap.ReceiveView = Backbone.View.extend({
   events: {
     'click .dropdown .dropdown-menu li': 'onDropdownSelect',
     'change .dropdown-coin': 'updateModel',
-    'click .generate': 'newAddress'
+    'click .generate': 'newAddress',
+    'click .address-copy': 'copyAddress'
   },
 
   template: _.template($('#template-receive').html()),
@@ -75,6 +76,11 @@ coinswap.ReceiveView = Backbone.View.extend({
 
   newAddress: function() {
     this.model.newAddress();
+  },
+
+  copyAddress: function() {
+    var address = this.model.get('address');
+    clipboard.set(address);
   }
 });
 
