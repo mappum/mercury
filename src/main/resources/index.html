@@ -51,10 +51,10 @@
     </div>
     <br>
     <div class="row col-xs-9 col-xs-push-2">
-      <button class="btn btn-default generate col-xs-1"><i class="fa fa-refresh"></i></button>
-      <div class="col-xs-11">
-        <input type="text" class="form-control address" readonly>
-        <a class="fa fa-copy address-copy"></a>
+      <div class="input-group col-xs-12 address">
+        <span class="btn btn-primary generate input-group-addon"><i class="fa fa-refresh"></i></span>
+        <input type="text" class="form-control value" onClick="this.setSelectionRange(0, this.value.length)" readonly>
+        <span class="btn btn-default input-group-addon copy"><i class="fa fa-copy"></i></span>
       </div>
     </div>
   </script>
@@ -85,7 +85,7 @@
           <div class="form-group col-xs-4 price">
             <label>Price</label>
             <div class="input-group">
-              <span class="input-group-addon symbol"></i></span>
+              <span class="input-group-addon symbol"></span>
               <input class="form-control" type="text" placeholder="0.00">
             </div>
           </div>
