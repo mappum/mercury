@@ -80,6 +80,8 @@ public class Coin {
 
     public WalletAppKit getWallet() { return wallet; }
 
+    public NetworkParameters getParams() { return params; }
+
     public ListenableFuture<Object> getSetupFuture() {
         return setupFuture;
     }
