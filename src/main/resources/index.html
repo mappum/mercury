@@ -38,6 +38,27 @@
   <script type="text/template" id="template-transactions">
 
   </script>
+  <script type="text/template" id="template-receive">
+    <br>
+    <div class="row col-xs-9 col-xs-push-2">
+      <div class="dropdown dropdown-coin pull-left">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value">BTC</span> <span class="caret"></span></a>
+        <ul class="dropdown-menu"></ul>
+      </div>
+
+      <div class="pull-right qr">
+        <img class="img-thumbnail" src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=1G6VswzKjwujBFhF1BMmHUoDxbz8Pm6HSK">
+      </div>
+      <div style="clear:both"></div>
+    </div>
+    <br>
+    <div class="row col-xs-9 col-xs-push-2">
+      <button class="btn btn-default generate col-xs-1"><i class="fa fa-refresh"></i></button>
+      <div class="col-xs-11">
+        <input type="text" class="form-control address" readonly>
+      </div>
+    </div>
+  </script>
   <script type="text/template" id="template-trade">
     <br>
     <div class="row trade-pair">
@@ -120,7 +141,7 @@
         </div>
         <div class="btn-group">
           <button class="btn btn-success send"><i class="fa fa-arrow-right"></i> Send</button>
-          <button class="btn btn-success receive"><i class="fa fa-arrow-left"></i> Receive</button>
+          <a href="#receive/<%= id %>" class="btn btn-success receive"><i class="fa fa-arrow-left"></i> Receive</a>
         </div>
         <div class="btn-group">
           <button class="btn btn-primary transactions"><i class="fa fa-list"></i> Transactions</button>
@@ -152,5 +173,6 @@
   <script src="js/models/Trade.js"></script>
   <script src="js/views/CoinView.js"></script>
   <script src="js/views/TradeView.js"></script>
+  <script src="js/views/ReceiveView.js"></script>
 </body>
 </html>

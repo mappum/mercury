@@ -27,6 +27,11 @@ coinswap.Coin = Backbone.Model.extend({
         synced: true
       });
     });
+  },
+
+  getAddress: function(cb) {
+    this.once('address', cb);
+    this.trigger('getAddress');
   }
 });
 

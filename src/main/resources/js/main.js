@@ -49,6 +49,12 @@ coinswap.MainView = Backbone.View.extend({
     var model = new coinswap.Trade({ coins: coins }, { id: id });
     var view = new coinswap.TradeView({ model: model });
     this.$el.append(view.el);
+  },
+
+  receive: function(id) {
+    var coins = this.model.get('coins');
+    var view = new coinswap.ReceiveView({ collection: coins, id: id });
+    this.$el.append(view.el);
   }
 });
 
@@ -60,7 +66,6 @@ coinswap.Router = Backbone.Router.extend({
     'trade/:coin': 'trade',
     'send': 'send',
     'send/:coin': 'send',
-    'receive': 'receive',
     'receive/:coin': 'receive',
     'transactions': 'transactions',
     'transactions/:coin': 'transactions',

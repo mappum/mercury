@@ -43,6 +43,18 @@ public class CoinModel extends Model {
                 }
             }, MoreExecutors.sameThreadExecutor());
         }
+
+        handleAddressRequests();
+    }
+
+    private void handleAddressRequests() {
+        on("getAddress", new EventEmitter.Callback() {
+            @Override
+            public void f(Object a) {
+                String address = coin.getWallet().wallet().currentReceiveAddress().toString();
+                trigger("address", "\"" + address + "\"");
+            }
+        });
     }
 
     private void addDownloadListener() {
