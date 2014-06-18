@@ -20,6 +20,7 @@ public class Controller {
 
         JSObject window = (JSObject) engine.executeScript("window");
         window.setMember("console", new Console());
+        window.setMember("clipboard", new ClipboardController());
 
         context = (JSObject) window.getMember("coinswap");
         app = new Model((JSObject) context.getMember("app"));
