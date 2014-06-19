@@ -60,7 +60,7 @@ public class CoinModel extends Model {
     private void addTransactionListener() {
         Wallet w = coin.wallet.wallet();
         UITransactionListener utl = new UITransactionListener();
-        w.addEventListener(utl);
+        w.addEventListener(utl, controller.e);
 
         // trigger the UI transaction listener for old transactions at startup
         List<Transaction> txs = w.getRecentTransactions(100, false);

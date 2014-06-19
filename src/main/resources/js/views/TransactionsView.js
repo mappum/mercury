@@ -1,7 +1,7 @@
 (function(coinswap) {
 
 coinswap.TransactionsView = Backbone.View.extend({
-  template: _.template($('#template-transactions').html()),
+  template: $('#template-transactions').html(),
   rowTemplate: _.template($('#template-transactions-row').html()),
   className: 'container transactions',
 
@@ -20,7 +20,7 @@ coinswap.TransactionsView = Backbone.View.extend({
   },
 
   render: function() {
-    this.$el.html(this.template({}));
+    this.$el.html(this.template);
   },
 
   addTransaction: function(tx) {
