@@ -21,6 +21,7 @@ coinswap.TransactionsView = Backbone.View.extend({
   },
 
   addTransaction: function(tx) {
+    tx.window = window;
     var row = $('<tr>').html(this.rowTemplate(tx.attributes));
     this.$el.find('tbody').prepend(row);
   }

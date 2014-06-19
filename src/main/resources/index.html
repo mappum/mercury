@@ -52,7 +52,7 @@
     </td>
     <td><%= coin %></td>
     <td class="text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
-    <td class="small"><%= new Date(date).toLocaleString() %></td>
+    <td class="small"><%= window.moment(date).format('l H:mm') %></td>
     <td class="small"><span class="text-<%= type === 'receive' ? 'success' : 'danger' %>"><i class="fa fa-sign-<%= type === 'receive' ? 'in' : 'out' %>"></i> <%= type === 'receive' ? 'Received' : 'Sent' %></span> <strong><%= value %> <%= coin %></strong> <%= type === 'receive' ? 'with' : 'to' %> <%= address %></td>
   </script>
   <script type="text/template" id="template-receive">
@@ -186,6 +186,7 @@
   <script src="js/underscore-min.js"></script>
   <script src="js/backbone-min.js"></script>
   <script src="js/qrcode.min.js"></script>
+  <script src="js/moment.min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/models/Coin.js"></script>
   <script src="js/models/Trade.js"></script>
