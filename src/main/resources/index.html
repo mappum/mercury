@@ -36,11 +36,29 @@
   </footer>
 
   <script type="text/template" id="template-transactions">
-
+    <br>
+    <div class="row">
+      <table class="table table-bordered table-striped table-hover col-xs-12">
+        <thead>
+          <tr class="small"><td></td><td>Currency</td><td>Amount</td><td>Date</td><td>Transaction</td></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </script>
+  <script type="text/template" id="template-transactions-row">
+    <td class="text-center">
+      <i class="fa <%= !depth ? 'fa-asterisk text-warning' : depth < 6 ? 'fa-clock-o text-info' : 'fa-check text-success' %>"></i>
+    </td>
+    <td><%= coin %></td>
+    <td class="text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
+    <td class="small"><%= new Date(date).toLocaleString() %></td>
+    <td class="small"><span class="text-<%= type === 'receive' ? 'success' : 'danger' %>"><i class="fa fa-sign-<%= type === 'receive' ? 'in' : 'out' %>"></i> <%= type === 'receive' ? 'Received' : 'Sent' %></span> <strong><%= value %> <%= coin %></strong> <%= type === 'receive' ? 'with' : 'to' %> <%= address %></td>
   </script>
   <script type="text/template" id="template-receive">
     <br>
     <div class="row col-xs-9 col-xs-push-2">
+      <h2>Receive Coins</h2><br>
       <div class="dropdown dropdown-coin pull-left">
         <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value">BTC</span> <span class="caret"></span></a>
         <ul class="dropdown-menu"></ul>
@@ -171,8 +189,10 @@
   <script src="js/main.js"></script>
   <script src="js/models/Coin.js"></script>
   <script src="js/models/Trade.js"></script>
+  <script src="js/models/Transaction.js"></script>
   <script src="js/views/CoinView.js"></script>
   <script src="js/views/TradeView.js"></script>
   <script src="js/views/ReceiveView.js"></script>
+  <script src="js/views/TransactionsView.js"></script>
 </body>
 </html>

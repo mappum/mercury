@@ -1,16 +1,19 @@
 package io.coinswap.client;
 
 
-import com.google.bitcoin.core.DownloadListener;
-import com.google.bitcoin.core.Peer;
+import com.google.bitcoin.core.*;
 import com.google.bitcoin.store.BlockStoreException;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.subgraph.orchid.encoders.Hex;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
 import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Date;
+import java.util.List;
 
 public class CoinModel extends Model {
     private static final Logger log = LoggerFactory.getLogger(CoinModel.class);
@@ -35,10 +38,11 @@ public class CoinModel extends Model {
         this.coin = coin;
 
         addDownloadListener();
-        handleAddressRequests();
+        addTransactionListener();
+        handleRequests();
     }
 
-    private void handleAddressRequests() {
+    private void handleRequests() {
         on("address:new", new EventEmitter.Callback() {
             @Override
             public void f(Object a) {
@@ -51,6 +55,21 @@ public class CoinModel extends Model {
     private void addDownloadListener() {
         UIDownloadListener udl = new UIDownloadListener();
         coin.wallet.peerGroup().addEventListener(udl, controller.e);
+    }
+
+    private void addTransactionListener() {
+        Wallet w = coin.wallet.wallet();
+        UITransactionListener utl = new UITransactionListener();
+        w.addEventListener(utl);
+
+        // trigger the UI transaction listener for old transactions at startup
+        List<Transaction> txs = w.getRecentTransactions(100, false);
+        for(Transaction tx : txs) {
+            if(tx.getValueSentToMe(w).compareTo(com.google.bitcoin.core.Coin.ZERO) == 1)
+                utl.onCoinsReceived(w, tx, null, null);
+            else
+                utl.onCoinsSent(w, tx, null, null);
+        }
     }
 
     class UIDownloadListener extends DownloadListener {
@@ -97,6 +116,44 @@ public class CoinModel extends Model {
             done = true;
             log.info("Done syncing " + coin.name);
             trigger("sync:done");
+        }
+    }
+
+    class UITransactionListener extends AbstractWalletEventListener {
+        @Override
+        public void onCoinsReceived(Wallet wallet, Transaction tx, com.google.bitcoin.core.Coin prevBalance, com.google.bitcoin.core.Coin newBalance) {
+            onTransaction(tx, true);
+        }
+
+        @Override
+        public void onCoinsSent(Wallet wallet, Transaction tx, com.google.bitcoin.core.Coin prevBalance, com.google.bitcoin.core.Coin newBalance) {
+            onTransaction(tx, false);
+        }
+
+        public void onTransaction(Transaction tx, boolean receive) {
+            Wallet w = coin.wallet.wallet();
+            JSONObject obj = new JSONObject();
+            obj.put("type", receive ? "receive" : "send");
+            obj.put("coin", coin.id);
+            obj.put("id", Utils.HEX.encode(tx.getHash().getBytes()));
+            obj.put("date", tx.getUpdateTime().getTime());
+            obj.put("depth", tx.getConfidence().getDepthInBlocks());
+            obj.put("value", Double.parseDouble(tx.getValue(w).toFriendlyString()));
+
+            String address = null;
+            if(receive) {
+                for(TransactionOutput out : tx.getOutputs()) {
+                    if(w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
+                        address = out.getScriptPubKey().getToAddress(coin.params).toString();
+                        break;
+                    }
+                }
+            } else {
+                address = tx.getOutput(0).getScriptPubKey().getToAddress(coin.params).toString();
+            }
+            obj.put("address", address);
+
+            trigger("transaction", obj.toJSONString(JSONStyle.LT_COMPRESS));
         }
     }
 }

@@ -9,6 +9,9 @@ coinswap.Coin = Backbone.Model.extend({
   },
 
   initialize: function() {
+    var transactions = new coinswap.TransactionCollection;
+    this.set('transactions', transactions);
+
     this.on('peers:connected', function(o) {
       this.set({
         connected: this.get('connected') || o.peers >= o.maxPeers,
@@ -31,6 +34,10 @@ coinswap.Coin = Backbone.Model.extend({
 
     this.on('address', function(address) {
       this.set('address', address);
+    });
+
+    this.on('transaction', function(tx) {
+      transactions.add(tx);
     });
   },
 
