@@ -122,26 +122,38 @@ public class CoinModel extends Model {
     class UITransactionListener extends AbstractWalletEventListener {
         @Override
         public void onCoinsReceived(Wallet wallet, Transaction tx, com.google.bitcoin.core.Coin prevBalance, com.google.bitcoin.core.Coin newBalance) {
-            onTransaction(tx, true);
+            onTransaction(tx);
         }
 
         @Override
         public void onCoinsSent(Wallet wallet, Transaction tx, com.google.bitcoin.core.Coin prevBalance, com.google.bitcoin.core.Coin newBalance) {
-            onTransaction(tx, false);
+            onTransaction(tx);
         }
 
-        public void onTransaction(Transaction tx, boolean receive) {
+        @Override
+        public void onWalletChanged(Wallet wallet) {
+            List<Transaction> txs = wallet.getRecentTransactions(100, true);
+            for(Transaction tx : txs) {
+                if(tx.getConfidence().getDepthInBlocks() > 6) break;
+                onTransaction(tx);
+            }
+        }
+
+        public void onTransaction(Transaction tx) {
             Wallet w = coin.wallet.wallet();
             JSONObject obj = new JSONObject();
-            obj.put("type", receive ? "receive" : "send");
+            obj.put("type", "payment");
             obj.put("coin", coin.id);
             obj.put("id", Utils.HEX.encode(tx.getHash().getBytes()));
             obj.put("date", tx.getUpdateTime().getTime());
             obj.put("depth", tx.getConfidence().getDepthInBlocks());
-            obj.put("value", Double.parseDouble(tx.getValue(w).toFriendlyString()));
+            obj.put("dead", tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.DEAD);
+
+            com.google.bitcoin.core.Coin value = tx.getValue(w);
+            obj.put("value", Double.parseDouble(value.toFriendlyString()));
 
             String address = null;
-            if(receive) {
+            if(value.compareTo(com.google.bitcoin.core.Coin.ZERO) == 1) {
                 for(TransactionOutput out : tx.getOutputs()) {
                     if(w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
                         address = out.getScriptPubKey().getToAddress(coin.params).toString();

@@ -10,6 +10,8 @@ coinswap.TransactionsView = Backbone.View.extend({
     var t = this;
     this.render();
 
+    this.removed = false;
+
     var combined = new coinswap.TransactionCollection;
     this.collection.each(function(coin) {
       var transactions = coin.get('transactions');
@@ -17,6 +19,8 @@ coinswap.TransactionsView = Backbone.View.extend({
       transactions.each(function(tx){ combined.add(tx); });
     });
     combined.each(this.addTransaction);
+
+    this.initialized = true;
   },
 
   render: function() {
@@ -24,9 +28,22 @@ coinswap.TransactionsView = Backbone.View.extend({
   },
 
   addTransaction: function(tx) {
-    tx.window = window;
-    var row = $('<tr>').html(this.rowTemplate(tx.attributes));
+    var t = this;
+    var row = $('<tr>');
+
+    function updateRow() {
+      if(t.initialized) {
+        if(!t.removed && !$.contains(document.documentElement, t.el))
+          t.removed = true;
+        if(t.removed)
+          return tx.off('change', updateRow);
+      }
+      row.html(t.rowTemplate(tx.attributes));
+    }
+
+    updateRow();
     this.$el.find('tbody').prepend(row);
+    tx.on('change', updateRow);
   }
 });
 

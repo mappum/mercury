@@ -37,7 +37,7 @@ coinswap.Coin = Backbone.Model.extend({
     });
 
     this.on('transaction', function(tx) {
-      transactions.add(tx);
+      transactions.add(tx, { merge: true });
     });
   },
 
