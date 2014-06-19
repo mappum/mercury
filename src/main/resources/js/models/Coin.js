@@ -48,15 +48,7 @@ coinswap.Coin = Backbone.Model.extend({
 
 coinswap.CoinCollection = Backbone.Collection.extend({
   model: coinswap.Coin,
-
-  initialize: function() {
-    var t = this;
-    
-    this.index = 0;
-    this.on('add', function(model) {
-      model.set('index', t.index++);
-    });
-  }
+  comparator: 'index'
 });
 
 })(coinswap);

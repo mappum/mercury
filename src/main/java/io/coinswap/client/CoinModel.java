@@ -29,6 +29,7 @@ public class CoinModel extends Model {
             "new this.Coin({ " +
                 "name: '" + coin.name + "'," +
                 "id: '" + coin.id + "'," +
+                "index: " + coin.index + ", " +
                 "symbol: '" + coin.symbol + "'," +
                 "pairs: ['" + Joiner.on("','").join(coin.pairs) + "']," +
                 "address: \"" + coin.getWallet().wallet().currentReceiveAddress().toString() + "\"" +

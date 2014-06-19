@@ -24,18 +24,20 @@ public class Coin {
     protected WalletAppKit wallet;
     protected String name, id, symbol;
     protected String[] pairs;
+    protected int index;
 
     private boolean setup;
     private SettableFuture<Object> setupFuture;
 
     public Coin(NetworkParameters params, File directory,
-                String name, String id, String symbol, String[] pairs) {
+                String name, String id, String symbol, String[] pairs, int index) {
 
         this.params = params;
         this.name = name;
         this.id = id;
         this.symbol = symbol;
         this.pairs = pairs;
+        this.index = index;
 
         setupFuture = SettableFuture.create();
 
