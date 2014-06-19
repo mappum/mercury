@@ -9,11 +9,14 @@ coinswap.TransactionsView = Backbone.View.extend({
     _.bindAll(this, 'addTransaction');
     var t = this;
     this.render();
+
+    var combined = new coinswap.TransactionCollection;
     this.collection.each(function(coin) {
       var transactions = coin.get('transactions');
       t.listenTo(transactions, 'add', t.addTransaction);
-      transactions.each(t.addTransaction);
+      transactions.each(function(tx){ combined.add(tx); });
     });
+    combined.each(this.addTransaction);
   },
 
   render: function() {
