@@ -43,7 +43,7 @@ public class Coin {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().setMaxConnections(6);
+                peerGroup().setMaxConnections(4);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
                 setup = true;
                 setupFuture.set(null);
