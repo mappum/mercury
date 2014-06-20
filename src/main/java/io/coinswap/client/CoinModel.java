@@ -89,10 +89,7 @@ public class CoinModel extends Model {
         // trigger the UI transaction listener for old transactions at startup
         List<Transaction> txs = w.getRecentTransactions(100, false);
         for(Transaction tx : txs) {
-            if(tx.getValueSentToMe(w).compareTo(com.google.bitcoin.core.Coin.ZERO) == 1)
-                utl.onCoinsReceived(w, tx, null, null);
-            else
-                utl.onCoinsSent(w, tx, null, null);
+            utl.onTransaction(tx);
         }
     }
 
@@ -176,16 +173,13 @@ public class CoinModel extends Model {
             com.google.bitcoin.core.Coin value = tx.getValue(w);
             obj.put("value", Double.parseDouble(value.toFriendlyString()));
 
-            String address = null;
-            if(value.compareTo(com.google.bitcoin.core.Coin.ZERO) == 1) {
-                for(TransactionOutput out : tx.getOutputs()) {
-                    if(w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
-                        address = out.getScriptPubKey().getToAddress(coin.params).toString();
-                        break;
-                    }
+            String address = "self";
+            boolean received = value.compareTo(com.google.bitcoin.core.Coin.ZERO) == 1;
+            for(TransactionOutput out : tx.getOutputs()) {
+                if(received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
+                    address = out.getScriptPubKey().getToAddress(coin.params).toString();
+                    break;
                 }
-            } else {
-                address = tx.getOutput(0).getScriptPubKey().getToAddress(coin.params).toString();
             }
             obj.put("address", address);
 
