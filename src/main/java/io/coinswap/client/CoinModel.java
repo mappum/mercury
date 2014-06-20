@@ -95,7 +95,8 @@ public class CoinModel extends Model {
 
     class UIDownloadListener extends DownloadListener {
         private boolean done = false,
-                started = false;
+                started = false,
+                connected = false;
 
         @Override
         public void onPeerConnected(Peer peer, int peerCount) {
@@ -103,9 +104,11 @@ public class CoinModel extends Model {
                     ", \"maxPeers\": " + coin.wallet.peerGroup().getMaxConnections() + " }");
 
             // if we are now connected to the network and already synced, tell the JS model we are done downloading
-            if(peerCount == coin.wallet.peerGroup().getMaxConnections()) {
+            if(!connected && peerCount == coin.wallet.peerGroup().getMaxConnections()) {
+                connected = true;
                 try {
-                    if (coin.wallet.store().getChainHead().getHeight() == coin.wallet.chain().getBestChainHeight())
+                    long limit = new Date().getTime() / 1000 - 60 * 15;
+                    if (coin.wallet.store().getChainHead().getHeader().getTimeSeconds() > limit)
                         doneDownload();
                 } catch(BlockStoreException ex) {
                     log.error(ex.getMessage());
