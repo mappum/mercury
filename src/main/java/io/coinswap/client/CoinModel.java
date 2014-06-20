@@ -188,7 +188,7 @@ public class CoinModel extends Model {
                     if(!w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash()))
                         sent = sent.add(out.getValue());
                 }
-                obj.put("sent", sent);
+                obj.put("sent", sent.toFriendlyString());
             } else {
                 address = "self";
             }
