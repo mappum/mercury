@@ -43,6 +43,14 @@ coinswap.Coin = Backbone.Model.extend({
 
   newAddress: function(cb) {
     this.trigger('address:new');
+  },
+
+  isAddressValid: function(address) {
+    return this.controller.isAddressValid(address);
+  },
+
+  send: function(address, amount) {
+    return this.controller.send(address, amount + '');
   }
 });
 

@@ -5,6 +5,10 @@
   position: relative;
 }
 
+.row {
+position: relative;
+}
+
 .progress {
   background: white;
   height: 16px;
@@ -37,6 +41,12 @@ hr {
 }
 
 /* classes */
+
+.pull-bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
 
 .currency.small {
   font-size: 12px;
@@ -232,4 +242,12 @@ table.transactions td {
 
 .address .btn:active {
   background-color: #8aa;
+}
+
+.send .error {
+  margin-bottom: 8px;
+  display: none;
+}
+.send .has-error .error {
+  display: block;
 }

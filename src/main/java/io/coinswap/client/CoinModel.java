@@ -41,6 +41,29 @@ public class CoinModel extends Model {
         addDownloadListener();
         addTransactionListener();
         handleRequests();
+
+        object.setMember("controller", this);
+    }
+
+    public boolean isAddressValid(String address) {
+        try {
+            new Address(coin.params, address);
+            return true;
+        } catch(AddressFormatException ex) {
+            return false;
+        }
+    }
+
+    public void send(String addressString, String amountString) {
+        try {
+            Address address = new Address(coin.params, addressString);
+            com.google.bitcoin.core.Coin amount = com.google.bitcoin.core.Coin.parseCoin(amountString);
+            coin.wallet.wallet().sendCoins(coin.wallet.peerGroup(), address, amount);
+        } catch(Exception ex) {
+            log.error(ex.getClass().getName() + ": " + ex.getMessage());
+            ex.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 
     private void handleRequests() {

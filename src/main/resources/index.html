@@ -157,15 +157,13 @@
           <a href="#trade/<%= id %>" class="btn btn-success trade"><i class="fa fa-exchange"></i> Trade</a>
         </div>
         <div class="btn-group">
-          <button class="btn btn-success send"><i class="fa fa-arrow-right"></i> Send</button>
+          <a href= "#send/<%= id %>" class="btn btn-success send"><i class="fa fa-arrow-right"></i> Send</a>
           <a href="#receive/<%= id %>" class="btn btn-success receive"><i class="fa fa-arrow-left"></i> Receive</a>
         </div>
         <div class="btn-group">
           <button class="btn btn-primary transactions"><i class="fa fa-list"></i> Transactions</button>
-          <button class="btn btn-primary data"><i class="fa fa-bar-chart-o"></i> Data</button>
         </div>
       </div>
-
     <% } else if(connected) { %>
       <p><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</p>
       <div class="progress progress-striped active">
@@ -179,6 +177,39 @@
       <p><i class="fa fa-clock-o text-warning symbol"></i> Connecting to network...</p>
 
     <% } %>
+  </script>
+  <script type="text/template" id="template-send">
+    <br>
+    <div class="row col-xs-8 col-xs-push-2">
+      <h2>Send Coins</h2><br>
+    </div>
+    <br>
+    <div class="col-xs-8 col-xs-push-2">
+      <div class="row">
+        <div class="address col-xs-12">
+          <label>Address</label>
+          <div class="text-danger error small">The provided address is invalid.</div>
+          <div class="input-group">
+            <input type="text" class="form-control value" placeholder="Enter an address to send to">
+            <span class="btn btn-default input-group-addon paste"><i class="fa fa-paste"></i></span>
+          </div>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="amount col-xs-7">
+          <label>Amount<span class="alt hidden"> - (<span class="currency"></span>)</span></label>
+          <div class="text-danger error small">The provided amount is invalid.</div>
+          <div class="input-group">
+            <span class="input-group-addon symbol"><i class="fa fa-btc"></i></span>
+            <input type="text" class="form-control value" placeholder="0.00">
+          </div>
+        </div>
+        <div class="col-xs-5 pull-bottom-right">
+          <button class="btn btn-lg btn-info send pull-right"><i class="fa fa-lg fa-sign-out fa-white"></i> Send <span class="currency"></span></button>
+        </div>
+      </div>
+    </div>
   </script>
 
   <script src="js/jquery-2.0.2.min.js"></script>
@@ -195,5 +226,6 @@
   <script src="js/views/TradeView.js"></script>
   <script src="js/views/ReceiveView.js"></script>
   <script src="js/views/TransactionsView.js"></script>
+  <script src="js/views/SendView.js"></script>
 </body>
 </html>

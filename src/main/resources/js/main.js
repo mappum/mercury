@@ -61,6 +61,12 @@ coinswap.MainView = Backbone.View.extend({
     var coins = this.model.get('coins');
     var view = new coinswap.TransactionsView({ collection: coins, filter: filter });
     this.$el.append(view.el);
+  },
+
+  send: function(id) {
+    var coins = this.model.get('coins');
+    var view = new coinswap.SendView({ collection: coins, id: id });
+    this.$el.append(view.el);
   }
 });
 
