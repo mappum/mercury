@@ -3,7 +3,7 @@
 coinswap.TransactionsView = Backbone.View.extend({
   template: $('#template-transactions').html(),
   rowTemplate: _.template($('#template-transactions-row').html()),
-  className: 'container transactions',
+  className: 'transactions',
 
   initialize: function() {
     _.bindAll(this, 'addTransaction');
