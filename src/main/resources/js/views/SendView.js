@@ -4,7 +4,8 @@ coinswap.SendView = Backbone.View.extend({
   events: {
     'blur .address .value': 'validateAddress',
     'blur .amount .value': 'validateAmount',
-    'click .send': 'send'
+    'click .send': 'send',
+    'click .address .paste': 'pasteAddress'
   },
 
   template: $('#template-send').html(),
@@ -60,18 +61,14 @@ coinswap.SendView = Backbone.View.extend({
   },
 
   send: function() {
-    console.log('send')
     this.validateAddress();
     this.validateAmount();
-    console.log('send')
 
     var addressEl = this.$el.find('.address');
     var amountEl = this.$el.find('.amount');
     if(addressEl.hasClass('has-error') || amountEl.hasClass('has-error')
     || !addressEl.find('.value').val() || !amountEl.find('.value').val())
       return;
-
-    console.log('sending...')
 
     // TODO: show confirm/wallet unlock modal before committing to action
 
@@ -80,6 +77,13 @@ coinswap.SendView = Backbone.View.extend({
     this.model.send(address, +amount);
 
     // TODO: give feedback that transaction happened
+  },
+
+  pasteAddress: function() {
+    var address = clipboard.get().trim();
+    if(!address) return;
+    this.$el.find('.address .value').val(address);
+    this.validateAddress();
   }
 });
 

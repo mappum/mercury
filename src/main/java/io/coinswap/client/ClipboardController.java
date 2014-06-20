@@ -17,4 +17,8 @@ public class ClipboardController {
         content.putString(s);
         clipboard.setContent(content);
     }
+
+    public String get() {
+        return clipboard.getString();
+    }
 }
