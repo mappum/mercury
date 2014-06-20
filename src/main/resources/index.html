@@ -53,7 +53,7 @@
     <td><%= coin %></td>
     <td class="text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
     <td class="small"><%= window.moment(date).format('l H:mm') %></td>
-    <td class="small"><span class="text-<%= value > 0 ? 'success' : 'danger' %>"><i class="fa fa-sign-<%= value > 0 ? 'in' : 'out' %>"></i> <%= value > 0 ? 'Received' : 'Sent' %></span> <strong><%= value %> <%= coin %></strong> <%= value > 0 ? 'with' : 'to' %> <%= address %></td>
+    <td class="small"><span class="text-<%= value > 0 ? 'success' : 'danger' %>"><i class="fa fa-sign-<%= value > 0 ? 'in' : 'out' %>"></i> <%= value > 0 ? 'Received' : 'Sent' %></span> <strong><%= Math.abs(value) %> <%= coin %></strong> <%= value > 0 ? 'with' : 'to' %> <%= address %></td>
   </script>
   <script type="text/template" id="template-receive">
     <br>
