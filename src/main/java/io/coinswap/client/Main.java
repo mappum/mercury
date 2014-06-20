@@ -9,6 +9,7 @@ import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
@@ -22,6 +23,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
+import javafx.stage.WindowEvent;
 import net.minidev.json.JSONObject;
 import netscape.javascript.JSObject;
 import org.slf4j.Logger;
@@ -89,12 +91,24 @@ public class Main extends Application {
 
             mainWindow.show();
         });
+
+        mainWindow.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent windowEvent) {
+                try {
+                    stop();
+                } catch(Exception ex) {
+                } finally {
+                    System.exit(0);
+                }
+            }
+        });
     }
 
     @Override
     public void stop() throws Exception {
-        super.stop();
         for(Coin coin : coins) coin.stop();
+        super.stop();
     }
 
     public static void main(String[] args) {
