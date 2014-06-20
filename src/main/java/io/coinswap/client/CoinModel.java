@@ -173,7 +173,7 @@ public class CoinModel extends Model {
             com.google.bitcoin.core.Coin value = tx.getValue(w);
             obj.put("value", Double.parseDouble(value.toFriendlyString()));
 
-            String address = "self";
+            String address = null;
             boolean received = value.compareTo(com.google.bitcoin.core.Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
                 if(received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
@@ -181,7 +181,20 @@ public class CoinModel extends Model {
                     break;
                 }
             }
+
+            if(address != null) {
+                com.google.bitcoin.core.Coin sent = com.google.bitcoin.core.Coin.ZERO;
+                for(TransactionOutput out : tx.getOutputs()) {
+                    if(!w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash()))
+                        sent = sent.add(out.getValue());
+                }
+                obj.put("sent", sent);
+            } else {
+                address = "self";
+            }
+
             obj.put("address", address);
+
 
             trigger("transaction", obj.toJSONString(JSONStyle.LT_COMPRESS));
         }
