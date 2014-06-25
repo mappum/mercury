@@ -37,11 +37,14 @@ public class AtomicSwapClient extends AtomicSwapController {
     private final boolean alice;
 
     private final io.coinswap.client.Coin[] coins;
+    private final Connection connection;
 
     private final int a, b;
 
     public AtomicSwapClient(AtomicSwap state, Connection connection, boolean alice, io.coinswap.client.Coin[] coins) {
-        super(state, connection);
+        super(state);
+
+        this.connection = checkNotNull(connection);
 
         this.alice = alice;
         a = alice ? 0 : 1;

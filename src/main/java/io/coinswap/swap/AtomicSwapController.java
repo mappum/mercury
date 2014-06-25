@@ -18,15 +18,12 @@ import static com.google.common.base.Preconditions.checkState;
 public abstract class AtomicSwapController implements Connection.ReceiveListener {
     public static final int VERSION = 0;
 
-    protected final Connection connection;
     protected final AtomicSwap state;
 
     protected final ReentrantLock lock = Threading.lock(AtomicSwapController.class.getName());
 
-    protected AtomicSwapController(AtomicSwap state, Connection connection) {
+    protected AtomicSwapController(AtomicSwap state) {
         this.state = checkNotNull(state);
-        this.connection = checkNotNull(connection);
-        connection.addListener(state.trade.id, this);
     }
 
     public void onMessage(boolean fromAlice, Map data) throws Exception {
