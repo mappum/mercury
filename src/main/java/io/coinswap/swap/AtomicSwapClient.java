@@ -100,20 +100,24 @@ public class AtomicSwapClient extends AtomicSwapController {
             Script p2sh = ScriptBuilder.createP2SHOutputScript(redeemHash);
             tx.addOutput(state.trade.quantities[a], p2sh);
 
-            // second output for Alice's bailin is p2sh pay-to-pubkey, with key B1
-            // for Bob's bailin is hashlocked with x, p2sh pay-to-pubkey, with key A1
+            // second output for Alice's bailin is p2sh pay-to-pubkey with key B1
+            // for Bob's bailin is p2sh, hashlocked with x, pay-to-pubkey with key A1
             // amount is the fee for the payout tx
+            // this output is used to lock the payout tx until x is revealed,
+            //   but isn't required for the refund tx
             Script xScript;
             if (alice) {
                 xScript = ScriptBuilder.createP2SHOutputScript(state.getXHash());
             } else {
-                xScript = new ScriptBuilder()
+                Script xRedeem = new ScriptBuilder()
                         .op(ScriptOpCodes.OP_HASH160)
                         .data(state.getXHash())
                         .op(ScriptOpCodes.OP_EQUALVERIFY)
                         .data(state.getKeys(true).get(0).getPubKey())
                         .op(ScriptOpCodes.OP_CHECKSIG)
                         .build();
+                byte[] scriptHash = Utils.Hash160(xRedeem.getProgram());
+                xScript = ScriptBuilder.createP2SHOutputScript(scriptHash);
             }
             // TODO: get actual fee amount
             tx.addOutput(Coin.valueOf(10000), xScript);
