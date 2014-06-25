@@ -25,7 +25,12 @@ public class Controller {
         context = (JSObject) window.getMember("coinswap");
         app = new Model((JSObject) context.getMember("app"));
 
-        e = Platform::runLater;
+        e = new Executor() {
+            @Override
+            public void execute(Runnable r) {
+                Platform.runLater(r);
+            }
+        };
     }
 
     public JSObject eval(String js) {

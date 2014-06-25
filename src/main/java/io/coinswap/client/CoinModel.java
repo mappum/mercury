@@ -4,8 +4,6 @@ package io.coinswap.client;
 import com.google.bitcoin.core.*;
 import com.google.bitcoin.store.BlockStoreException;
 import com.google.common.base.Joiner;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.subgraph.orchid.encoders.Hex;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 import netscape.javascript.JSObject;

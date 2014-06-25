@@ -9,6 +9,9 @@ import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.VPos;
@@ -60,37 +63,41 @@ public class Main extends Application {
     @Override
     public void start(Stage mainWindow) {
         ui = new ClientUI();
-        ui.engine.getLoadWorker().stateProperty().addListener((ov, oldState, state) -> {
-            controller = new Controller(ui.engine);
-            coins = Coins.get(dataDir);
-            models = new HashMap<String, CoinModel>();
+        ui.engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
+            @Override
+            public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
+                controller = new Controller(ui.engine);
+                coins = Coins.get(dataDir);
+                models = new HashMap<String, CoinModel>();
 
-            // for each Coin, create JS-side model and insert into JS-side collection
-            JSObject coinCollection = (JSObject) controller.app.get("coins");
-            for(Coin coin : coins) {
-                coin.getSetupFuture().addListener(new Runnable() {
-                    @Override
-                    public void run() {
-                        CoinModel model = new CoinModel(controller, coin);
-                        models.put(coin.id, model);
-                        coinCollection.call("add", new Object[]{ model.object });
-                    }
-                }, controller.e);
+                // for each Coin, create JS-side model and insert into JS-side collection
+                final JSObject coinCollection = (JSObject) controller.app.get("coins");
+                for(Coin coin : coins) {
+                    final Coin c = coin;
+                    coin.getSetupFuture().addListener(new Runnable() {
+                        @Override
+                        public void run() {
+                            CoinModel model = new CoinModel(controller, c);
+                            models.put(c.id, model);
+                            coinCollection.call("add", new Object[]{ model.object });
+                        }
+                    }, controller.e);
 
-                coin.start();
+                    coin.start();
+                }
             }
-
-            mainWindow.setTitle(APP_NAME);
-            mainWindow.setScene(new Scene(ui, DEFAULT_WIDTH, DEFAULT_HEIGHT));
-            mainWindow.setMinWidth(MIN_WIDTH);
-            mainWindow.setMinHeight(MIN_HEIGHT);
-
-            mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon128.png")));
-            mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon64.png")));
-            mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon32.png")));
-
-            mainWindow.show();
         });
+
+        mainWindow.setTitle(APP_NAME);
+        mainWindow.setScene(new Scene(ui, DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        mainWindow.setMinWidth(MIN_WIDTH);
+        mainWindow.setMinHeight(MIN_HEIGHT);
+
+        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon128.png")));
+        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon64.png")));
+        mainWindow.getIcons().add(new Image(getClass().getResourceAsStream("/images/icon32.png")));
+
+        mainWindow.show();
 
         mainWindow.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
