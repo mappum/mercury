@@ -123,6 +123,10 @@ public class AtomicSwapClient extends AtomicSwapController {
             tx.addOutput(Coin.valueOf(10000), xScript);
 
             Wallet.SendRequest req = Wallet.SendRequest.forTx(tx);
+            req.changeAddress = coins[a].getWallet().wallet().getChangeAddress();
+            req.shuffleOutputs = false;
+            // TODO: get actual fee amount
+            req.feePerKb = Coin.valueOf(10000);
             coins[a].getWallet().wallet().completeTx(req);
 
             state.setBailinTx(alice, tx);
