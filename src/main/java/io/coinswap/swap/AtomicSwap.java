@@ -20,7 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 public class AtomicSwap {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AtomicSwap.class);
-    protected final ReentrantLock lock = Threading.lock("io.coinswap.swap.AtomicSwap");
+    protected final ReentrantLock lock = Threading.lock(AtomicSwap.class.getName());
     public static final int VERSION = 0;
 
     private List<ECKey>[] keys;
@@ -176,40 +176,6 @@ public class AtomicSwap {
             else checkState(hash.compareTo(bailinHashes[a]) == 0);
         } finally {
             lock.unlock();
-        }
-    }
-
-    public void onReceive(boolean fromAlice, Map data) throws Exception {
-        String method = (String) checkNotNull(data.get("method"));
-
-        if (method.equals(AtomicSwapMethod.VERSION)) {
-            checkState(getStep() == AtomicSwap.Step.STARTING);
-            checkState((Integer) data.get("version") == VERSION);
-
-        } else if (method.equals(AtomicSwapMethod.KEYS_REQUEST)) {
-            checkState(getStep() == AtomicSwap.Step.EXCHANGING_KEYS);
-            checkState(getKeys(fromAlice) == null);
-
-            List<String> keyStrings = (ArrayList<String>) data.get("keys");
-            checkState(keyStrings.size() == 3);
-
-            List<ECKey> keys = new ArrayList<ECKey>(3);
-            for(String s : keyStrings)
-                keys.add(ECKey.fromPublicOnly(Base58.decode(checkNotNull(s))));
-            setKeys(fromAlice, keys);
-
-            if (!fromAlice) {
-                byte[] xHash = Base58.decode((String) checkNotNull(data.get("x")));
-                setXHash(xHash);
-            }
-
-        } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
-            checkState(getStep() == Step.EXCHANGING_BAILIN_HASHES);
-            checkState(getBailinHash(fromAlice) == null);
-
-            byte[] hashBytes = Base58.decode(checkNotNull((String) data.get("hash")));
-            Sha256Hash hash = new Sha256Hash(hashBytes);
-            setBailinHash(fromAlice, hash);
         }
     }
 }

@@ -27,9 +27,8 @@ import static com.google.common.base.Preconditions.checkState;
  * Loosely based on the Atomic Cross Chain Transfers BIP draft by Noel Tiernan.
  * (https://github.com/TierNolan/bips/blob/bip4x/bip-atom.mediawiki)
  */
-public class AtomicSwapClient implements Connection.ReceiveListener {
+public class AtomicSwapClient extends AtomicSwapController {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AtomicSwapClient.class);
-    public static final int VERSION = 0;
 
     private List<ECKey> myKeys;
 
@@ -38,13 +37,11 @@ public class AtomicSwapClient implements Connection.ReceiveListener {
     private final boolean alice;
 
     private final io.coinswap.client.Coin[] coins;
-    private final Connection connection;
-    private final AtomicSwap state;
 
     private final int a, b;
 
-    public AtomicSwapClient(AtomicSwap state, boolean alice, io.coinswap.client.Coin[] coins, Connection connection) {
-        this.state = checkNotNull(state);
+    public AtomicSwapClient(AtomicSwap state, Connection connection, boolean alice, io.coinswap.client.Coin[] coins) {
+        super(state, connection);
 
         this.alice = alice;
         a = alice ? 0 : 1;
@@ -54,9 +51,6 @@ public class AtomicSwapClient implements Connection.ReceiveListener {
         checkState(coins.length == 2);
         checkNotNull(coins[0]);
         checkNotNull(coins[1]);
-
-        this.connection = checkNotNull(connection);
-        connection.addListener(state.trade.id, this);
     }
 
     public void start() {
@@ -141,7 +135,7 @@ public class AtomicSwapClient implements Connection.ReceiveListener {
     @Override
     public void onReceive(Map data) {
         try {
-            state.onReceive(!alice, data);
+            onMessage(!alice, data);
 
             String method = (String) data.get("method");
 
