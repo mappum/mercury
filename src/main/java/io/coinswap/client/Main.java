@@ -85,6 +85,9 @@ public class Main extends Application {
 
                     coin.start();
                 }
+
+                TradeClient tradeClient = new TradeClient(coins);
+                tradeClient.start();
             }
         });
 
