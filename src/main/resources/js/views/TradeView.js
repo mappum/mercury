@@ -4,7 +4,9 @@ coinswap.TradeView = Backbone.View.extend({
   events: {
     'click .dropdown .dropdown-menu li': 'onDropdownSelect',
     'change .dropdown-coin': 'updateDropdowns',
-    'click .buysell .btn': 'updateBuysell'
+    'click .buysell .btn': 'updateBuysell',
+    'keypress .values input': 'updateInputs',
+    'keydown .values input': 'updateInputs'
   },
 
   template: _.template($('#template-trade').html()),
@@ -14,6 +16,9 @@ coinswap.TradeView = Backbone.View.extend({
     _.bindAll(this, 'render');
     this.listenTo(this.model, 'change:pair', this.updatePair);
     this.listenTo(this.model, 'change:buy', this.updatePair);
+    this.listenTo(this.model, 'change:price', this.updateValues);
+    this.listenTo(this.model, 'change:quantity', this.updateValues);
+    this.listenTo(this.model, 'change:total', this.updateValues);
     this.render();
     this.updatePair();
   },
@@ -69,9 +74,9 @@ coinswap.TradeView = Backbone.View.extend({
       else menus.eq(0).append(el);
     });
 
-    this.$el.find('.price')
+    this.$el.find('.price, .total')
       .find('.symbol').html(pair[1].get('symbol'));
-    this.$el.find('.quantity, .total')
+    this.$el.find('.quantity')
       .find('.symbol').html(pair[0].get('symbol'));
 
     var overview = this.$el.find('.overview');
@@ -90,6 +95,25 @@ coinswap.TradeView = Backbone.View.extend({
     var selection = $(e.currentTarget);
     var buy = selection.hasClass('buy');
     this.model.set('buy', buy);
+  },
+
+  updateInputs: function(e) {
+    // TODO: error if value is NaN
+
+    var keys = ['price', 'quantity', 'total'];
+    var container = $(e.target).parent().parent();
+    for(var i = 0; i < keys.length; i++) {
+      if(container.hasClass(keys[i]))
+        return this.model.set(keys[i], +$(e.target).val());
+    }
+  },
+
+  updateValues: function() {
+    this.$el.find('.values .price input').text(this.model.get('price'));
+    this.$el.find('.values .quantity input').text(this.model.get('quantity'));
+    this.$el.find('.values .total input').text(this.model.get('total'));
+    this.$el.find('.overview .quantity').text(this.model.get('quantity'));
+    this.$el.find('.overview .total').text(this.model.get('total'));
   }
 });
 

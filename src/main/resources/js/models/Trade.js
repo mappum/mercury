@@ -3,7 +3,10 @@
 coinswap.Trade = Backbone.Model.extend({
   defaults: {
     buy: true,
-    pair: ['BTC', 'LTC']
+    pair: ['BTC', 'LTC'],
+    price: 0,
+    quantity: 0,
+    total: 0
   },
 
   initialize: function(attributes, options) {
@@ -15,6 +18,9 @@ coinswap.Trade = Backbone.Model.extend({
     }
 
     this.on('change:pair', this.updatePair);
+    this.on('change:price', this.updateValues);
+    this.on('change:quantity', this.updateValues);
+    this.on('change:total', this.updateTotal);
   },
 
   updatePair: function() {
@@ -37,6 +43,14 @@ coinswap.Trade = Backbone.Model.extend({
       models.reverse();
 
     return models;
+  },
+
+  updateValues: function() {
+    this.set('total', +this.get('price') * +this.get('quantity'));
+  },
+  
+  updateTotal: function() {
+    this.set('quantity', +this.get('total') / +this.get('price'));
   }
 });
 
