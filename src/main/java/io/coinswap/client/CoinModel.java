@@ -172,7 +172,7 @@ public class CoinModel extends Model {
             obj.put("dead", tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.DEAD);
 
             com.google.bitcoin.core.Coin value = tx.getValue(w);
-            obj.put("value", Double.parseDouble(value.toFriendlyString()));
+            obj.put("value", Double.parseDouble(value.toPlainString()));
 
             String address = null;
             boolean received = value.compareTo(com.google.bitcoin.core.Coin.ZERO) == 1;
