@@ -6,7 +6,9 @@ coinswap.TradeView = Backbone.View.extend({
     'change .dropdown-coin': 'updateDropdowns',
     'click .buysell .btn': 'updateBuysell',
     'keypress .values input': 'updateInputs',
-    'keydown .values input': 'updateInputs'
+    'keydown .values input': 'updateInputs',
+    'keyup .values input': 'updateInputs',
+    'change .values input': 'updateInputs'
   },
 
   template: _.template($('#template-trade').html()),
@@ -109,9 +111,9 @@ coinswap.TradeView = Backbone.View.extend({
   },
 
   updateValues: function() {
-    this.$el.find('.values .price input').text(this.model.get('price'));
-    this.$el.find('.values .quantity input').text(this.model.get('quantity'));
-    this.$el.find('.values .total input').text(this.model.get('total'));
+    this.$el.find('.values .price input').val(this.model.get('price'));
+    this.$el.find('.values .quantity input').val(this.model.get('quantity'));
+    this.$el.find('.values .total input').val(this.model.get('total'));
     this.$el.find('.overview .quantity').text(this.model.get('quantity'));
     this.$el.find('.overview .total').text(this.model.get('total'));
   }
