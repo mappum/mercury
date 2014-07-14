@@ -3,6 +3,8 @@ package io.coinswap.swap;
 import com.google.bitcoin.core.*;
 import net.minidev.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -50,7 +52,7 @@ public class AtomicSwapTrade {
     public Map toJson() {
         Map data = new JSONObject();
         data.put("buy", buy);
-        data.put("fee", fee);
+        data.put("fee", fee.longValue());
         data.put("coins", coins);
         data.put("quantities", new long[]{ quantities[0].longValue(), quantities[1].longValue() });
         data.put("immediate", immediate);
@@ -59,25 +61,25 @@ public class AtomicSwapTrade {
 
     public static AtomicSwapTrade fromJson(Map data) {
         checkNotNull(data);
-        long[] longQuantities = (long[]) checkNotNull(data.get("quantities"));
-        checkState(longQuantities.length == 2);
-        checkNotNull(longQuantities[0]);
-        checkNotNull(longQuantities[1]);
+        List<Integer> longQuantities = (ArrayList<Integer>) checkNotNull(data.get("quantities"));
+        checkState(longQuantities.size() == 2);
+        checkNotNull(longQuantities.get(0));
+        checkNotNull(longQuantities.get(1));
         Coin[] quantities = new Coin[]{
-                Coin.valueOf(longQuantities[0]),
-                Coin.valueOf(longQuantities[1])
+                Coin.valueOf(longQuantities.get(0)),
+                Coin.valueOf(longQuantities.get(1))
         };
 
-        String[] coins = (String[]) checkNotNull(data.get("coins"));
-        checkState(coins.length == 2);
-        checkNotNull(coins[0]);
-        checkNotNull(coins[1]);
+        List<String> coins = (ArrayList<String>) checkNotNull(data.get("coins"));
+        checkState(coins.size() == 2);
+        checkNotNull(coins.get(0));
+        checkNotNull(coins.get(1));
 
         AtomicSwapTrade output = new AtomicSwapTrade(
                 (boolean) checkNotNull(data.get("buy")),
-                coins,
+                new String[]{ coins.get(0), coins.get(1) },
                 quantities,
-                Coin.valueOf((long) checkNotNull(data.get("fee"))));
+                Coin.valueOf((int) checkNotNull(data.get("fee"))));
         output.immediate = (boolean) checkNotNull(data.get("immediate"));
         return output;
     }
