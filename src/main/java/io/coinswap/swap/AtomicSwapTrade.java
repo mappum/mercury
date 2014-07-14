@@ -6,6 +6,7 @@ import net.minidev.json.JSONObject;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class AtomicSwapTrade {
     public static final Coin FEE = Coin.valueOf(10);
@@ -15,6 +16,9 @@ public class AtomicSwapTrade {
 
     public final String[] coins;
     public final Coin[] quantities;
+
+    // buy = trading currency 0 for 1
+    // sell = trading 1 for 0
     public final boolean buy;
 
     // coins: 0 = chain A (A->B), 1 = chain B (B->A)
@@ -49,12 +53,25 @@ public class AtomicSwapTrade {
     }
 
     public static AtomicSwapTrade fromJson(Map data) {
-        long[] longQuantities = (long[]) data.get("quantities");
-        Coin[] quantities = new Coin[]{ Coin.valueOf(longQuantities[0]), Coin.valueOf(longQuantities[1]) };
+        checkNotNull(data);
+        long[] longQuantities = (long[]) checkNotNull(data.get("quantities"));
+        checkState(longQuantities.length == 2);
+        checkNotNull(longQuantities[0]);
+        checkNotNull(longQuantities[1]);
+        Coin[] quantities = new Coin[]{
+                Coin.valueOf(longQuantities[0]),
+                Coin.valueOf(longQuantities[1])
+        };
+
+        String[] coins = (String[]) checkNotNull(data.get("coins"));
+        checkState(coins.length == 2);
+        checkNotNull(coins[0]);
+        checkNotNull(coins[1]);
+
         return new AtomicSwapTrade(
-                (boolean) data.get("buy"),
-                (String[]) data.get("coins"),
+                (boolean) checkNotNull(data.get("buy")),
+                coins,
                 quantities,
-                Coin.valueOf((long) data.get("fee")));
+                Coin.valueOf((long) checkNotNull(data.get("fee"))));
     }
 }
