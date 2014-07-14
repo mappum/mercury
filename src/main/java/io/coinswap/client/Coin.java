@@ -76,6 +76,12 @@ public class Coin {
         wallet.stopAsync();
     }
 
+    public String getId() { return id; }
+
+    public int getIndex() { return index; }
+
+    public String[] getPairs() { return pairs; }
+
     public boolean isSetup() {
         return setup;
     }
