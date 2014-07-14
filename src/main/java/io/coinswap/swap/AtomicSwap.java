@@ -31,6 +31,7 @@ public class AtomicSwap {
     private Sha256Hash[] bailinHashes;
     private Transaction[] bailinTxs;
 
+    public final String id;
     public final AtomicSwapTrade trade;
 
     public enum Step {
@@ -45,7 +46,8 @@ public class AtomicSwap {
     }
     private Step step = Step.STARTING;
 
-    public AtomicSwap(AtomicSwapTrade trade) {
+    public AtomicSwap(String id, AtomicSwapTrade trade) {
+        this.id = checkNotNull(id);
         this.trade = checkNotNull(trade);
         keys = new ArrayList[2];
         bailinHashes = new Sha256Hash[2];
