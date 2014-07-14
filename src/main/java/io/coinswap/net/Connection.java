@@ -17,6 +17,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Connection extends Thread {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Connection.class);
 
+    public static final int PORT = 16800;
+
     private SSLSocket socket;
     private Map<String, List<ReceiveListener>> listeners;
     private BufferedWriter out;
@@ -115,6 +117,8 @@ public class Connection extends Thread {
             }
         }
     }
+
+    public SSLSocket getSocket() { return socket; }
 
     public interface ReceiveListener {
         public void onReceive(Map data);
