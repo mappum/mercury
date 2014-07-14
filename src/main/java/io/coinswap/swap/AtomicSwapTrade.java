@@ -21,6 +21,10 @@ public class AtomicSwapTrade {
     // sell = trading 1 for 0
     public final boolean buy;
 
+    // if true, only fill already open orders
+    // if false, open a new order if neccessary
+    public boolean immediate = false;
+
     // coins: 0 = chain A (A->B), 1 = chain B (B->A)
     // quantities: 0 = amount traded from A->B (quantity), 1 = B->A (total)
     public AtomicSwapTrade(boolean buy, String[] coins, Coin[] quantities, Coin fee) {
@@ -45,10 +49,11 @@ public class AtomicSwapTrade {
 
     public Map toJson() {
         Map data = new JSONObject();
-        data.put("buy", this.buy);
-        data.put("fee", this.fee);
-        data.put("coins", this.coins);
+        data.put("buy", buy);
+        data.put("fee", fee);
+        data.put("coins", coins);
         data.put("quantities", new long[]{ quantities[0].longValue(), quantities[1].longValue() });
+        data.put("immediate", immediate);
         return data;
     }
 
@@ -68,10 +73,12 @@ public class AtomicSwapTrade {
         checkNotNull(coins[0]);
         checkNotNull(coins[1]);
 
-        return new AtomicSwapTrade(
+        AtomicSwapTrade output = new AtomicSwapTrade(
                 (boolean) checkNotNull(data.get("buy")),
                 coins,
                 quantities,
                 Coin.valueOf((long) checkNotNull(data.get("fee"))));
+        output.immediate = (boolean) checkNotNull(data.get("immediate"));
+        return output;
     }
 }
