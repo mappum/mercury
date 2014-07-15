@@ -71,6 +71,7 @@ public class Connection extends Thread {
 
     public void write(Map obj) {
         String data = ((JSONObject) obj).toJSONString(JSONStyle.LT_COMPRESS);
+        log.info(">> " + data);
 
         lock.lock();
         try {
@@ -88,6 +89,7 @@ public class Connection extends Thread {
         try {
             String data;
             while (socket.isConnected() && (data = in.readLine()) != null) {
+                log.info("<< " + data);
                 JSONObject obj = (JSONObject) JSONValue.parse(data);
 
                 List<ReceiveListener> channelListeners;
@@ -106,7 +108,8 @@ public class Connection extends Thread {
                 }
             }
         } catch (Exception ex) {
-            log.error(ex.getMessage());
+            log.error(ex.getClass().getName() + ": " + ex.getMessage());
+            ex.printStackTrace();
         } finally {
             try {
                 socket.close();
