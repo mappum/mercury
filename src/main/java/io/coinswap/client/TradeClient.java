@@ -1,6 +1,7 @@
 package io.coinswap.client;
 
 import io.coinswap.net.Connection;
+import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -19,6 +21,7 @@ public class TradeClient extends Thread {
 
     public static final String HOST = "localhost";
     public static final int PORT = Connection.PORT;
+    public static final com.google.bitcoin.core.Coin FEE = com.google.bitcoin.core.Coin.valueOf(10);
 
     private List<Coin> coins;
     private Connection connection;
@@ -30,6 +33,27 @@ public class TradeClient extends Thread {
     @Override
     public void run() {
         connect();
+
+        final TradeClient parent = this;
+        connection.addListener("trade", new Connection.ReceiveListener() {
+            @Override
+            public void onReceive(Map res) {
+                if(checkNotNull(res.get("method")).equals("trade")) {
+
+                }
+            }
+        });
+
+        try {
+            Thread.sleep(1000);
+            trade(new AtomicSwapTrade(true, new String[]{"BTCt","BTC"},
+                    new com.google.bitcoin.core.Coin[]{
+                            com.google.bitcoin.core.Coin.valueOf(1,0),
+                            com.google.bitcoin.core.Coin.valueOf(0,1)
+                    }, FEE));
+        } catch(Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
     private void connect() {
@@ -54,5 +78,13 @@ public class TradeClient extends Thread {
         } catch(Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    public void trade(AtomicSwapTrade trade) {
+        JSONObject req = new JSONObject();
+        req.put("channel", "trade");
+        req.put("method", "trade");
+        req.put("trade", trade.toJson());
+        connection.write(req);
     }
 }
