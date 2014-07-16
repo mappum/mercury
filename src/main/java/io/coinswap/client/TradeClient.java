@@ -35,7 +35,7 @@ public class TradeClient extends Thread {
         connect();
 
         final TradeClient parent = this;
-        connection.addListener("trade", new Connection.ReceiveListener() {
+        connection.onMessage("trade", new Connection.ReceiveListener() {
             @Override
             public void onReceive(Map res) {
                 if(checkNotNull(res.get("method")).equals("trade")) {
@@ -46,7 +46,7 @@ public class TradeClient extends Thread {
 
         try {
             Thread.sleep(1000);
-            trade(new AtomicSwapTrade(true, new String[]{"BTCt","BTC"},
+            trade(new AtomicSwapTrade(false, new String[]{"BTCt","BTC"},
                     new com.google.bitcoin.core.Coin[]{
                             com.google.bitcoin.core.Coin.valueOf(1,0),
                             com.google.bitcoin.core.Coin.valueOf(0,1)

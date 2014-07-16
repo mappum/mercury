@@ -38,7 +38,7 @@ public class Connection extends Thread {
         }
     }
 
-    public void addListener(String channel, ReceiveListener listener) {
+    public void onMessage(String channel, ReceiveListener listener) {
         List<ReceiveListener> list;
 
         lock.lock();
@@ -56,7 +56,7 @@ public class Connection extends Thread {
         }
     }
 
-    public void removeListener(String channel, ReceiveListener listener) {
+    public void removeMessageListener(String channel, ReceiveListener listener) {
         lock.lock();
         try {
             if(!listeners.containsKey(channel)) return;
