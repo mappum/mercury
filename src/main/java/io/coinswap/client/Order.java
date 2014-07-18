@@ -1,4 +1,4 @@
-package io.coinswap.swap;
+package io.coinswap.client;
 
 import com.google.bitcoin.core.Coin;
 
