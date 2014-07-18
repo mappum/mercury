@@ -25,12 +25,13 @@ public class Coin {
     protected String name, id, symbol;
     protected String[] pairs;
     protected int index;
+    protected boolean alice; // whether or not this coin can be used on the Alice-side of a swap
 
     private boolean setup;
     private SettableFuture<Object> setupFuture;
 
     public Coin(NetworkParameters params, File directory,
-                String name, String id, String symbol, String[] pairs, int index) {
+                String name, String id, String symbol, String[] pairs, int index, boolean alice) {
 
         this.params = params;
         this.name = name;
@@ -38,6 +39,7 @@ public class Coin {
         this.symbol = symbol;
         this.pairs = pairs;
         this.index = index;
+        this.alice = alice;
 
         setupFuture = SettableFuture.create();
 
@@ -79,6 +81,8 @@ public class Coin {
     public String getId() { return id; }
 
     public int getIndex() { return index; }
+
+    public boolean getAlice() { return alice; }
 
     public String[] getPairs() { return pairs; }
 
