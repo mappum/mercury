@@ -180,4 +180,17 @@ public class AtomicSwap {
             lock.unlock();
         }
     }
+
+    public Map toJson() {
+        JSONObject data = new JSONObject();
+        data.put("id", id);
+        data.put("trade", trade.toJson());
+        return data;
+    }
+
+    public static AtomicSwap fromJson(Map data) {
+        String id = (String) checkNotNull(data.get("id"));
+        AtomicSwapTrade trade = AtomicSwapTrade.fromJson((Map) checkNotNull(data.get("trade")));
+        return new AtomicSwap(id, trade);
+    }
 }
