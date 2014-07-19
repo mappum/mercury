@@ -45,7 +45,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         super(swap);
 
         this.connection = checkNotNull(connection);
-        connection.onMessage(swap.id, this);
+        String channel = "swap:" + swap.id + ":" + (alice ? "0" : "1");
+        connection.onMessage(channel, this);
 
         this.alice = alice;
         a = alice ? 0 : 1;
