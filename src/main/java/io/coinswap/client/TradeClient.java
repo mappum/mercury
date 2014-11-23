@@ -23,11 +23,11 @@ public class TradeClient extends Thread {
     public static final int PORT = Connection.PORT;
     public static final org.bitcoinj.core.Coin FEE = org.bitcoinj.core.Coin.valueOf(10);
 
-    private List<Coin> coins;
+    private List<Currency> currencies;
     private Connection connection;
 
-    public TradeClient(List<Coin> coins) {
-        this.coins = checkNotNull(coins);
+    public TradeClient(List<Currency> currencies) {
+        this.currencies = checkNotNull(currencies);
     }
 
     @Override

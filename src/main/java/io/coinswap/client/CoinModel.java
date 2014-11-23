@@ -17,24 +17,24 @@ public class CoinModel extends Model {
     private static final Logger log = LoggerFactory.getLogger(CoinModel.class);
 
     private Controller controller;
-    private Coin coin;
+    private Currency currency;
 
-    public CoinModel(Controller controller, Coin coin) {
+    public CoinModel(Controller controller, Currency currency) {
         // build JSON string with arguments,
         // eval to create object via JS constructor,
         // pass to Model() to initialize Java-side handling of object
         super((JSObject) controller.context.eval(
             "new this.Coin({ " +
-                "name: '" + coin.name + "'," +
-                "id: '" + coin.id + "'," +
-                "index: " + coin.index + ", " +
-                "symbol: '" + coin.symbol + "'," +
-                "pairs: ['" + Joiner.on("','").join(coin.pairs) + "']," +
-                "address: \"" + coin.getWallet().wallet().currentReceiveAddress().toString() + "\"" +
+                "name: '" + currency.name + "'," +
+                "id: '" + currency.id + "'," +
+                "index: " + currency.index + ", " +
+                "symbol: '" + currency.symbol + "'," +
+                "pairs: ['" + Joiner.on("','").join(currency.pairs) + "']," +
+                "address: \"" + currency.getWallet().wallet().currentReceiveAddress().toString() + "\"" +
             "})"));
 
         this.controller = controller;
-        this.coin = coin;
+        this.currency = currency;
 
         addDownloadListener();
         addTransactionListener();
@@ -45,7 +45,7 @@ public class CoinModel extends Model {
 
     public boolean isAddressValid(String address) {
         try {
-            new Address(coin.params, address);
+            new Address(currency.params, address);
             return true;
         } catch(AddressFormatException ex) {
             return false;
@@ -54,9 +54,9 @@ public class CoinModel extends Model {
 
     public void send(String addressString, String amountString) {
         try {
-            Address address = new Address(coin.params, addressString);
+            Address address = new Address(currency.params, addressString);
             org.bitcoinj.core.Coin amount = org.bitcoinj.core.Coin.parseCoin(amountString);
-            coin.wallet.wallet().sendCoins(coin.wallet.peerGroup(), address, amount);
+            currency.wallet.wallet().sendCoins(currency.wallet.peerGroup(), address, amount);
         } catch(Exception ex) {
             log.error(ex.getClass().getName() + ": " + ex.getMessage());
             ex.printStackTrace();
@@ -68,7 +68,7 @@ public class CoinModel extends Model {
         on("address:new", new EventEmitter.Callback() {
             @Override
             public void f(Object a) {
-                String address = coin.getWallet().wallet().freshReceiveAddress().toString();
+                String address = currency.getWallet().wallet().freshReceiveAddress().toString();
                 trigger("address", "\"" + address + "\"");
             }
         });
@@ -76,11 +76,11 @@ public class CoinModel extends Model {
 
     private void addDownloadListener() {
         UIDownloadListener udl = new UIDownloadListener();
-        coin.wallet.peerGroup().addEventListener(udl, controller.e);
+        currency.wallet.peerGroup().addEventListener(udl, controller.e);
     }
 
     private void addTransactionListener() {
-        Wallet w = coin.wallet.wallet();
+        Wallet w = currency.wallet.wallet();
         UITransactionListener utl = new UITransactionListener();
         w.addEventListener(utl, controller.e);
 
@@ -99,14 +99,14 @@ public class CoinModel extends Model {
         @Override
         public void onPeerConnected(Peer peer, int peerCount) {
             trigger("peers:connected", "{ \"peers\": " + peerCount +
-                    ", \"maxPeers\": " + coin.wallet.peerGroup().getMaxConnections() + " }");
+                    ", \"maxPeers\": " + currency.wallet.peerGroup().getMaxConnections() + " }");
 
             // if we are now connected to the network and already synced, tell the JS model we are done downloading
             if(!connected && peerCount == 2) {
                 connected = true;
                 try {
                     long limit = new Date().getTime() / 1000 - 60 * 15;
-                    if (coin.wallet.store().getChainHead().getHeader().getTimeSeconds() > limit)
+                    if (currency.wallet.store().getChainHead().getHeader().getTimeSeconds() > limit)
                         doneDownload();
                 } catch(BlockStoreException ex) {
                     log.error(ex.getMessage());
@@ -125,7 +125,7 @@ public class CoinModel extends Model {
             if(started) return;
             started = true;
             try {
-                int height = coin.wallet.store().getChainHead().getHeight();
+                int height = currency.wallet.store().getChainHead().getHeight();
                 trigger("sync:start", height + blocks + "");
             } catch(BlockStoreException ex) {
                 log.error(ex.getMessage());
@@ -136,7 +136,7 @@ public class CoinModel extends Model {
         protected void doneDownload() {
             if(done) return;
             done = true;
-            log.info("Done syncing " + coin.name);
+            log.info("Done syncing " + currency.name);
             trigger("sync:done");
         }
     }
@@ -162,10 +162,10 @@ public class CoinModel extends Model {
         }
 
         public void onTransaction(Transaction tx) {
-            Wallet w = coin.wallet.wallet();
+            Wallet w = currency.wallet.wallet();
             JSONObject obj = new JSONObject();
             obj.put("type", "payment");
-            obj.put("coin", coin.id);
+            obj.put("coin", currency.id);
             obj.put("id", Utils.HEX.encode(tx.getHash().getBytes()));
             obj.put("date", tx.getUpdateTime().getTime());
             obj.put("depth", tx.getConfidence().getDepthInBlocks());
@@ -178,7 +178,7 @@ public class CoinModel extends Model {
             boolean received = value.compareTo(org.bitcoinj.core.Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
                 if(received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
-                    address = out.getScriptPubKey().getToAddress(coin.params).toString();
+                    address = out.getScriptPubKey().getToAddress(currency.params).toString();
                     break;
                 }
             }

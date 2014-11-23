@@ -1,5 +1,6 @@
 package io.coinswap.swap;
 
+import io.coinswap.client.Currency;
 import org.bitcoinj.core.*;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
@@ -30,12 +31,12 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     // bob = other trader, generates x for hashlock
     private final boolean alice;
 
-    private final io.coinswap.client.Coin[] coins;
+    private final Currency[] currencies;
     private final Connection connection;
 
     private final int a, b;
 
-    public AtomicSwapClient(AtomicSwap swap, Connection connection, boolean alice, io.coinswap.client.Coin[] coins) {
+    public AtomicSwapClient(AtomicSwap swap, Connection connection, boolean alice, Currency[] currencies) {
         super(swap);
 
         this.connection = checkNotNull(connection);
@@ -46,10 +47,10 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         a = alice ? 0 : 1;
         b = a ^ 1;
 
-        this.coins = checkNotNull(coins);
-        checkState(coins.length == 2);
-        checkNotNull(coins[0]);
-        checkNotNull(coins[1]);
+        this.currencies = checkNotNull(currencies);
+        checkState(currencies.length == 2);
+        checkNotNull(currencies[0]);
+        checkNotNull(currencies[1]);
     }
 
     public void start() {
@@ -66,7 +67,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         message.put("method", AtomicSwapMethod.KEYS_REQUEST);
 
         myKeys = (List<ECKey>)(List<?>)
-            coins[b].getWallet().wallet().freshKeys(KeyChain.KeyPurpose.RECEIVE_FUNDS, 3);
+            currencies[b].getWallet().wallet().freshKeys(KeyChain.KeyPurpose.RECEIVE_FUNDS, 3);
         swap.setKeys(alice, myKeys);
         List<String> keyStrings = new ArrayList<String>(3);
         for(ECKey key : myKeys)
@@ -74,7 +75,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         message.put("keys", keyStrings);
 
         if (!alice) {
-            swap.setXKey(coins[0].getWallet().wallet().freshReceiveKey());
+            swap.setXKey(currencies[0].getWallet().wallet().freshReceiveKey());
             message.put("x", Base58.encode(swap.getXHash()));
         }
 
@@ -87,7 +88,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             message.put("channel", swap.id);
             message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
 
-            Transaction tx = new Transaction(coins[0].getParams());
+            Transaction tx = new Transaction(currencies[0].getParams());
 
             // first output is p2sh 2-of-2 multisig, with keys A1 and B1
             // amount is how much we are trading to other party
@@ -122,11 +123,11 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             tx.addOutput(Coin.valueOf(10000), xScript);
 
             Wallet.SendRequest req = Wallet.SendRequest.forTx(tx);
-            req.changeAddress = coins[a].getWallet().wallet().getChangeAddress();
+            req.changeAddress = currencies[a].getWallet().wallet().getChangeAddress();
             req.shuffleOutputs = false;
             // TODO: get actual fee amount
             req.feePerKb = Coin.valueOf(10000);
-            coins[a].getWallet().wallet().completeTx(req);
+            currencies[a].getWallet().wallet().completeTx(req);
 
             swap.setBailinTx(alice, tx);
 

@@ -14,10 +14,10 @@ import java.io.IOException;
 
 /**
  * Contains the settings and state for one currency. Includes an AltcoinJ wallet,
- * and a JS-side Coin model for interfacing with UI.
+ * and a JS-side Currency model for interfacing with UI.
  */
-public class Coin {
-    private static final Logger log = LoggerFactory.getLogger(Coin.class);
+public class Currency {
+    private static final Logger log = LoggerFactory.getLogger(Currency.class);
     private static final File checkpointDir = new File("./checkpoints");
 
     protected NetworkParameters params;
@@ -30,7 +30,7 @@ public class Coin {
     private boolean setup;
     private SettableFuture<Object> setupFuture;
 
-    public Coin(NetworkParameters params, File directory,
+    public Currency(NetworkParameters params, File directory,
                 String name, String id, String symbol, String[] pairs, int index, boolean hashlock) {
 
         this.params = params;

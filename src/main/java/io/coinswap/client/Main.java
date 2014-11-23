@@ -45,7 +45,7 @@ public class Main extends Application {
 
     private ClientUI ui;
     private Controller controller;
-    private ArrayList<Coin> coins;
+    private ArrayList<Currency> currencies;
     private Map<String, CoinModel> models;
 
     @Override
@@ -55,14 +55,14 @@ public class Main extends Application {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
                 controller = new Controller(ui.engine);
-                coins = Coins.get(dataDir);
+                currencies = Coins.get(dataDir);
                 models = new HashMap<String, CoinModel>();
 
                 // for each Coin, create JS-side model and insert into JS-side collection
                 final JSObject coinCollection = (JSObject) controller.app.get("coins");
-                for(Coin coin : coins) {
-                    final Coin c = coin;
-                    coin.getSetupFuture().addListener(new Runnable() {
+                for(Currency currency : currencies) {
+                    final Currency c = currency;
+                    currency.getSetupFuture().addListener(new Runnable() {
                         @Override
                         public void run() {
                             CoinModel model = new CoinModel(controller, c);
@@ -71,10 +71,10 @@ public class Main extends Application {
                         }
                     }, controller.e);
 
-                    coin.start();
+                    currency.start();
                 }
 
-                TradeClient tradeClient = new TradeClient(coins);
+                TradeClient tradeClient = new TradeClient(currencies);
                 tradeClient.start();
             }
         });
@@ -105,7 +105,7 @@ public class Main extends Application {
 
     @Override
     public void stop() throws Exception {
-        for(Coin coin : coins) coin.stop();
+        for(Currency currency : currencies) currency.stop();
         super.stop();
     }
 
