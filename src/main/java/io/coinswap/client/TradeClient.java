@@ -21,7 +21,7 @@ public class TradeClient extends Thread {
 
     public static final String HOST = "localhost";
     public static final int PORT = Connection.PORT;
-    public static final com.google.bitcoin.core.Coin FEE = com.google.bitcoin.core.Coin.valueOf(10);
+    public static final org.bitcoinj.core.Coin FEE = org.bitcoinj.core.Coin.valueOf(10);
 
     private List<Coin> coins;
     private Connection connection;
@@ -47,9 +47,9 @@ public class TradeClient extends Thread {
         try {
             Thread.sleep(1000);
             trade(new AtomicSwapTrade(false, new String[]{"BTCt","BTC"},
-                    new com.google.bitcoin.core.Coin[]{
-                            com.google.bitcoin.core.Coin.valueOf(1,0),
-                            com.google.bitcoin.core.Coin.valueOf(0,1)
+                    new org.bitcoinj.core.Coin[]{
+                            org.bitcoinj.core.Coin.valueOf(1,0),
+                            org.bitcoinj.core.Coin.valueOf(0,1)
                     }, FEE));
         } catch(Exception e) {
             log.error(e.getMessage());

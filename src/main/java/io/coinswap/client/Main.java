@@ -1,12 +1,6 @@
 package io.coinswap.client;
 
-import com.google.bitcoin.kits.WalletAppKit;
-import com.google.common.util.concurrent.MoreExecutors;
 import io.coinswap.Coins;
-import io.coinswap.net.Connection;
-import io.coinswap.swap.AtomicSwap;
-import io.coinswap.swap.AtomicSwapClient;
-import io.coinswap.swap.AtomicSwapTrade;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -27,17 +21,11 @@ import javafx.scene.web.WebView;
 import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.stage.WindowEvent;
-import net.minidev.json.JSONObject;
 import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.*;
 import java.io.File;
-import java.io.FileInputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

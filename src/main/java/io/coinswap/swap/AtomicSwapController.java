@@ -1,11 +1,9 @@
 package io.coinswap.swap;
 
-import com.google.bitcoin.core.Base58;
-import com.google.bitcoin.core.ECKey;
-import com.google.bitcoin.core.Sha256Hash;
-import com.google.bitcoin.utils.Threading;
-import io.coinswap.net.Connection;
-import org.slf4j.LoggerFactory;
+import org.bitcoinj.core.Base58;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.Sha256Hash;
+import org.bitcoinj.utils.Threading;
 
 import java.util.ArrayList;
 import java.util.List;

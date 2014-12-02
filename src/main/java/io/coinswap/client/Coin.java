@@ -1,7 +1,7 @@
 package io.coinswap.client;
 
-import com.google.bitcoin.core.*;
-import com.google.bitcoin.kits.WalletAppKit;
+import org.bitcoinj.kits.WalletAppKit;
+import org.bitcoinj.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ public class Coin {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().setMaxConnections(4);
+                peerGroup().setMaxConnections(5);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
                 setup = true;
                 setupFuture.set(null);

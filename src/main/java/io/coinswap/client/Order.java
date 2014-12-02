@@ -1,6 +1,6 @@
 package io.coinswap.client;
 
-import com.google.bitcoin.core.Coin;
+import org.bitcoinj.core.Coin;
 
 import java.util.ArrayList;
 import java.util.List;

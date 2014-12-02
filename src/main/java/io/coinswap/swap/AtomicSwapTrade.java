@@ -1,7 +1,7 @@
 package io.coinswap.swap;
 
-import com.google.bitcoin.core.*;
 import net.minidev.json.JSONObject;
+import org.bitcoinj.core.Coin;
 
 import java.util.ArrayList;
 import java.util.List;

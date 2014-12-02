@@ -1,23 +1,17 @@
 package io.coinswap.swap;
 
-import com.google.bitcoin.core.*;
-import com.google.bitcoin.crypto.DeterministicKey;
-import com.google.bitcoin.kits.WalletAppKit;
-import com.google.bitcoin.script.Script;
-import com.google.bitcoin.script.ScriptBuilder;
-import com.google.bitcoin.script.ScriptOpCodes;
-import com.google.bitcoin.utils.Threading;
-import com.google.bitcoin.wallet.KeyChain;
+import org.bitcoinj.core.*;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.ScriptOpCodes;
+import org.bitcoinj.wallet.KeyChain;
 import io.coinswap.net.Connection;
-import net.jcip.annotations.GuardedBy;
 import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;

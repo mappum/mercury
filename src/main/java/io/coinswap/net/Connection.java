@@ -1,6 +1,6 @@
 package io.coinswap.net;
 
-import com.google.bitcoin.utils.Threading;
+import org.bitcoinj.utils.Threading;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
 import net.minidev.json.JSONValue;

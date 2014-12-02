@@ -1,6 +1,6 @@
 package io.coinswap;
 
-import com.google.bitcoin.params.*;
+import org.bitcoinj.params.*;
 import io.coinswap.client.Coin;
 
 import java.io.File;

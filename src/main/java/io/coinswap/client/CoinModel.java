@@ -1,8 +1,8 @@
 package io.coinswap.client;
 
 
-import com.google.bitcoin.core.*;
-import com.google.bitcoin.store.BlockStoreException;
+import org.bitcoinj.core.*;
+import org.bitcoinj.store.BlockStoreException;
 import com.google.common.base.Joiner;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
@@ -55,7 +55,7 @@ public class CoinModel extends Model {
     public void send(String addressString, String amountString) {
         try {
             Address address = new Address(coin.params, addressString);
-            com.google.bitcoin.core.Coin amount = com.google.bitcoin.core.Coin.parseCoin(amountString);
+            org.bitcoinj.core.Coin amount = org.bitcoinj.core.Coin.parseCoin(amountString);
             coin.wallet.wallet().sendCoins(coin.wallet.peerGroup(), address, amount);
         } catch(Exception ex) {
             log.error(ex.getClass().getName() + ": " + ex.getMessage());
@@ -102,7 +102,7 @@ public class CoinModel extends Model {
                     ", \"maxPeers\": " + coin.wallet.peerGroup().getMaxConnections() + " }");
 
             // if we are now connected to the network and already synced, tell the JS model we are done downloading
-            if(!connected && peerCount == coin.wallet.peerGroup().getMaxConnections()) {
+            if(!connected && peerCount == 2) {
                 connected = true;
                 try {
                     long limit = new Date().getTime() / 1000 - 60 * 15;
@@ -143,12 +143,12 @@ public class CoinModel extends Model {
 
     class UITransactionListener extends AbstractWalletEventListener {
         @Override
-        public void onCoinsReceived(Wallet wallet, Transaction tx, com.google.bitcoin.core.Coin prevBalance, com.google.bitcoin.core.Coin newBalance) {
+        public void onCoinsReceived(Wallet wallet, Transaction tx, org.bitcoinj.core.Coin prevBalance, org.bitcoinj.core.Coin newBalance) {
             onTransaction(tx);
         }
 
         @Override
-        public void onCoinsSent(Wallet wallet, Transaction tx, com.google.bitcoin.core.Coin prevBalance, com.google.bitcoin.core.Coin newBalance) {
+        public void onCoinsSent(Wallet wallet, Transaction tx, org.bitcoinj.core.Coin prevBalance, org.bitcoinj.core.Coin newBalance) {
             onTransaction(tx);
         }
 
@@ -171,11 +171,11 @@ public class CoinModel extends Model {
             obj.put("depth", tx.getConfidence().getDepthInBlocks());
             obj.put("dead", tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.DEAD);
 
-            com.google.bitcoin.core.Coin value = tx.getValue(w);
+            org.bitcoinj.core.Coin value = tx.getValue(w);
             obj.put("value", Double.parseDouble(value.toPlainString()));
 
             String address = null;
-            boolean received = value.compareTo(com.google.bitcoin.core.Coin.ZERO) == 1;
+            boolean received = value.compareTo(org.bitcoinj.core.Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
                 if(received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
                     address = out.getScriptPubKey().getToAddress(coin.params).toString();
@@ -184,7 +184,7 @@ public class CoinModel extends Model {
             }
 
             if(address != null) {
-                com.google.bitcoin.core.Coin sent = com.google.bitcoin.core.Coin.ZERO;
+                org.bitcoinj.core.Coin sent = org.bitcoinj.core.Coin.ZERO;
                 for(TransactionOutput out : tx.getOutputs()) {
                     if(!w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash()))
                         sent = sent.add(out.getValue());
