@@ -33,7 +33,7 @@ import java.util.Map;
 public class Main extends Application {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static final String APP_NAME = "Coinswap";
+    public static final String APP_NAME = "Mercury Wallet";
     public static final String APP_VERSION = "0.0.1-SNAPSHOT";
 
     public static final File dataDir = new File("./data");
