@@ -54,6 +54,7 @@ public class Currency {
             }
         };
         wallet.setUserAgent(Main.APP_NAME, Main.APP_VERSION);
+        wallet.setBlockingStartup(false);
 
         // load a checkpoint file (if it exists) to speed up initial blockchain sync
         try {
@@ -72,10 +73,12 @@ public class Currency {
 
     public void start() {
         wallet.startAsync();
+        wallet.awaitRunning();
     }
 
     public void stop() {
         wallet.stopAsync();
+        wallet.awaitTerminated();
     }
 
     public String getId() { return id; }
