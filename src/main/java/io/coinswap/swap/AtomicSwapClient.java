@@ -40,8 +40,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         super(swap);
 
         this.connection = checkNotNull(connection);
-        String channel = "swap:" + swap.id + ":" + (alice ? "0" : "1");
-        connection.onMessage(channel, this);
+        connection.onMessage(swap.getChannelId(alice), this);
 
         this.alice = alice;
         a = alice ? 0 : 1;
@@ -55,7 +54,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     public void start() {
         JSONObject message = new JSONObject();
-        message.put("channel", swap.id);
+        message.put("channel", swap.getChannelId(alice));
         message.put("method", AtomicSwapMethod.VERSION);
         message.put("version", VERSION);
         connection.write(message);
@@ -63,7 +62,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void sendKeys() {
         JSONObject message = new JSONObject();
-        message.put("channel", swap.id);
+        message.put("channel", swap.getChannelId(alice));
         message.put("method", AtomicSwapMethod.KEYS_REQUEST);
 
         myKeys = (List<ECKey>)(List<?>)
@@ -85,7 +84,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private void sendBailinHash() {
         try {
             JSONObject message = new JSONObject();
-            message.put("channel", swap.id);
+            message.put("channel", swap.getChannelId(alice));
             message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
 
             Transaction tx = new Transaction(currencies[0].getParams());
