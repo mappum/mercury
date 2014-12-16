@@ -11,7 +11,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class AtomicSwapTrade {
-    public static final Coin FEE = Coin.valueOf(10);
+    public static final Coin FEE = Coin.ZERO;
 
     // exchange fee, in satoshis per 10 microcoins
     public final Coin fee;
@@ -25,6 +25,7 @@ public class AtomicSwapTrade {
 
     // if true, only fill already open orders
     // if false, open a new order if neccessary
+    // TODO: move this field into an 'OrderOptions' object
     public boolean immediate = false;
 
     // coins: 0 = chain A (A->B), 1 = chain B (B->A)
