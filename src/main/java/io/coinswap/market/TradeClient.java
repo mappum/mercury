@@ -1,5 +1,6 @@
-package io.coinswap.client;
+package io.coinswap.market;
 
+import io.coinswap.client.Currency;
 import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;

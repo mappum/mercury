@@ -1,4 +1,4 @@
-package io.coinswap.client;
+package io.coinswap.market;
 
 import org.bitcoinj.core.Coin;
 
