@@ -1,5 +1,7 @@
 package io.coinswap.net;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import org.bitcoinj.utils.Threading;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
@@ -12,7 +14,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Connection extends Thread {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(Connection.class);
@@ -23,6 +28,8 @@ public class Connection extends Thread {
     private Map<String, List<ReceiveListener>> listeners;
     private BufferedWriter out;
     private BufferedReader in;
+
+    private int id = 0;
 
     private final ReentrantLock lock = Threading.lock("io.coinswap.net.Connection");
 
@@ -83,6 +90,35 @@ public class Connection extends Thread {
         } finally {
             lock.unlock();
         }
+    }
+
+    public Map request(Map req) {
+        SettableFuture<Map> responseFuture = SettableFuture.create();
+        String channel = (String) checkNotNull(req.get("channel"));
+        String requestId = id++ + "";
+        req.put("request", requestId);
+
+        ReceiveListener onRes = new ReceiveListener() {
+            @Override
+            public void onReceive(Map data) {
+                String responseId = (String) data.get("response");
+                if(responseId != null && responseId.equals(requestId))
+                    responseFuture.set(data);
+            }
+        };
+
+        onMessage(channel, onRes);
+        write(req);
+
+        Map res = null;
+        try {
+            res = responseFuture.get();
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            removeMessageListener(channel, onRes);
+        }
+        return res;
     }
 
     public void run() {
