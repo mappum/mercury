@@ -193,4 +193,8 @@ public class AtomicSwap {
         AtomicSwapTrade trade = AtomicSwapTrade.fromJson((Map) checkNotNull(data.get("trade")));
         return new AtomicSwap(id, trade);
     }
+
+    public String getChannelId(boolean alice) {
+        return id + ":" + (alice ? "0" : "1");
+    }
 }
