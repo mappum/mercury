@@ -50,6 +50,19 @@ public class AtomicSwapTrade {
         return fee.multiply(tensOfMicrocoins);
     }
 
+    // gets the amount this trade buys or sells
+    public Coin getAmount() {
+        return quantities[0];
+    }
+
+    // gets the price this trade buys or sells at
+    public Coin getPrice() {
+        long longValue = quantities[1]
+            .multiply(Coin.COIN.longValue())
+            .divide(quantities[0]);
+        return Coin.valueOf(longValue);
+    }
+
     public Map toJson() {
         Map data = new JSONObject();
         data.put("buy", buy);
