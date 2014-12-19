@@ -195,6 +195,6 @@ public class AtomicSwap {
     }
 
     public String getChannelId(boolean alice) {
-        return id + ":" + (alice ? "0" : "1");
+        return "swap:" + id + ":" + (alice ? "0" : "1");
     }
 }
