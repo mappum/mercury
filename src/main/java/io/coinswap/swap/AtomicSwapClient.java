@@ -157,6 +157,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             }
         } catch(Exception ex) {
             log.error(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }
