@@ -2,8 +2,11 @@ package io.coinswap.market;
 
 import io.coinswap.client.Currency;
 import io.coinswap.net.Connection;
+import io.coinswap.swap.AtomicSwap;
+import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;
+import org.bitcoinj.core.Coin;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
@@ -12,23 +15,33 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class TradeClient extends Thread {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(TradeClient.class);
 
     public static final String HOST = "localhost";
     public static final int PORT = Connection.PORT;
-    public static final org.bitcoinj.core.Coin FEE = org.bitcoinj.core.Coin.valueOf(10);
+    public static final org.bitcoinj.core.Coin FEE = Coin.ZERO;
 
-    private List<Currency> currencies;
+    private Map<String, Currency> currencies;
     private Connection connection;
 
+    private Map<Integer, Order> orders;
+    private Set<Integer> bids;
+
     public TradeClient(List<Currency> currencies) {
-        this.currencies = checkNotNull(currencies);
+        checkNotNull(currencies);
+        this.currencies = new HashMap<String, Currency>();
+        for(Currency c : currencies) {
+            this.currencies.put(c.getId().toLowerCase(), c);
+        }
+
+        orders = new HashMap<Integer, Order>();
+        bids = new HashSet<Integer>();
     }
 
     @Override
@@ -39,8 +52,10 @@ public class TradeClient extends Thread {
         connection.onMessage("trade", new Connection.ReceiveListener() {
             @Override
             public void onReceive(Map res) {
-                if(checkNotNull(res.get("method")).equals("trade")) {
+                String method = (String) res.get("method");
 
+                if(method.equals("fill")) {
+                    parent.onFill(res);
                 }
             }
         });
@@ -48,10 +63,10 @@ public class TradeClient extends Thread {
         try {
             Thread.sleep(1000);
             trade(new AtomicSwapTrade(false, new String[]{"BTCt","BTC"},
-                    new org.bitcoinj.core.Coin[]{
-                            org.bitcoinj.core.Coin.valueOf(1,0),
-                            org.bitcoinj.core.Coin.valueOf(0,1)
-                    }, FEE));
+                new Coin[]{
+                    Coin.valueOf(1,0),
+                    Coin.valueOf(0,1)
+                }, FEE));
         } catch(Exception e) {
             log.error(e.getMessage());
         }
@@ -64,7 +79,7 @@ public class TradeClient extends Thread {
             ks.load(storeFile, "password".toCharArray());
 
             TrustManagerFactory tmf =
-                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(ks);
 
             SSLContext context = SSLContext.getInstance("TLS");
@@ -86,6 +101,104 @@ public class TradeClient extends Thread {
         req.put("channel", "trade");
         req.put("method", "trade");
         req.put("trade", trade.toJson());
-        connection.write(req);
+        Map res = connection.request(req);
+
+        if(res.containsKey("order")) {
+            Order order = Order.fromJson((List<Object>) res.get("order"));
+
+            // make sure the server didn't open the order at the wrong price/amount
+            checkState(!order.amount.isGreaterThan(trade.getAmount()));
+            checkState(order.price.equals(trade.getPrice()));
+
+            orders.put(order.id, order);
+            if(trade.buy) bids.add(order.id);
+            log.info("Opened order: " + order.toJson().toString());
+        }
+
+        if(res.containsKey("swaps")) {
+            List<Map> swapsJson = (List<Map>) res.get("swaps");
+            List<AtomicSwap> swaps = new ArrayList<>(swapsJson.size());
+            Coin totalAmount = Coin.ZERO;
+
+            // deserialize list of AtomicSwaps
+            for(Map swapJson : swapsJson) {
+                AtomicSwap swap = AtomicSwap.fromJson(swapJson);
+                swaps.add(swap);
+
+                // verify that the coin IDs, price, and fee are what we expected
+                checkState(swap.trade.coins[0].equals(trade.coins[0]));
+                checkState(swap.trade.coins[1].equals(trade.coins[1]));
+                checkState(swap.trade.getPrice().equals(trade.getPrice()));
+                checkState(swap.trade.fee.equals(trade.fee));
+                checkState(swap.trade.buy == trade.buy);
+
+                // increment total
+                totalAmount = totalAmount.add(swap.trade.getAmount());
+            }
+
+            // verify the total amount isn't bigger than we requested
+            checkState(!totalAmount.isGreaterThan(trade.getAmount()));
+
+            log.debug("Swaps are valid, starting AtomicSwapClients");
+            for(AtomicSwap swap : swaps) {
+                Currency[] swapCurrencies = new Currency[]{
+                   currencies.get(trade.coins[0].toLowerCase()),
+                   currencies.get(trade.coins[1].toLowerCase())
+                };
+
+                // we are alice if we are selling and the first currency supports hashlock TXs,
+                // or if we are buying and the first currency doesn't support them.
+                // otherwise, we are bob
+                boolean alice = trade.buy ^ !swapCurrencies[0].supportsHashlock();
+
+                AtomicSwapClient client =
+                        new AtomicSwapClient(swap, connection, alice, swapCurrencies);
+                client.start();
+            }
+        }
+
+    }
+
+    public void onFill(Map message) {
+        AtomicSwap swap = AtomicSwap.fromJson((Map) message.get("swap"));
+
+        Coin totalVolume = Coin.ZERO,
+             totalPrice = Coin.ZERO;
+
+        for(int id : (List<Integer>) message.get("orders")) {
+            Order order = orders.get(id);
+            boolean bid = bids.contains(id);
+            checkState(swap.trade.buy == bid);
+
+            Coin remaining = swap.trade.getAmount().subtract(totalVolume);
+            checkState(remaining.isGreaterThan(Coin.ZERO));
+
+            Coin toAdd = order.amount;
+            if(order.amount.isGreaterThan(remaining)) {
+                toAdd = remaining;
+            }
+
+            totalVolume = totalVolume.add(toAdd);
+            long price = toAdd.multiply(order.price.longValue()).divide(Coin.COIN);
+            totalPrice = totalPrice.add(Coin.valueOf(price));
+        }
+
+        checkState(totalPrice.equals(swap.trade.quantities[1]));
+
+        for(int id : (List<Integer>) message.get("orders")) {
+            orders.remove(id);
+            bids.remove(id);
+        }
+
+        Currency[] swapCurrencies = new Currency[]{
+            currencies.get(swap.trade.coins[0].toLowerCase()),
+            currencies.get(swap.trade.coins[1].toLowerCase())
+        };
+
+        boolean alice = swap.trade.buy ^ !swapCurrencies[0].supportsHashlock();
+
+        AtomicSwapClient client =
+                new AtomicSwapClient(swap, connection, alice, swapCurrencies);
+        client.start();
     }
 }
