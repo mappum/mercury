@@ -21,7 +21,7 @@ public class AtomicSwapTrade {
 
     // buy = trading currency 0 for 1
     // sell = trading 1 for 0
-    public final boolean buy;
+    public boolean buy;
 
     // if true, only fill already open orders
     // if false, open a new order if neccessary
@@ -55,20 +55,20 @@ public class AtomicSwapTrade {
         data.put("buy", buy);
         data.put("fee", fee.longValue());
         data.put("coins", coins);
-        data.put("quantities", new long[]{ quantities[0].longValue(), quantities[1].longValue() });
+        data.put("quantities", new String[]{ quantities[0].toPlainString(), quantities[1].toPlainString() });
         data.put("immediate", immediate);
         return data;
     }
 
     public static AtomicSwapTrade fromJson(Map data) {
         checkNotNull(data);
-        List<Integer> longQuantities = (ArrayList<Integer>) checkNotNull(data.get("quantities"));
-        checkState(longQuantities.size() == 2);
-        checkNotNull(longQuantities.get(0));
-        checkNotNull(longQuantities.get(1));
+        List<String> stringQuantities = (ArrayList<String>) checkNotNull(data.get("quantities"));
+        checkState(stringQuantities.size() == 2);
+        checkNotNull(stringQuantities.get(0));
+        checkNotNull(stringQuantities.get(1));
         Coin[] quantities = new Coin[]{
-                Coin.valueOf(longQuantities.get(0)),
-                Coin.valueOf(longQuantities.get(1))
+                Coin.parseCoin(stringQuantities.get(0)),
+                Coin.parseCoin(stringQuantities.get(1))
         };
 
         List<String> coins = (ArrayList<String>) checkNotNull(data.get("coins"));
