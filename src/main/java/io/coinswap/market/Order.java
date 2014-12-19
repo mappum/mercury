@@ -9,6 +9,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class Order {
+    // TODO: make ids strings?
     public int id;
     public Coin amount, price;
 
@@ -31,8 +32,8 @@ public class Order {
     public Object toJson() {
         List<Object> data = new ArrayList<Object>(3);
         data.add(id);
-        data.add(amount.longValue());
-        data.add(price.longValue());
+        data.add(amount.toPlainString());
+        data.add(price.toPlainString());
         return data;
     }
 
@@ -40,8 +41,8 @@ public class Order {
         checkNotNull(data);
         checkState(data.size() == 3);
         Order output = new Order(
-                Coin.valueOf((long) checkNotNull(data.get(1))),
-                Coin.valueOf((long) checkNotNull(data.get(2)))
+                Coin.parseCoin((String) checkNotNull(data.get(1))),
+                Coin.parseCoin((String) checkNotNull(data.get(2)))
         );
         output.id = (int) checkNotNull(data.get(0));
         return output;
