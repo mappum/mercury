@@ -43,7 +43,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         connection.onMessage(swap.getChannelId(alice), this);
 
         this.alice = alice;
-        a = alice ? 0 : 1;
+        a = swap.trade.buy ? 1 : 0;
         b = a ^ 1;
 
         this.currencies = checkNotNull(currencies);
@@ -130,13 +130,20 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
             swap.setBailinTx(alice, tx);
 
-            log.info(tx.toString());
-
             message.put("hash", Base58.encode(tx.getHash().getBytes()));
             connection.write(message);
         } catch(InsufficientMoneyException ex) {
             log.error(ex.getMessage());
         }
+    }
+
+    private void sendSignatures() {
+
+
+        JSONObject message = new JSONObject();
+        message.put("channel", swap.getChannelId(alice));
+        message.put("method", AtomicSwapMethod.EXCHANGE_SIGNATURES);
+        connection.write(message);
     }
 
     @Override
@@ -154,6 +161,9 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 swap.setStep(AtomicSwap.Step.EXCHANGING_BAILIN_HASHES);
                 sendBailinHash();
 
+            } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
+                swap.setStep(AtomicSwap.Step.EXCHANGING_SIGNATURES);
+                sendSignatures();
             }
         } catch(Exception ex) {
             log.error(ex.getMessage());
