@@ -57,6 +57,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         checkState(currencies.length == 2);
         checkNotNull(currencies[0]);
         checkNotNull(currencies[1]);
+        checkState(swap.trade.quantities[0].isGreaterThan(currencies[0].getParams().getMinFee()));
+        checkState(swap.trade.quantities[1].isGreaterThan(currencies[1].getParams().getMinFee()));
     }
 
     public void start() {
@@ -119,14 +121,13 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                         .build();
                 xScript = ScriptBuilder.createP2SHOutputScript(xRedeem);
             }
-            // TODO: get actual fee amount
-            tx.addOutput(Coin.valueOf(10000), xScript);
+            Coin fee = currencies[a].getParams().getMinFee();
+            tx.addOutput(fee, xScript);
 
             Wallet.SendRequest req = Wallet.SendRequest.forTx(tx);
             req.changeAddress = currencies[a].getWallet().wallet().getChangeAddress();
             req.shuffleOutputs = false;
-            // TODO: get actual fee amount
-            req.feePerKb = Coin.valueOf(10000);
+            req.feePerKb = fee;
             currencies[a].getWallet().wallet().completeTx(req);
             // TODO: maybe we shouldn't be storing the already-signed bailin?
 
@@ -239,8 +240,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         Script redeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(2));
         Script p2sh = ScriptBuilder.createP2SHOutputScript(redeem);
-        // TODO: get real fee
-        tx.addOutput(swap.trade.quantities[i].subtract(Coin.valueOf(10000)), p2sh);
+        Coin fee = currencies[i].getParams().getMinFee();
+        tx.addOutput(swap.trade.quantities[i].subtract(fee), p2sh);
 
         int period = REFUND_PERIOD * (alice ? 1 : 2) * 60 * 60;
         tx.setLockTime((System.currentTimeMillis() / 1000) + period);
