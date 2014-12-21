@@ -5,6 +5,7 @@ import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.Utils;
+import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,8 @@ public class AtomicSwap {
 
     private Sha256Hash[] bailinHashes;
     private Transaction[] bailinTxs;
+    private ECKey.ECDSASignature[] payoutSigs;
+    private ECKey.ECDSASignature[] refundSigs;
 
     public final String id;
     public final AtomicSwapTrade trade;
@@ -52,6 +55,8 @@ public class AtomicSwap {
         keys = new ArrayList[2];
         bailinHashes = new Sha256Hash[2];
         bailinTxs = new Transaction[2];
+        payoutSigs = new ECKey.ECDSASignature[2];
+        refundSigs = new ECKey.ECDSASignature[2];
     }
 
     public void cancel() {
@@ -176,6 +181,63 @@ public class AtomicSwap {
 
             if(bailinHashes[a] == null) bailinHashes[a] = hash;
             else checkState(hash.compareTo(bailinHashes[a]) == 0);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public Transaction getBailinTx(boolean alice) {
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            return checkNotNull(bailinTxs[a]);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void setPayoutSig(boolean alice, ECKey.ECDSASignature sig) {
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            checkState(payoutSigs[a] == null);
+            payoutSigs[a] = sig;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public ECKey.ECDSASignature getPayoutSig(boolean alice) {
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            return payoutSigs[a];
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void setRefundSig(boolean alice, ECKey.ECDSASignature sig) {
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            checkState(refundSigs[a] == null);
+            refundSigs[a] = sig;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public ECKey.ECDSASignature getRefundSig(boolean alice) {
+        int a = alice ? 0 : 1;
+
+        lock.lock();
+        try {
+            return refundSigs[a];
         } finally {
             lock.unlock();
         }
