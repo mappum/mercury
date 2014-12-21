@@ -1,8 +1,10 @@
 package io.coinswap.swap;
 
-import org.bitcoinj.core.Base58;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.Sha256Hash;
+import io.coinswap.client.Currency;
+import org.bitcoinj.core.*;
+import org.bitcoinj.crypto.TransactionSignature;
+import org.bitcoinj.script.Script;
+import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.utils.Threading;
 
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static org.bitcoinj.script.ScriptOpCodes.OP_NOP;
 
 public abstract class AtomicSwapController {
     public static final int VERSION = 0;
@@ -54,9 +57,12 @@ public abstract class AtomicSwapController {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_BAILIN_HASHES);
                 checkState(swap.getBailinHash(fromAlice) == null);
 
-                byte[] hashBytes = Base58.decode(checkNotNull((String) data.get("hash")));
+                byte[] hashBytes = Base58.decode((String) checkNotNull(data.get("hash")));
                 Sha256Hash hash = new Sha256Hash(hashBytes);
                 swap.setBailinHash(fromAlice, hash);
+
+            } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
+                checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_SIGNATURES);
             }
         } finally {
             lock.unlock();
