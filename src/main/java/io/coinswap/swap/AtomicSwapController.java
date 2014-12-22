@@ -1,11 +1,13 @@
 package io.coinswap.swap;
 
 import io.coinswap.client.Currency;
+import io.coinswap.net.Connection;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.utils.Threading;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +22,31 @@ public abstract class AtomicSwapController {
     public static final int VERSION = 0;
 
     protected final AtomicSwap swap;
+    protected Currency[] currencies;
+
+    private static final int REFUND_PERIOD = 4;
+
+    private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
 
     protected final ReentrantLock lock = Threading.lock(AtomicSwapController.class.getName());
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(AtomicSwapController.class);
 
-    protected AtomicSwapController(AtomicSwap swap) {
+    protected AtomicSwapController(AtomicSwap swap, Currency[] currencies) {
         this.swap = checkNotNull(swap);
+        checkNotNull(swap.trade);
+
+        this.currencies = checkNotNull(currencies);
+        checkState(currencies.length == 2);
+        checkNotNull(currencies[0]);
+        checkNotNull(currencies[1]);
+        checkState(swap.trade.quantities[0].isGreaterThan(currencies[0].getParams().getMinFee()));
+        checkState(swap.trade.quantities[1].isGreaterThan(currencies[1].getParams().getMinFee()));
+
+        if(!currencies[0].supportsHashlock()) {
+            Currency curr = this.currencies[0];
+            this.currencies[0] = currencies[1];
+            this.currencies[1] = curr;
+        }
     }
 
     public void onMessage(boolean fromAlice, Map data) throws Exception {
@@ -63,9 +85,65 @@ public abstract class AtomicSwapController {
 
             } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_SIGNATURES);
+
+                byte[] payoutSigBytes = Base58.decode((String) checkNotNull(data.get("payout"))),
+                        refundSigBytes = Base58.decode((String) checkNotNull(data.get("refund")));
+                ECKey.ECDSASignature payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
+                        refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes);
+
+                Script redeem = getMultisigRedeem();
+
+                Transaction payoutTx = createPayout(!fromAlice);
+                Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
+                checkState(swap.getKeys(fromAlice).get(0).verify(payoutSigHash, payoutSig));
+                log.info("Verified payout signature");
+
+                Transaction refundTx = createRefund(!fromAlice);
+                Sha256Hash refundSigHash = refundTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
+                checkState(swap.getKeys(fromAlice).get(0).verify(refundSigHash, refundSig));
+                log.info("Verified refund signature");
             }
         } finally {
             lock.unlock();
         }
+    }
+
+    protected Transaction createPayout(boolean alice) {
+        int i = alice ? 1 : 0;
+        NetworkParameters params = currencies[i].getParams();
+
+        Transaction tx = new Transaction(params);
+        tx.addInput(swap.getBailinHash(!alice), 0, OP_NOP_SCRIPT);
+        tx.addInput(swap.getBailinHash(!alice), 1, OP_NOP_SCRIPT);
+
+        Script outRedeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(1));
+        Script outP2sh = ScriptBuilder.createP2SHOutputScript(outRedeem);
+        tx.addOutput(swap.trade.quantities[i], outP2sh);
+
+        return tx;
+    }
+
+    protected Transaction createRefund(boolean alice) {
+        int i = alice ? 0 : 1;
+
+        Transaction tx = new Transaction(currencies[i].getParams());
+        tx.addInput(swap.getBailinHash(alice), 0, OP_NOP_SCRIPT);
+
+        Script redeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(2));
+        Script p2sh = ScriptBuilder.createP2SHOutputScript(redeem);
+        Coin fee = currencies[i].getParams().getMinFee();
+        tx.addOutput(swap.trade.quantities[i].subtract(fee), p2sh);
+
+        int period = REFUND_PERIOD * (alice ? 1 : 2) * 60 * 60;
+        tx.setLockTime((System.currentTimeMillis() / 1000) + period);
+
+        return tx;
+    }
+
+    protected Script getMultisigRedeem() {
+        List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
+        multiSigKeys.add(swap.getKeys(true).get(0));
+        multiSigKeys.add(swap.getKeys(false).get(0));
+        return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
     }
 }

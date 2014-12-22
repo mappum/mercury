@@ -2,7 +2,6 @@ package io.coinswap.swap;
 
 import io.coinswap.client.Currency;
 import org.bitcoinj.core.*;
-import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.script.ScriptOpCodes;
@@ -12,7 +11,6 @@ import net.minidev.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -28,37 +26,25 @@ import static org.bitcoinj.script.ScriptOpCodes.OP_NOP;
 public class AtomicSwapClient extends AtomicSwapController implements Connection.ReceiveListener {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AtomicSwapClient.class);
 
-    private static final int REFUND_PERIOD = 4;
-
-    private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
-
     private List<ECKey> myKeys;
 
     // alice = trader on blockchain that accepts hashlocked transactions
     // bob = other trader, generates x for hashlock
     private final boolean alice;
 
-    private Currency[] currencies;
     private final Connection connection;
 
     private final int a, b;
 
     public AtomicSwapClient(AtomicSwap swap, Connection connection, boolean alice, Currency[] currencies) {
-        super(swap);
+        super(swap, currencies);
 
         this.connection = checkNotNull(connection);
         connection.onMessage(swap.getChannelId(alice), this);
 
         this.alice = alice;
-        a = swap.trade.buy ? 1 : 0;
+        a = alice ? 0 : 1;
         b = a ^ 1;
-
-        this.currencies = checkNotNull(currencies);
-        checkState(currencies.length == 2);
-        checkNotNull(currencies[0]);
-        checkNotNull(currencies[1]);
-        checkState(swap.trade.quantities[0].isGreaterThan(currencies[0].getParams().getMinFee()));
-        checkState(swap.trade.quantities[1].isGreaterThan(currencies[1].getParams().getMinFee()));
     }
 
     public void start() {
@@ -159,6 +145,15 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         connection.write(message);
     }
 
+    private void sendBailin() {
+        Transaction bailin = swap.getBailinTx(alice);
+
+        JSONObject message = new JSONObject();
+        message.put("channel", swap.getChannelId(alice));
+        message.put("method", AtomicSwapMethod.EXCHANGE_BAILIN);
+        // TODO: serialize bailin
+    }
+
     @Override
     public void onReceive(Map data) {
         try {
@@ -175,39 +170,28 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 sendBailinHash();
 
             } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
-                Wallet w = new Wallet(currencies[alice ? 1 : 0].getParams());
+                Wallet w = new Wallet(currencies[b].getParams());
                 List<Script> scripts = new ArrayList<>(1);
                 scripts.add(ScriptBuilder.createP2SHOutputScript(getMultisigRedeem()));
                 w.addWatchedScripts(scripts);
                 w.addEventListener(new AbstractWalletEventListener() {
                     @Override
-                    public void onWalletChanged(Wallet wallet) {
-                        super.onWalletChanged(wallet);
-                        log.info("pending:", wallet.getPendingTransactions());
+                    public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
+                        super.onTransactionConfidenceChanged(wallet, tx);
+                        log.info("!!!! pending: " + wallet.getPendingTransactions());
+                        // TODO: when confirmed, send payout (if bob)
                     }
                 });
+                currencies[b].getWallet().peerGroup().addWallet(w);
+                // TODO: listen for this script when starting up and we have pending swaps
 
                 swap.setStep(AtomicSwap.Step.EXCHANGING_SIGNATURES);
                 sendSignatures();
 
             } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
-                byte[] payoutSigBytes = Base58.decode((String) checkNotNull(data.get("payout"))),
-                        refundSigBytes = Base58.decode((String) checkNotNull(data.get("refund")));
-                ECKey.ECDSASignature payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
-                        refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes);
+                sendBailin();
 
-                Script redeem = getMultisigRedeem();
-
-                Transaction payoutTx = createPayout(alice);
-                Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
-                checkState(swap.getKeys(!alice).get(0).verify(payoutSigHash, payoutSig));
-                log.info("Verified payout signature");
-
-                Transaction refundTx = createRefund(alice);
-                Sha256Hash refundSigHash = refundTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
-                checkState(swap.getKeys(!alice).get(0).verify(refundSigHash, refundSig));
-                log.info("Verified refund signature");
-
+                // TODO: don't broadcast bailin until we've seen other party's valid bailin
                 Transaction bailin = swap.getBailinTx(alice);
                 currencies[a].getWallet().peerGroup().broadcastTransaction(bailin);
             }
@@ -215,44 +199,5 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             log.error(ex.getMessage());
             ex.printStackTrace();
         }
-    }
-
-    private Transaction createPayout(boolean alice) {
-        int i = alice == this.alice ? b : a;
-        NetworkParameters params = currencies[i].getParams();
-
-        Transaction tx = new Transaction(params);
-        tx.addInput(swap.getBailinHash(!alice), 0, OP_NOP_SCRIPT);
-        tx.addInput(swap.getBailinHash(!alice), 1, OP_NOP_SCRIPT);
-
-        Script outRedeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(1));
-        Script outP2sh = ScriptBuilder.createP2SHOutputScript(outRedeem);
-        tx.addOutput(swap.trade.quantities[i], outP2sh);
-
-        return tx;
-    }
-
-    private Transaction createRefund(boolean alice) {
-        int i = alice == this.alice ? a : b;
-
-        Transaction tx = new Transaction(currencies[i].getParams());
-        tx.addInput(swap.getBailinHash(alice), 0, OP_NOP_SCRIPT);
-
-        Script redeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(2));
-        Script p2sh = ScriptBuilder.createP2SHOutputScript(redeem);
-        Coin fee = currencies[i].getParams().getMinFee();
-        tx.addOutput(swap.trade.quantities[i].subtract(fee), p2sh);
-
-        int period = REFUND_PERIOD * (alice ? 1 : 2) * 60 * 60;
-        tx.setLockTime((System.currentTimeMillis() / 1000) + period);
-
-        return tx;
-    }
-
-    private Script getMultisigRedeem() {
-        List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
-        multiSigKeys.add(swap.getKeys(true).get(0));
-        multiSigKeys.add(swap.getKeys(false).get(0));
-        return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
     }
 }
