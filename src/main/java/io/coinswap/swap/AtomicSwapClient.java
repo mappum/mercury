@@ -60,8 +60,10 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         message.put("channel", swap.getChannelId(alice));
         message.put("method", AtomicSwapMethod.KEYS_REQUEST);
 
-        myKeys = (List<ECKey>)(List<?>)
-            currencies[b].getWallet().wallet().freshKeys(KeyChain.KeyPurpose.RECEIVE_FUNDS, 3);
+        myKeys = new ArrayList<ECKey>(3);
+        myKeys.add(currencies[b].getWallet().wallet().freshReceiveKey());
+        myKeys.add(currencies[a].getWallet().wallet().freshReceiveKey());
+        myKeys.add(currencies[b].getWallet().wallet().freshReceiveKey());
         swap.setKeys(alice, myKeys);
         List<String> keyStrings = new ArrayList<String>(3);
         for(ECKey key : myKeys)
