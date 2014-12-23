@@ -26,12 +26,14 @@ public class Currency {
     protected String[] pairs;
     protected int index;
     protected boolean hashlock; // whether or not this coin can be used on the Alice-side of a swap
+    protected int confirmationDepth;
 
     private boolean setup;
     private SettableFuture<Object> setupFuture;
 
     public Currency(NetworkParameters params, File directory,
-                String name, String id, String symbol, String[] pairs, int index, boolean hashlock) {
+                String name, String id, String symbol, String[] pairs,
+                int index, boolean hashlock, int confirmationDepth) {
 
         this.params = params;
         this.name = name;
@@ -40,6 +42,7 @@ public class Currency {
         this.pairs = pairs;
         this.index = index;
         this.hashlock = hashlock;
+        this.confirmationDepth = confirmationDepth;
 
         setupFuture = SettableFuture.create();
 
@@ -86,6 +89,8 @@ public class Currency {
     public int getIndex() { return index; }
 
     public boolean supportsHashlock() { return hashlock; }
+
+    public int getConfirmationDepth() { return confirmationDepth; }
 
     public String[] getPairs() { return pairs; }
 
