@@ -136,6 +136,16 @@ public class AtomicSwap {
         }
     }
 
+    public byte[] getX() {
+        lock.lock();
+        try {
+            checkNotNull(x);
+            return x;
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void setXHash(byte[] hash) {
         checkNotNull(hash);
 
