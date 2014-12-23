@@ -63,7 +63,7 @@ public abstract class AtomicSwapController {
                 checkState(swap.getKeys(fromAlice) == null);
 
                 List<String> keyStrings = (ArrayList<String>) data.get("keys");
-                checkState(keyStrings.size() == 3);
+                checkState(keyStrings.size() >= 3);
 
                 List<ECKey> keys = new ArrayList<ECKey>(3);
                 for(String s : keyStrings)

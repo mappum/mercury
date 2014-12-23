@@ -97,7 +97,7 @@ public class AtomicSwap {
     }
 
     public void setKeys(boolean alice, List<ECKey> keys) {
-        checkState(keys.size() == 3);
+        checkState(keys.size() >= 3);
         checkNotNull(keys.get(0));
         checkNotNull(keys.get(1));
         checkNotNull(keys.get(2));
