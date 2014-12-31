@@ -2,6 +2,7 @@ package io.coinswap.swap;
 
 import io.coinswap.client.Currency;
 import org.bitcoinj.core.*;
+import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.script.ScriptOpCodes;
@@ -64,6 +65,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         myKeys.add(currencies[b].getWallet().wallet().freshReceiveKey());
         myKeys.add(currencies[a].getWallet().wallet().freshReceiveKey());
         myKeys.add(currencies[b].getWallet().wallet().freshReceiveKey());
+        if(!alice) myKeys.add(currencies[b].getWallet().wallet().freshReceiveKey());
         swap.setKeys(alice, myKeys);
         List<String> keyStrings = new ArrayList<String>(3);
         for(ECKey key : myKeys)
@@ -100,14 +102,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             if (alice) {
                 xScript = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
             } else {
-                Script xRedeem = new ScriptBuilder()
-                        .op(ScriptOpCodes.OP_HASH160)
-                        .data(swap.getXHash())
-                        .op(ScriptOpCodes.OP_EQUALVERIFY)
-                        .data(swap.getKeys(true).get(0).getPubKey())
-                        .op(ScriptOpCodes.OP_CHECKSIG)
-                        .build();
-                xScript = ScriptBuilder.createP2SHOutputScript(xRedeem);
+                Script hashlockRedeem = getHashlockRedeem();
+                xScript = ScriptBuilder.createP2SHOutputScript(hashlockRedeem);
             }
             Coin fee = currencies[a].getParams().getMinFee();
             tx.addOutput(fee, xScript);
@@ -156,6 +152,59 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         // TODO: serialize bailin
     }
 
+    private void broadcastPayout() {
+        Transaction payout = createPayout(alice);
+
+        // TODO: create this signature earlier so we don't have to decrypt keys again
+        Script multisigRedeem = getMultisigRedeem();
+        ECKey key = swap.getKeys(alice).get(0);
+        Sha256Hash multisigSighash = payout.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
+        ECKey.ECDSASignature mySig = key.sign(multisigSighash),
+                otherSig = swap.getPayoutSig(!alice);
+
+        List<TransactionSignature> sigs = new ArrayList<>(2);
+        sigs.add(new TransactionSignature(alice ? mySig : otherSig, Transaction.SigHash.ALL, false));
+        sigs.add(new TransactionSignature(alice ? otherSig : mySig, Transaction.SigHash.ALL, false));
+        Script multisigScript = ScriptBuilder.createP2SHMultiSigInputScript(sigs, multisigRedeem);
+        payout.addInput(swap.getBailinHash(!alice), 0, multisigScript);
+
+        Sha256Hash hashlockSighash = payout.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
+        Script hashlockScript;
+        if(alice) {
+            // now that we've seen X (revealed when Bob spent his payout), we can provide X
+            TransactionSignature hashlockSig =
+                    new TransactionSignature(myKeys.get(0).sign(hashlockSighash), Transaction.SigHash.ALL, false);
+            hashlockScript = new ScriptBuilder()
+                    .data(swap.getX())
+                    .data(hashlockSig.encodeToBitcoin())
+                    .build();
+
+        } else {
+            // sign using 4th key and provide p2sh script, revealing X to alice
+            TransactionSignature hashlockSig =
+                    new TransactionSignature(myKeys.get(3).sign(hashlockSighash), Transaction.SigHash.ALL, false);
+            Script hashlockRedeem = getHashlockRedeem();
+            hashlockScript = new ScriptBuilder()
+                    .data(hashlockSig.encodeToBitcoin())
+                    .data(hashlockRedeem.getProgram())
+                    .build();
+        }
+        payout.addInput(swap.getBailinHash(!alice), 1, hashlockScript);
+
+        currencies[b].getWallet().peerGroup().broadcastTransaction(payout);
+    }
+
+    private Script getHashlockRedeem() {
+        checkState(!alice);
+        return new ScriptBuilder()
+            .op(ScriptOpCodes.OP_HASH160)
+            .data(swap.getXHash())
+            .op(ScriptOpCodes.OP_EQUALVERIFY)
+            .data(myKeys.get(3).getPubKey())
+            .op(ScriptOpCodes.OP_CHECKSIG)
+            .build();
+    }
+
     @Override
     public void onReceive(Map data) {
         try {
@@ -179,9 +228,11 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 w.addEventListener(new AbstractWalletEventListener() {
                     @Override
                     public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
-                        super.onTransactionConfidenceChanged(wallet, tx);
-                        log.info("!!!! pending: " + wallet.getPendingTransactions());
-                        // TODO: when confirmed, send payout (if bob)
+                        checkState(tx.getHash().equals(swap.getBailinHash(!alice)));
+                        log.info("received other party's bailin via coin network: " + tx.toString());
+                        broadcastPayout();
+                        currencies[b].getWallet().peerGroup().removeWallet(w);
+                        // TODO: maybe we shouldn't remove the listener right away
                     }
                 });
                 currencies[b].getWallet().peerGroup().addWallet(w);
