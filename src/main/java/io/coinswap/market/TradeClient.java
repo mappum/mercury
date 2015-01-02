@@ -27,6 +27,8 @@ public class TradeClient extends Thread {
     public static final int PORT = Connection.PORT;
     public static final org.bitcoinj.core.Coin FEE = Coin.ZERO;
 
+    public static final long TIME_EPSILON = 60;
+
     private Map<String, Currency> currencies;
     private Connection connection;
 
@@ -62,13 +64,14 @@ public class TradeClient extends Thread {
 
         try {
             Thread.sleep(1000);
-            trade(new AtomicSwapTrade(false, new String[]{"BTCt","BTC"},
+            trade(new AtomicSwapTrade(true, new String[]{"BTCt","DOGE"},
                 new Coin[]{
-                    Coin.valueOf(1,0),
-                    Coin.valueOf(0,1)
+                    Coin.valueOf(100000),
+                    Coin.valueOf(133333337)
                 }, FEE));
         } catch(Exception e) {
             log.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -132,6 +135,9 @@ public class TradeClient extends Thread {
                 checkState(swap.trade.fee.equals(trade.fee));
                 checkState(swap.trade.buy == trade.buy);
 
+                // make sure time value is correct (otherwise server could get us to use unreasonable locktimes)
+                checkState(Math.abs(System.currentTimeMillis() / 1000 - swap.getTime()) < TIME_EPSILON);
+
                 // increment total
                 totalAmount = totalAmount.add(swap.trade.getAmount());
             }
@@ -161,6 +167,9 @@ public class TradeClient extends Thread {
 
     public void onFill(Map message) {
         AtomicSwap swap = AtomicSwap.fromJson((Map) message.get("swap"));
+
+        // make sure time value is correct (otherwise server could get us to use unreasonable locktimes)
+        checkState(Math.abs(System.currentTimeMillis() / 1000 - swap.getTime()) < TIME_EPSILON);
 
         Coin totalVolume = Coin.ZERO,
              totalPrice = Coin.ZERO;
