@@ -34,6 +34,8 @@ public class AtomicSwap {
     private ECKey.ECDSASignature[] payoutSigs;
     private ECKey.ECDSASignature[] refundSigs;
 
+    private final long time;
+
     public final String id;
     public final AtomicSwapTrade trade;
 
@@ -50,9 +52,10 @@ public class AtomicSwap {
     }
     private Step step = Step.STARTING;
 
-    public AtomicSwap(String id, AtomicSwapTrade trade) {
+    public AtomicSwap(String id, AtomicSwapTrade trade, long time) {
         this.id = checkNotNull(id);
         this.trade = checkNotNull(trade);
+        this.time = time;
         keys = new ArrayList[2];
         bailinHashes = new Sha256Hash[2];
         bailinTxs = new Transaction[2];
@@ -82,6 +85,15 @@ public class AtomicSwap {
         lock.lock();
         try {
             this.step = step;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public long getTime() {
+        lock.lock();
+        try {
+            return time;
         } finally {
             lock.unlock();
         }
@@ -258,13 +270,15 @@ public class AtomicSwap {
         JSONObject data = new JSONObject();
         data.put("id", id);
         data.put("trade", trade.toJson());
+        data.put("time", time + "");
         return data;
     }
 
     public static AtomicSwap fromJson(Map data) {
         String id = (String) checkNotNull(data.get("id"));
         AtomicSwapTrade trade = AtomicSwapTrade.fromJson((Map) checkNotNull(data.get("trade")));
-        return new AtomicSwap(id, trade);
+        long time = Long.valueOf((String) checkNotNull(data.get("time")));
+        return new AtomicSwap(id, trade, time);
     }
 
     public String getChannelId(boolean alice) {
