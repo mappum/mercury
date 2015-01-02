@@ -135,7 +135,7 @@ public abstract class AtomicSwapController {
         tx.addOutput(swap.trade.quantities[i].subtract(fee), p2sh);
 
         int period = REFUND_PERIOD * (alice ? 1 : 2) * 60 * 60;
-        tx.setLockTime((System.currentTimeMillis() / 1000) + period);
+        tx.setLockTime(swap.getTime() + period);
 
         return tx;
     }
