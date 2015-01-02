@@ -113,7 +113,6 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             req.shuffleOutputs = false;
             req.feePerKb = fee;
             currencies[a].getWallet().wallet().completeTx(req);
-            // TODO: maybe we shouldn't be storing the already-signed bailin?
 
             swap.setBailinTx(alice, tx);
 
@@ -221,22 +220,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 sendBailinHash();
 
             } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
-                Wallet w = new Wallet(currencies[b].getParams());
-                List<Script> scripts = new ArrayList<>(1);
-                scripts.add(ScriptBuilder.createP2SHOutputScript(getMultisigRedeem()));
-                w.addWatchedScripts(scripts);
-                w.addEventListener(new AbstractWalletEventListener() {
-                    @Override
-                    public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
-                        checkState(tx.getHash().equals(swap.getBailinHash(!alice)));
-                        log.info("received other party's bailin via coin network: " + tx.toString());
-                        broadcastPayout();
-                        currencies[b].getWallet().peerGroup().removeWallet(w);
-                        // TODO: maybe we shouldn't remove the listener right away
-                    }
-                });
-                currencies[b].getWallet().peerGroup().addWallet(w);
-                // TODO: listen for this script when starting up and we have pending swaps
+                if(!alice) listenForBailin();
+                else listenForPayout();
 
                 swap.setStep(AtomicSwap.Step.EXCHANGING_SIGNATURES);
                 sendSignatures();
@@ -252,5 +237,56 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             log.error(ex.getMessage());
             ex.printStackTrace();
         }
+    }
+
+    public void listenForBailin() {
+        checkState(!alice);
+
+        Wallet w = new Wallet(currencies[b].getParams());
+        List<Script> scripts = new ArrayList<>(1);
+        scripts.add(ScriptBuilder.createP2SHOutputScript(getMultisigRedeem()));
+        w.addWatchedScripts(scripts);
+        w.addEventListener(new AbstractWalletEventListener() {
+            @Override
+            public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
+                checkState(tx.getHash().equals(swap.getBailinHash(!alice)));
+                // TODO: support mutated bailin (will have different hash) - not sure how to handle this
+
+                if(tx.getConfidence().getDepthInBlocks() < currencies[b].getConfirmationDepth()) return;
+
+                log.info("received other party's bailin via coin network: " + tx.toString());
+                broadcastPayout();
+                currencies[b].getWallet().peerGroup().removeWallet(w);
+                // TODO: maybe we shouldn't remove the listener right away
+            }
+        });
+        currencies[b].getWallet().peerGroup().addWallet(w);
+        // TODO: listen for this script when starting up and we have pending swaps
+    }
+
+    public void listenForPayout() {
+        checkState(alice);
+
+        Transaction payout = createPayout(false);
+
+        Wallet w = new Wallet(currencies[b].getParams());
+        List<Script> scripts = new ArrayList<>(1);
+        scripts.add(ScriptBuilder.createP2SHOutputScript(payout.getOutput(0).getScriptPubKey()));
+        w.addWatchedScripts(scripts);
+        w.addEventListener(new AbstractWalletEventListener() {
+            @Override
+            public void onTransactionConfidenceChanged(Wallet wallet, Transaction tx) {
+                log.info("received other party's payout via coin network: " + tx.toString());
+                Script xScript = tx.getInput(1).getScriptSig();
+                log.info("x redeem: " + xScript.toString());
+                ECKey xKey = ECKey.fromPublicOnly(xScript.getChunks().get(3).data);
+                swap.setXKey(xKey);
+
+                broadcastPayout();
+                currencies[b].getWallet().peerGroup().removeWallet(w);
+            }
+        });
+        currencies[b].getWallet().peerGroup().addWallet(w);
+        // TODO: listen for this script when starting up and we have pending swaps
     }
 }
