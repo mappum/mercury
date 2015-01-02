@@ -86,7 +86,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             message.put("channel", swap.getChannelId(alice));
             message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
 
-            Transaction tx = new Transaction(currencies[0].getParams());
+            Transaction tx = new Transaction(currencies[a].getParams());
 
             // first output is p2sh 2-of-2 multisig, with keys A1 and B1
             // amount is how much we are trading to other party
