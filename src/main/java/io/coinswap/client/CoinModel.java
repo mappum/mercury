@@ -180,17 +180,21 @@ public class CoinModel extends Model {
             String address = null;
             boolean received = value.compareTo(org.bitcoinj.core.Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
-                if(received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
-                    address = out.getScriptPubKey().getToAddress(currency.params).toString();
-                    break;
-                }
+                try {
+                    if (received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
+                        address = out.getScriptPubKey().getToAddress(currency.params).toString();
+                        break;
+                    }
+                } catch(Exception e) {}
             }
 
             if(address != null) {
                 org.bitcoinj.core.Coin sent = org.bitcoinj.core.Coin.ZERO;
                 for(TransactionOutput out : tx.getOutputs()) {
-                    if(!w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash()))
-                        sent = sent.add(out.getValue());
+                    try {
+                        if (!w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash()))
+                            sent = sent.add(out.getValue());
+                    } catch(Exception e){}
                 }
                 obj.put("sent", sent.toFriendlyString());
             } else {
