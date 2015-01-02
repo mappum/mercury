@@ -23,6 +23,7 @@ public abstract class AtomicSwapController {
 
     protected final AtomicSwap swap;
     protected Currency[] currencies;
+    protected boolean switched;
 
     private static final int REFUND_PERIOD = 4;
 
@@ -42,11 +43,7 @@ public abstract class AtomicSwapController {
         checkState(swap.trade.quantities[0].isGreaterThan(currencies[0].getParams().getMinFee()));
         checkState(swap.trade.quantities[1].isGreaterThan(currencies[1].getParams().getMinFee()));
 
-        if(!currencies[0].supportsHashlock()) {
-            Currency curr = this.currencies[0];
-            this.currencies[0] = currencies[1];
-            this.currencies[1] = curr;
-        }
+        switched = !currencies[1].supportsHashlock();
     }
 
     public void onMessage(boolean fromAlice, Map data) throws Exception {
@@ -97,11 +94,13 @@ public abstract class AtomicSwapController {
                 Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
                 checkState(swap.getKeys(fromAlice).get(0).verify(payoutSigHash, payoutSig));
                 log.info("Verified payout signature");
+                swap.setPayoutSig(fromAlice, payoutSig);
 
                 Transaction refundTx = createRefund(!fromAlice);
                 Sha256Hash refundSigHash = refundTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
                 checkState(swap.getKeys(fromAlice).get(0).verify(refundSigHash, refundSig));
                 log.info("Verified refund signature");
+                swap.setRefundSig(fromAlice, refundSig);
             }
         } finally {
             lock.unlock();
