@@ -7,6 +7,5 @@ public class AtomicSwapMethod {
         BAILIN_HASH_REQUEST = "bail_in_hash.request",
         EXCHANGE_SIGNATURES = "exchange.signatures",
         EXCHANGE_BAILIN = "exchange.bail.in",
-        CANCEL_TRANSACTION = "cancel.transaction",
-        ARBITRATE = "arbitrate";
+        CANCEL_TRANSACTION = "cancel.transaction";
 }
