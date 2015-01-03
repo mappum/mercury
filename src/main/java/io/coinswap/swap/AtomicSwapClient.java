@@ -1,6 +1,9 @@
 package io.coinswap.swap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.coinswap.client.Currency;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.TransactionSignature;
@@ -9,6 +12,7 @@ import org.bitcoinj.script.ScriptBuilder;
 import io.coinswap.net.Connection;
 import net.minidev.json.JSONObject;
 import org.bitcoinj.script.ScriptOpCodes;
+import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -150,6 +154,12 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         // TODO: serialize bailin
     }
 
+    private void broadcastBailin() {
+        // TODO: don't broadcast bailin until we've seen other party's valid bailin
+        Transaction bailin = swap.getBailinTx(alice);
+        currencies[a].getWallet().peerGroup().broadcastTransaction(bailin);
+    }
+
     private void broadcastPayout() {
         Transaction payout = createPayout(alice);
 
@@ -229,18 +239,14 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 sendBailinHash();
 
             } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
-                if(!alice) listenForBailin();
-                else listenForPayout();
-
                 swap.setStep(AtomicSwap.Step.EXCHANGING_SIGNATURES);
+                listenForBailin();
                 sendSignatures();
 
             } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
-                sendBailin();
-
-                // TODO: don't broadcast bailin until we've seen other party's valid bailin
-                Transaction bailin = swap.getBailinTx(alice);
-                currencies[a].getWallet().peerGroup().broadcastTransaction(bailin);
+                if(!alice) {
+                    broadcastBailin();
+                }
             }
         } catch(Exception ex) {
             log.error(ex.getMessage());
@@ -248,8 +254,9 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         }
     }
 
-    public void listenForBailin() {
+    private void listenForBailin() {
         Wallet w = currencies[b].getWallet().wallet();
+        AtomicSwapClient parent = this;
 
         List<Script> scripts = new ArrayList<>(1);
         scripts.add(ScriptBuilder.createP2SHOutputScript(getMultisigRedeem()));
@@ -264,27 +271,34 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 w.removeEventListener(this);
                 log.info("Received other party's bailin via coin network: " + tx.toString());
 
-                /*ListenableFuture future = tx.getConfidence().getDepthFuture(currencies[b].getConfirmationDepth());
-                Futures.addCallback(future, new FutureCallback<Transaction>() {
-                    @Override
-                    public void onSuccess(Transaction result) {*/
-                        log.info("Other party's bailin confirmed. Now committing to swap.");
-                        broadcastPayout();
-                        // TODO: stop watching script to keep our Bloom filter small (no API to do this yet)
-                /*    }
-
-                    @Override
-                    public void onFailure(Throwable t) {
-                        // TODO: cancel swap
-                    }
-                });*/
+                tx.getConfidence().getDepthFuture(currencies[b].getConfirmationDepth()).addListener(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            parent.onBailin(tx);
+                            // TODO: stop watching script to keep our Bloom filter small (no API to do this yet)
+                        }
+                    }, Threading.SAME_THREAD
+                );
             }
         };
         w.addEventListener(listener);
         // TODO: listen for this script when starting up and we have pending swaps
     }
 
-    public void listenForPayout() {
+    private void onBailin(Transaction tx) {
+        if(alice) {
+            log.info("Other party's bailin confirmed. Now broadcasting our bailin.");
+            listenForPayout();
+            broadcastBailin();
+
+        } else {
+            log.info("Other party's bailin confirmed. Now committing to swap.");
+            broadcastPayout();
+        }
+    }
+
+    private void listenForPayout() {
         checkState(alice);
 
         Transaction payout = createPayout(false);
@@ -299,7 +313,6 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 log.info("Received other party's payout via coin network: " + tx.toString());
 
                 Script xScript = tx.getInput(1).getScriptSig();
-                log.info("x redeem: " + xScript.toString());
                 swap.setX(xScript.getChunks().get(1).data);
 
                 broadcastPayout();
