@@ -108,7 +108,7 @@ public abstract class AtomicSwapController {
     }
 
     protected Transaction createPayout(boolean alice) {
-        int i = alice ? 1 : 0;
+        int i = alice ^ switched ? 1 : 0;
         NetworkParameters params = currencies[i].getParams();
 
         Transaction tx = new Transaction(params);
@@ -123,7 +123,7 @@ public abstract class AtomicSwapController {
     }
 
     protected Transaction createRefund(boolean alice) {
-        int i = alice ? 0 : 1;
+        int i = alice ^ switched ? 0 : 1;
 
         Transaction tx = new Transaction(currencies[i].getParams());
         tx.addInput(swap.getBailinHash(alice), 0, OP_NOP_SCRIPT);
