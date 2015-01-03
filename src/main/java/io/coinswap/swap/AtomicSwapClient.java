@@ -43,7 +43,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         connection.onMessage(swap.getChannelId(alice), this);
 
         this.alice = alice;
-        a = alice ^ switched ? 1 : 0;
+        a = alice ^ switched ? 0 : 1;
         b = a ^ 1;
     }
 
@@ -90,9 +90,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
             // first output is p2sh 2-of-2 multisig, with keys A1 and B1
             // amount is how much we are trading to other party
-            //Script p2sh = ScriptBuilder.createP2SHOutputScript(getMultisigRedeem());
-            //tx.addOutput(swap.trade.quantities[a], p2sh);
-            tx.addOutput(swap.trade.quantities[a], getMultisigRedeem());
+            Script p2sh = ScriptBuilder.createP2SHOutputScript(getMultisigRedeem());
+            tx.addOutput(swap.trade.quantities[a], p2sh);
 
             // second output for Alice's bailin is p2sh pay-to-pubkey with key B1
             // for Bob's bailin is hashlocked with x, pay-to-pubkey with key A1
@@ -164,7 +163,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         List<TransactionSignature> sigs = new ArrayList<TransactionSignature>(2);
         sigs.add(new TransactionSignature(alice ? mySig : otherSig, Transaction.SigHash.ALL, false));
         sigs.add(new TransactionSignature(alice ? otherSig : mySig, Transaction.SigHash.ALL, false));
-        Script multisigScriptSig = ScriptBuilder.createMultiSigInputScript(sigs);
+        Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, multisigRedeem);
         payout.getInput(0).setScriptSig(multisigScriptSig);
 
         Script hashlockScriptSig;
@@ -253,8 +252,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         Wallet w = currencies[b].getWallet().wallet();
 
         List<Script> scripts = new ArrayList<>(1);
-        //scripts.add(ScriptBuilder.createP2SHOutputScript(getMultisigRedeem()));
-        scripts.add(getMultisigRedeem());
+        scripts.add(ScriptBuilder.createP2SHOutputScript(getMultisigRedeem()));
         w.addWatchedScripts(scripts);
 
         WalletEventListener listener = new AbstractWalletEventListener() {
@@ -291,9 +289,9 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         Transaction payout = createPayout(false);
 
-        Wallet w = new Wallet(currencies[b].getParams());
+        Wallet w = new Wallet(currencies[a].getParams());
         List<Script> scripts = new ArrayList<>(1);
-        scripts.add(ScriptBuilder.createP2SHOutputScript(payout.getOutput(0).getScriptPubKey()));
+        scripts.add(payout.getOutput(0).getScriptPubKey());
         w.addWatchedScripts(scripts);
         w.addEventListener(new AbstractWalletEventListener() {
             @Override
@@ -302,14 +300,13 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
                 Script xScript = tx.getInput(1).getScriptSig();
                 log.info("x redeem: " + xScript.toString());
-                ECKey xKey = ECKey.fromPublicOnly(xScript.getChunks().get(2).data);
-                swap.setXKey(xKey);
+                swap.setX(xScript.getChunks().get(1).data);
 
                 broadcastPayout();
                 currencies[b].getWallet().peerGroup().removeWallet(w);
             }
         });
-        currencies[b].getWallet().peerGroup().addWallet(w);
+        currencies[a].getWallet().peerGroup().addWallet(w);
         // TODO: listen for this script when starting up and we have pending swaps
     }
 }
