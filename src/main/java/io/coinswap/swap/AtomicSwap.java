@@ -134,8 +134,13 @@ public class AtomicSwap {
 
     public void setXKey(ECKey key) {
         checkNotNull(key);
-
         byte[] x = ScriptBuilder.createOutputScript(key).getProgram();
+        setX(x);
+    }
+
+    public void setX(byte[] x) {
+        checkNotNull(x);
+
         byte[] hash = Utils.Hash160(x);
 
         lock.lock();
