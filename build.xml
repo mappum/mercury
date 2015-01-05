@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="client" default="default" basedir=".">
+    <taskdef name="bundleapp"
+             classname="com.oracle.appbundler.AppBundlerTask"
+             classpath="lib/appbundler-1.0.jar" />
+
+    <target name="bundle-osx">
+        <bundleapp outputdirectory="dist"
+                   name="MercuryWallet"
+                   displayname="Mercury Wallet"
+                   identifier="io.coinswap.client"
+                   mainclassname="io.coinswap.client.Main">
+            <classpath file="build/*.jar" />
+        </bundleapp>
+    </target>
+
+</project>
