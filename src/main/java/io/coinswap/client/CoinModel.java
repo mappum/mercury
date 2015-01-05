@@ -38,7 +38,6 @@ public class CoinModel extends Model {
 
         addDownloadListener();
         addTransactionListener();
-        handleRequests();
 
         object.setMember("controller", this);
     }
@@ -50,6 +49,10 @@ public class CoinModel extends Model {
         } catch(AddressFormatException ex) {
             return false;
         }
+    }
+
+    public String newAddress() {
+        return currency.getWallet().wallet().freshReceiveAddress().toString();
     }
 
     public void send(String addressString, String amountString) {
@@ -65,16 +68,6 @@ public class CoinModel extends Model {
             ex.printStackTrace();
             throw new RuntimeException();
         }
-    }
-
-    private void handleRequests() {
-        on("address:new", new EventEmitter.Callback() {
-            @Override
-            public void f(Object a) {
-                String address = currency.getWallet().wallet().freshReceiveAddress().toString();
-                trigger("address", "\"" + address + "\"");
-            }
-        });
     }
 
     private void addDownloadListener() {

@@ -32,17 +32,15 @@ coinswap.Coin = Backbone.Model.extend({
       });
     });
 
-    this.on('address', function(address) {
-      this.set('address', address);
-    });
-
     this.on('transaction', function(tx) {
       transactions.add(tx, { merge: true });
     });
   },
 
   newAddress: function(cb) {
-    this.trigger('address:new');
+    var address = this.controller.newAddress();
+    this.set('address', address);
+    return address;
   },
 
   isAddressValid: function(address) {
