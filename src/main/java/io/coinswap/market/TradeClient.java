@@ -61,18 +61,6 @@ public class TradeClient extends Thread {
                 }
             }
         });
-
-        try {
-            Thread.sleep(1000);
-            trade(new AtomicSwapTrade(true, new String[]{"BTCt","DOGE"},
-                new Coin[]{
-                    Coin.valueOf(100000),
-                    Coin.valueOf(133333337)
-                }, FEE));
-        } catch(Exception e) {
-            log.error(e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     private void connect() {
