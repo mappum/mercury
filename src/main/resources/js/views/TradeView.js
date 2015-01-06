@@ -120,6 +120,17 @@ coinswap.TradeView = Backbone.View.extend({
   },
 
   submit: function() {
+    var t = this;
+    this.$el.find('.accept')
+      .addClass('disabled')
+      .text('Submitted trade');
+
+    setTimeout(function(){
+      t.$el.find('.accept')
+        .removeClass('disabled')
+        .text('Accept Trade');
+    }, 3000);
+
     var m = this.model;
     coinswap.trade.submit(m.get('buy'),
       m.get('pair')[0], m.get('pair')[1],
