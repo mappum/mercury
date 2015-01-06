@@ -3,7 +3,7 @@
 coinswap.Trade = Backbone.Model.extend({
   defaults: {
     buy: true,
-    pair: ['BTC', 'LTC'],
+    pair: ['LTC', 'BTC'],
     price: 0,
     quantity: 0,
     total: 0
