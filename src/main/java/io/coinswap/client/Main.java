@@ -1,6 +1,7 @@
 package io.coinswap.client;
 
 import io.coinswap.Coins;
+import io.coinswap.market.TradeClient;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
@@ -25,7 +26,9 @@ import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,6 +79,7 @@ public class Main extends Application {
 
                 TradeClient tradeClient = new TradeClient(currencies);
                 tradeClient.start();
+                controller.context.setMember("trade", new TradeController(tradeClient));
             }
         });
 
