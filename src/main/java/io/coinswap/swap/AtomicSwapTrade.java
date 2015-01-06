@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -33,9 +34,11 @@ public class AtomicSwapTrade {
     public AtomicSwapTrade(boolean buy, String[] coins, Coin[] quantities, Coin fee) {
         this.buy = buy;
         this.coins = checkNotNull(coins);
+        checkArgument(coins.length == 2);
         checkNotNull(coins[0]);
         checkNotNull(coins[1]);
         this.quantities = checkNotNull(quantities);
+        checkArgument(quantities.length == 2);
         checkNotNull(quantities[0]);
         checkNotNull(quantities[1]);
         this.fee = checkNotNull(fee);
