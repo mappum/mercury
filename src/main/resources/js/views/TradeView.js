@@ -8,14 +8,15 @@ coinswap.TradeView = Backbone.View.extend({
     'keypress .values input': 'updateInputs',
     'keydown .values input': 'updateInputs',
     'keyup .values input': 'updateInputs',
-    'change .values input': 'updateInputs'
+    'change .values input': 'updateInputs',
+    'click .accept': 'submit'
   },
 
   template: _.template($('#template-trade').html()),
   className: 'container trade',
 
   initialize: function() {
-    _.bindAll(this, 'render');
+    _.bindAll(this, 'render', 'submit');
     this.listenTo(this.model, 'change:pair', this.updatePair);
     this.listenTo(this.model, 'change:buy', this.updatePair);
     this.listenTo(this.model, 'change:price', this.updateValues);
@@ -116,6 +117,13 @@ coinswap.TradeView = Backbone.View.extend({
     this.$el.find('.values .total input').val(this.model.get('total'));
     this.$el.find('.overview .quantity').text(this.model.get('quantity'));
     this.$el.find('.overview .total').text(this.model.get('total'));
+  },
+
+  submit: function() {
+    var m = this.model;
+    coinswap.trade.submit(m.get('buy'),
+      m.get('pair')[0], m.get('pair')[1],
+      m.get('quantity'), m.get('total'));
   }
 });
 
