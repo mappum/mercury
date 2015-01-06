@@ -1,5 +1,6 @@
 package io.coinswap.market;
 
+import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwap;
@@ -7,6 +8,7 @@ import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
@@ -16,6 +18,8 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -32,6 +36,7 @@ public class TradeClient extends Thread {
     private Map<String, Currency> currencies;
     private Connection connection;
 
+    private Queue<AtomicSwapTrade> requests;
     private Map<Integer, Order> orders;
     private Set<Integer> bids;
 
@@ -42,6 +47,7 @@ public class TradeClient extends Thread {
             this.currencies.put(c.getId().toLowerCase(), c);
         }
 
+        requests = new ConcurrentLinkedQueue<>();
         orders = new HashMap<Integer, Order>();
         bids = new HashSet<Integer>();
     }
@@ -61,6 +67,15 @@ public class TradeClient extends Thread {
                 }
             }
         });
+
+        while(true) {
+            while (!requests.isEmpty()) {
+                submit(requests.remove());
+            }
+            try {
+                Thread.sleep(250);
+            } catch(Exception e) {}
+        }
     }
 
     private void connect() {
@@ -88,6 +103,10 @@ public class TradeClient extends Thread {
     }
 
     public void trade(AtomicSwapTrade trade) {
+        requests.add(trade);
+    }
+
+    private void submit(AtomicSwapTrade trade) {
         JSONObject req = new JSONObject();
         req.put("channel", "trade");
         req.put("method", "trade");
@@ -153,7 +172,7 @@ public class TradeClient extends Thread {
 
     }
 
-    public void onFill(Map message) {
+    private void onFill(Map message) {
         AtomicSwap swap = AtomicSwap.fromJson((Map) message.get("swap"));
 
         // make sure time value is correct (otherwise server could get us to use unreasonable locktimes)
@@ -197,5 +216,9 @@ public class TradeClient extends Thread {
         AtomicSwapClient client =
                 new AtomicSwapClient(swap, connection, alice, swapCurrencies);
         client.start();
+    }
+
+    public Map<String, Currency> getCurrencies() {
+        return currencies;
     }
 }
