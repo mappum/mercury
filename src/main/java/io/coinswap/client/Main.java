@@ -79,7 +79,7 @@ public class Main extends Application {
 
                 TradeClient tradeClient = new TradeClient(currencies);
                 tradeClient.start();
-                controller.context.setMember("trade", new TradeController(tradeClient));
+                controller.context.setMember("trade", new TradeController(controller, tradeClient));
             }
         });
 

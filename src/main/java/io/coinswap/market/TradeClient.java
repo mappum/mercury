@@ -60,7 +60,7 @@ public class TradeClient extends Thread {
         connection.onMessage("trade", new Connection.ReceiveListener() {
             @Override
             public void onReceive(Map res) {
-                String method = (String) res.get("method");
+                String method = (String) checkNotNull(res.get("method"));
 
                 if(method.equals("fill")) {
                     parent.onFill(res);
@@ -135,12 +135,15 @@ public class TradeClient extends Thread {
                 AtomicSwap swap = AtomicSwap.fromJson(swapJson);
                 swaps.add(swap);
 
-                // verify that the coin IDs, price, and fee are what we expected
+                // verify that the coin IDs and fee are what we expected
                 checkState(swap.trade.coins[0].equals(trade.coins[0]));
                 checkState(swap.trade.coins[1].equals(trade.coins[1]));
-                checkState(swap.trade.getPrice().equals(trade.getPrice()));
                 checkState(swap.trade.fee.equals(trade.fee));
                 checkState(swap.trade.buy == trade.buy);
+
+                // verify price is at or better than what we expected
+                int comp = swap.trade.getPrice().compareTo(trade.getPrice());
+                checkState(comp == 0 || comp == (trade.buy ? -1 : 1));
 
                 // make sure time value is correct (otherwise server could get us to use unreasonable locktimes)
                 checkState(Math.abs(System.currentTimeMillis() / 1000 - swap.getTime()) < TIME_EPSILON);
@@ -216,6 +219,17 @@ public class TradeClient extends Thread {
         AtomicSwapClient client =
                 new AtomicSwapClient(swap, connection, alice, swapCurrencies);
         client.start();
+    }
+
+    public Ticker getTicker(String pairId) {
+        Map req = new JSONObject();
+        req.put("channel", "trade");
+        req.put("method", "ticker");
+        req.put("pair", pairId);
+
+        Map res = connection.request(req);
+        Map ticker = (Map) res.get("data");
+        return Ticker.fromJson(ticker);
     }
 
     public Map<String, Currency> getCurrencies() {
