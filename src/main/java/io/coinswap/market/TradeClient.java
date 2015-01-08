@@ -185,7 +185,7 @@ public class TradeClient extends Thread {
              totalPrice = Coin.ZERO;
 
         for(int id : (List<Integer>) message.get("orders")) {
-            Order order = orders.get(id);
+            Order order = checkNotNull(orders.get(id));
             boolean bid = bids.contains(id);
             checkState(swap.trade.buy == bid);
 
