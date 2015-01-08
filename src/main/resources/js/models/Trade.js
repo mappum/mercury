@@ -32,7 +32,7 @@ coinswap.Trade = Backbone.Model.extend({
       this.get('pair')[1] = pairs[0];
 
     coinswap.trade.ticker(pair[0].id, pair[1].id, function(err, res) {
-      if(err) return console.log(err);
+      if(err) return;
       this.set({
         bestBid: res.bestBid,
         bestAsk: res.bestAsk

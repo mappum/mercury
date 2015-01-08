@@ -112,8 +112,15 @@ coinswap.TradeView = Backbone.View.extend({
     var keys = ['price', 'quantity', 'total'];
     var container = $(e.target).parent().parent();
     for(var i = 0; i < keys.length; i++) {
-      if(container.hasClass(keys[i]))
-        return this.model.set(keys[i], +$(e.target).val());
+      if(container.hasClass(keys[i])) {
+        var val = $(e.target).val();
+        if(!val || !+val) return;
+
+        try {
+          var val = parseFloat(val);
+          return this.model.set(keys[i], val);
+        } catch(err) {}
+      }
     }
   },
 
