@@ -86,66 +86,79 @@
   </script>
   <script type="text/template" id="template-trade">
     <br>
-    <div class="row trade-pair">
-      <div class="col-sm-2 col-sm-push-3 col-xs-3 col-xs-push-2"><div class="dropdown dropdown-coin pull-left">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
-        <ul class="dropdown-menu"></ul>
-      </div></div>
-      <div class="separator col-sm-2 col-sm-push-3 col-xs-2 col-xs-push-2">/</div>
-      <div class="col-sm-2 col-sm-push-3 col-xs-3 col-xs-push-2"><div class="dropdown dropdown-coin pull-right">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
-        <ul class="dropdown-menu"></ul>
-      </div></div>
-    </div>
-    <br><br>
     <div class="row">
-      <div class="form col-sm-10 col-sm-push-1 well">
-        <div class="row">
-          <div class="btn-group col-xs-12 buysell" data-toggle="buttons-radio">
-            <button class="btn btn-default buy active">Buy</button>
-            <button class="btn btn-default sell">Sell</button>
-          </div>
+      <div class="col-xs-8">
+        <div class="row trade-pair">
+          <div class="col-xs-2 col-xs-push-2"><div class="dropdown dropdown-coin pull-left">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
+            <ul class="dropdown-menu"></ul>
+          </div></div>
+          <div class="separator col-xs-2 col-xs-push-3">/</div>
+          <div class="col-xs-2 col-xs-push-4"><div class="dropdown dropdown-coin pull-right">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
+            <ul class="dropdown-menu"></ul>
+          </div></div>
         </div>
-        <hr>
-        <div class="row values">
-          <div class="form-group col-xs-4 price">
-            <label>Price</label>
-            <div class="input-group">
-              <span class="input-group-addon symbol"></span>
-              <input class="form-control" type="text" placeholder="0.00">
-            </div>
-          </div>
-          <div class="form-group col-xs-4 quantity">
-            <label>Quantity</label>
-            <div class="input-group">
-              <span class="input-group-addon symbol"></span>
-              <input class="form-control" type="text" placeholder="0.00">
-            </div>
-          </div>
-          <div class="form-group col-xs-4 total">
-            <label>Total</label>
-            <div class="input-group">
-              <span class="input-group-addon symbol"></span>
-              <input class="form-control" type="text" placeholder="0.00">
-            </div>
-          </div>
-        </div>
-        <hr>
+        <br><br>
         <div class="row">
-          <div class="col-xs-12 text-center overview">
-            <p>You will <span class="type"></span> <strong><span class="symbol"></span><span class="quantity"></span> <span class="alt"></span></strong></p>
-            <p>for <strong><span class="symbol"></span><span class="total"></span> <span class="alt"></span></strong></p>
-          </div>
-        </div>
-        <hr>
-        <div class="row">
-          <div class="col-xs-12">
-            <button class="btn btn-lg btn-success pull-right accept">Accept Trade</button>
-            <button class="btn btn-default pull-right cancel">Cancel</button>
+          <div class="form well">
+            <div class="row">
+              <div class="btn-group col-xs-12 buysell" data-toggle="buttons-radio">
+                <button class="btn btn-default buy active">Buy</button>
+                <button class="btn btn-default sell">Sell</button>
+              </div>
+            </div>
+            <hr>
+            <div class="row values">
+              <div class="form-group col-xs-4 price">
+                <label>Price</label>
+                <div class="input-group">
+                  <span class="input-group-addon symbol"></span>
+                  <input class="form-control" type="text" placeholder="0.00">
+                </div>
+              </div>
+              <div class="form-group col-xs-4 quantity">
+                <label>Quantity</label>
+                <div class="input-group">
+                  <span class="input-group-addon symbol"></span>
+                  <input class="form-control" type="text" placeholder="0.00">
+                </div>
+              </div>
+              <div class="form-group col-xs-4 total">
+                <label>Total</label>
+                <div class="input-group">
+                  <span class="input-group-addon symbol"></span>
+                  <input class="form-control" type="text" placeholder="0.00">
+                </div>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-xs-12 text-center overview">
+                <p>You will <span class="type"></span> <strong><span class="symbol"></span><span class="quantity"></span> <span class="alt"></span></strong></p>
+                <p>for <strong><span class="symbol"></span><span class="total"></span> <span class="alt"></span></strong></p>
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-xs-12">
+                <button class="btn btn-lg btn-success pull-right accept">Accept Trade</button>
+                <button class="btn btn-default pull-right cancel">Cancel</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+      <div class="col-xs-4">
+        <h4>Open Orders</h4>
+        <ul class="list-group orders"> </ul>
+      </div>
     </div>
+  </script>
+  <script type="text/template" id="template-trade-order">
+    <span class="small"><%= currencies.join('/').toUpperCase() %></span><br>
+    <strong class="small"><span class="type" style="color: <%= bid ? 'green' : 'red' %>"><%= bid ? 'Buy' : 'Sell' %></span> <%= symbols[0] %><%= amount %> <span class="alt">@</span> <%= symbols[1] %><%= price %> </strong>
+    <button class="btn btn-sm btn-link cancel">Cancel</button>
   </script>
   <script type="text/template" id="template-coinview">
     <img class="pull-left logo" src="images/<%= id.toLowerCase() %>.png">

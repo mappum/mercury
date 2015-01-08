@@ -13,6 +13,7 @@ coinswap.TradeView = Backbone.View.extend({
   },
 
   template: _.template($('#template-trade').html()),
+  orderTemplate: _.template($('#template-trade-order').html()),
   className: 'container trade',
 
   initialize: function() {
@@ -27,6 +28,7 @@ coinswap.TradeView = Backbone.View.extend({
     this.render();
     this.updatePair();
     this.updateValues();
+    this.updateOrders();
 
     this.model.set('price', this.model.get('bestBid'));
   },
@@ -136,6 +138,25 @@ coinswap.TradeView = Backbone.View.extend({
     var m = this.model;
     var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk');
     m.set('price', bestPrice);
+  },
+
+  updateOrders: function() {
+    console.log('updateOrders')
+    var t = this;
+    var orders = coinswap.trade.orders();
+    var ordersEl = this.$el.find('.orders').empty();
+    try{
+    _.each(orders, function(order) {
+      order.symbols = [
+        t.model.getPair()[0].get('symbol'),
+        t.model.getPair()[1].get('symbol')
+      ];
+      var el = $('<li class="list-group-item order">').html(t.orderTemplate(order));
+      ordersEl.append(el);
+    });
+  } catch(err) {
+    console.log(err+'')
+  }
   },
 
   submit: function() {
