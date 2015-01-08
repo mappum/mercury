@@ -1,11 +1,14 @@
 package io.coinswap.client;
 
+import io.coinswap.market.Order;
 import io.coinswap.market.Ticker;
 import io.coinswap.market.TradeClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import netscape.javascript.JSObject;
 import org.bitcoinj.core.Coin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -60,6 +63,15 @@ public class TradeController {
         JSObject wrapper = controller.eval("new Object()");
         wrapper.setMember("f", cb);
         wrapper.call("f", values);
+    }
+
+    public JSObject orders() {
+        List<Order> orders = client.getOrders();
+        JSObject ordersJs = controller.eval("[]");
+        for(int i = 0; i < orders.size(); i++) {
+            ordersJs.setSlot(i, toJSObject(orders.get(i).toJson()));
+        }
+        return ordersJs;
     }
 
     private JSObject toJSObject(Map<String, Object> obj) {
