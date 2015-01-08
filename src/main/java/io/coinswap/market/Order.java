@@ -3,7 +3,9 @@ package io.coinswap.market;
 import org.bitcoinj.core.Coin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -29,22 +31,21 @@ public class Order {
         return output;
     }
 
-    public Object toJson() {
-        List<Object> data = new ArrayList<Object>(3);
-        data.add(id);
-        data.add(amount.toPlainString());
-        data.add(price.toPlainString());
+    public Map<String, Object> toJson() {
+        Map<String, Object> data = new HashMap<String, Object>(3);
+        data.put("id", id);
+        data.put("amount", amount.toPlainString());
+        data.put("price", price.toPlainString());
         return data;
     }
 
-    public static Order fromJson(List<Object> data) {
+    public static Order fromJson(Map<String, Object> data) {
         checkNotNull(data);
-        checkState(data.size() == 3);
         Order output = new Order(
-                Coin.parseCoin((String) checkNotNull(data.get(1))),
-                Coin.parseCoin((String) checkNotNull(data.get(2)))
+                Coin.parseCoin((String) checkNotNull(data.get("amount"))),
+                Coin.parseCoin((String) checkNotNull(data.get("price")))
         );
-        output.id = (int) checkNotNull(data.get(0));
+        output.id = (int) checkNotNull(data.get("id"));
         return output;
     }
 }
