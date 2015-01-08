@@ -37,6 +37,7 @@ public class TradeClient extends Thread {
     private Connection connection;
 
     private Queue<AtomicSwapTrade> requests;
+    private Map<AtomicSwapTrade, SettableFuture<Map>> requestFutures;
     private Map<Integer, Order> orders;
 
     public TradeClient(List<Currency> currencies) {
@@ -47,6 +48,7 @@ public class TradeClient extends Thread {
         }
 
         requests = new ConcurrentLinkedQueue<>();
+        requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
     }
 
@@ -100,8 +102,12 @@ public class TradeClient extends Thread {
         }
     }
 
-    public void trade(AtomicSwapTrade trade) {
+    public SettableFuture trade(AtomicSwapTrade trade) {
         requests.add(trade);
+
+        SettableFuture<Map> future = SettableFuture.create();
+        requestFutures.put(trade, future);
+        return future;
     }
 
     private void submit(AtomicSwapTrade trade) {
@@ -171,6 +177,7 @@ public class TradeClient extends Thread {
             }
         }
 
+        requestFutures.remove(trade).set(res);
     }
 
     private void onFill(Map message) {
