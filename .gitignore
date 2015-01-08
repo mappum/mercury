@@ -8,3 +8,5 @@ out
 target
 classes
 data
+build
+dist
