@@ -189,7 +189,7 @@ public class CoinModel extends Model {
                             sent = sent.add(out.getValue());
                     } catch(Exception e){}
                 }
-                obj.put("sent", sent.toFriendlyString());
+                obj.put("sent", sent.toPlainString());
             } else {
                 address = "self";
             }
