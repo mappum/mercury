@@ -90,14 +90,11 @@ coinswap.TradeView = Backbone.View.extend({
       .find('.symbol').html(pair[0].get('symbol'));
 
     var overview = this.$el.find('.overview');
-    overview
-      .find('.type')
+    overview.find('.type')
         .removeClass(!this.model.get('buy') ? 'buy' : 'sell')
         .addClass(this.model.get('buy') ? 'buy' : 'sell')
-        .text(this.model.get('buy') ? 'buy' : 'sell')
-      .parent().find('.symbol:eq(0)').html(pair[0].get('symbol'))
-      .parent().find('.alt:eq(0)').html(pair[0].id);
-    overview.find('.symbol:eq(1)').html(pair[1].get('symbol'));
+        .text(this.model.get('buy') ? 'buy' : 'sell');
+    overview.find('.alt:eq(0)').html(pair[0].id);
     overview.find('.alt:eq(1)').html(pair[1].id);
   },
 
