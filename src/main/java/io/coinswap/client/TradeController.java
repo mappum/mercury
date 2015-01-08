@@ -1,11 +1,13 @@
 package io.coinswap.client;
 
+import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.market.Order;
 import io.coinswap.market.Ticker;
 import io.coinswap.market.TradeClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import netscape.javascript.JSObject;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.utils.Threading;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,14 +39,22 @@ public class TradeController {
         return pair;
     }
 
-    public void submit(boolean buy, String currency1, String currency2, String quantity, String total) {
+    public void submit(boolean buy, String currency1, String currency2, String quantity, String total, JSObject cb) {
         String[] pair = getPair(currency1, currency2);
         Coin[] quantities = new Coin[]{
                 Coin.parseCoin(quantity),
                 Coin.parseCoin(total)
         };
         AtomicSwapTrade trade = new AtomicSwapTrade(buy, pair, quantities, AtomicSwapTrade.FEE);
-        client.trade(trade);
+        SettableFuture<Map> future = client.trade(trade);
+
+        future.addListener(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: send some response data
+                callJSFunction(cb, new Object[]{ null });
+            }
+        }, controller.e);
     }
 
     public void ticker(String currency1, String currency2, JSObject cb) {
@@ -58,18 +68,19 @@ public class TradeController {
             values[0] = controller.eval("new Error('"+e.getMessage()+"')");
         }
 
-        // hack to be able to call function:
-        // create a wrapper object, set the function as a property, then use wrapper.call
-        JSObject wrapper = controller.eval("new Object()");
-        wrapper.setMember("f", cb);
-        wrapper.call("f", values);
+        callJSFunction(cb, values);
     }
 
     public JSObject orders() {
         List<Order> orders = client.getOrders();
         JSObject ordersJs = controller.eval("[]");
         for(int i = 0; i < orders.size(); i++) {
-            ordersJs.setSlot(i, toJSObject(orders.get(i).toJson()));
+            Map<String, Object> orderJson = orders.get(i).toJson();
+            orderJson.put("currencies", new String[]{
+                    currencies.get(orders.get(i).currencies[0]).getId(),
+                    currencies.get(orders.get(i).currencies[1]).getId(),
+            });
+            ordersJs.setSlot(i, toJSObject(orderJson));
         }
         return ordersJs;
     }
@@ -80,5 +91,13 @@ public class TradeController {
             output.setMember(key, obj.get(key));
         }
         return output;
+    }
+
+    private void callJSFunction(JSObject function, Object[] args) {
+        // hack to be able to call function:
+        // create a wrapper object, set the function as a property, then use wrapper.call
+        JSObject wrapper = controller.eval("new Object()");
+        wrapper.setMember("f", function);
+        wrapper.call("f", args);
     }
 }

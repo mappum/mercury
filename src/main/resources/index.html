@@ -156,9 +156,11 @@
     </div>
   </script>
   <script type="text/template" id="template-trade-order">
-    <span class="small"><%= currencies.join('/').toUpperCase() %></span><br>
-    <strong class="small"><span class="type" style="color: <%= bid ? 'green' : 'red' %>"><%= bid ? 'Buy' : 'Sell' %></span> <%= symbols[0] %><%= amount %> <span class="alt">@</span> <%= symbols[1] %><%= price %> </strong>
-    <button class="btn btn-sm btn-link cancel">Cancel</button>
+    <li class="list-group-item order">
+      <span class="small"><%= currencies.join('/').toUpperCase() %></span><br>
+      <strong class="small"><span class="type" style="color: <%= bid ? 'green' : 'red' %>"><%= bid ? 'Buy' : 'Sell' %></span> <%= symbols[0] %><%= amount %> <span class="alt">@</span> <%= symbols[1] %><%= price %> </strong>
+      <button class="btn btn-sm btn-link cancel">Cancel</button>
+    </li>
   </script>
   <script type="text/template" id="template-coinview">
     <img class="pull-left logo" src="images/<%= id.toLowerCase() %>.png">
