@@ -38,7 +38,6 @@ public class TradeClient extends Thread {
 
     private Queue<AtomicSwapTrade> requests;
     private Map<Integer, Order> orders;
-    private Set<Integer> bids;
 
     public TradeClient(List<Currency> currencies) {
         checkNotNull(currencies);
@@ -49,7 +48,6 @@ public class TradeClient extends Thread {
 
         requests = new ConcurrentLinkedQueue<>();
         orders = new HashMap<Integer, Order>();
-        bids = new HashSet<Integer>();
     }
 
     @Override
@@ -114,14 +112,14 @@ public class TradeClient extends Thread {
         Map res = connection.request(req);
 
         if(res.containsKey("order")) {
-            Order order = Order.fromJson((List<Object>) res.get("order"));
+            Order order = Order.fromJson((Map) res.get("order"));
 
             // make sure the server didn't open the order at the wrong price/amount
             checkState(!order.amount.isGreaterThan(trade.getAmount()));
             checkState(order.price.equals(trade.getPrice()));
+            checkState(order.bid == trade.buy);
 
             orders.put(order.id, order);
-            if(trade.buy) bids.add(order.id);
             log.info("Opened order: " + order.toJson().toString());
         }
 
@@ -186,8 +184,7 @@ public class TradeClient extends Thread {
 
         for(int id : (List<Integer>) message.get("orders")) {
             Order order = checkNotNull(orders.get(id));
-            boolean bid = bids.contains(id);
-            checkState(swap.trade.buy == bid);
+            checkState(swap.trade.buy == order.bid);
 
             Coin remaining = swap.trade.getAmount().subtract(totalVolume);
             checkState(remaining.isGreaterThan(Coin.ZERO));
@@ -206,7 +203,6 @@ public class TradeClient extends Thread {
 
         for(int id : (List<Integer>) message.get("orders")) {
             orders.remove(id);
-            bids.remove(id);
         }
 
         Currency[] swapCurrencies = new Currency[]{
