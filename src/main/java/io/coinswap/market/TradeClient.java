@@ -235,4 +235,8 @@ public class TradeClient extends Thread {
     public Map<String, Currency> getCurrencies() {
         return currencies;
     }
+
+    public List<Order> getOrders() {
+        return new ArrayList<>(orders.values());
+    }
 }
