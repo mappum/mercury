@@ -22,8 +22,13 @@ coinswap.TradeView = Backbone.View.extend({
     this.listenTo(this.model, 'change:price', this.updateValues);
     this.listenTo(this.model, 'change:quantity', this.updateValues);
     this.listenTo(this.model, 'change:total', this.updateValues);
+    this.listenTo(this.model, 'change:bestBid', this.updateBest);
+    this.listenTo(this.model, 'change:bestAsk', this.updateBest);
     this.render();
     this.updatePair();
+    this.updateValues();
+
+    this.model.set('price', this.model.get('bestBid'));
   },
 
   onDropdownSelect: function(e) {
@@ -98,6 +103,7 @@ coinswap.TradeView = Backbone.View.extend({
     var selection = $(e.currentTarget);
     var buy = selection.hasClass('buy');
     this.model.set('buy', buy);
+    this.updateBest();
   },
 
   updateInputs: function(e) {
@@ -117,6 +123,12 @@ coinswap.TradeView = Backbone.View.extend({
     this.$el.find('.values .total input').val(this.model.get('total'));
     this.$el.find('.overview .quantity').text(this.model.get('quantity'));
     this.$el.find('.overview .total').text(this.model.get('total'));
+  },
+
+  updateBest: function() {
+    var m = this.model;
+    var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk');
+    m.set('price', bestPrice);
   },
 
   submit: function() {

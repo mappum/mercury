@@ -21,6 +21,8 @@ coinswap.Trade = Backbone.Model.extend({
     this.on('change:price', this.updateValues);
     this.on('change:quantity', this.updateValues);
     this.on('change:total', this.updateTotal);
+
+    this.updatePair();
   },
 
   updatePair: function() {
@@ -28,6 +30,14 @@ coinswap.Trade = Backbone.Model.extend({
     var pairs = pair[0].get('pairs');
     if(pairs.indexOf(pair[1].id) === -1)
       this.get('pair')[1] = pairs[0];
+
+    coinswap.trade.ticker(pair[0].id, pair[1].id, function(err, res) {
+      if(err) return console.log(err);
+      this.set({
+        bestBid: res.bestBid,
+        bestAsk: res.bestAsk
+      });
+    }.bind(this));
   },
 
   getPair: function() {
