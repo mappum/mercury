@@ -46,13 +46,18 @@ public class TradeController {
 
     public void ticker(String currency1, String currency2, JSObject cb) {
         String[] pair = getPair(currency1, currency2);
-        Ticker res = client.getTicker(pair[0] + "/" + pair[1]);
+        Object[] values = new Object[2];
+        try {
+            values[1] = client.getTicker(pair[0] + "/" + pair[1]);
+        } catch(Exception e) {
+            values[0] = controller.eval("new Error("+e.getMessage()+")");
+        }
 
         // hack to be able to call function:
         // create a wrapper object, set the function as a property, then use wrapper.call
         JSObject wrapper = controller.eval("new Object()");
         wrapper.setMember("f", cb);
-        wrapper.call("f", new Object[]{ null, toJSObject((Map) res.toJson()) });
+        wrapper.call("f", values);
     }
 
     private JSObject toJSObject(Map<String, Object> obj) {
