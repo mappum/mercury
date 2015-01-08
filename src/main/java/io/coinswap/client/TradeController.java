@@ -48,9 +48,11 @@ public class TradeController {
         String[] pair = getPair(currency1, currency2);
         Object[] values = new Object[2];
         try {
-            values[1] = client.getTicker(pair[0] + "/" + pair[1]);
+            Ticker ticker = client.getTicker(pair[0] + "/" + pair[1]);
+            values[1] = toJSObject((Map<String, Object>) ticker.toJson());
         } catch(Exception e) {
-            values[0] = controller.eval("new Error("+e.getMessage()+")");
+            e.printStackTrace();
+            values[0] = controller.eval("new Error('"+e.getMessage()+"')");
         }
 
         // hack to be able to call function:
