@@ -227,8 +227,8 @@ public class TradeClient extends Thread {
             }
 
             totalVolume = totalVolume.add(toAdd);
-            long price = toAdd.multiply(order.price.longValue()).divide(Coin.COIN);
-            totalPrice = totalPrice.add(Coin.valueOf(price));
+            Coin price = AtomicSwapTrade.getTotal(order.price, toAdd);
+            totalPrice = totalPrice.add(price);
         }
 
         checkState(totalPrice.equals(swap.trade.quantities[1]));

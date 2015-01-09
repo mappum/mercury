@@ -3,6 +3,7 @@ package io.coinswap.swap;
 import net.minidev.json.JSONObject;
 import org.bitcoinj.core.Coin;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -60,10 +61,13 @@ public class AtomicSwapTrade {
 
     // gets the price this trade buys or sells at
     public Coin getPrice() {
-        long longValue = quantities[1]
-            .multiply(Coin.COIN.longValue())
-            .divide(quantities[0]);
-        return Coin.valueOf(longValue);
+        // This would overflow with Coin (long) math since we are multiplying
+        // by COIN before we divide. To solve that, we use a bigint then
+        // convert back to a Coin (throwing an exception if it won't fit)
+        BigInteger bigValue = BigInteger.valueOf(quantities[1].getValue())
+            .multiply(BigInteger.valueOf(Coin.COIN.longValue()))
+            .divide(BigInteger.valueOf(quantities[0].getValue()));
+        return Coin.valueOf(bigValue.longValueExact());
     }
 
     public Map toJson() {
@@ -99,5 +103,15 @@ public class AtomicSwapTrade {
                 Coin.valueOf((int) checkNotNull(data.get("fee"))));
         output.immediate = (boolean) checkNotNull(data.get("immediate"));
         return output;
+    }
+
+    public static Coin getTotal(Coin price, Coin amount) {
+        // This would overflow with Coin (long) math since we are multiplying
+        // by COIN before we divide. To solve that, we use a bigint then
+        // convert back to a Coin (throwing an exception if it won't fit)
+        BigInteger bigValue = BigInteger.valueOf(amount.getValue())
+                .multiply(BigInteger.valueOf(price.getValue()))
+                .divide(BigInteger.valueOf(Coin.COIN.longValue()));
+        return Coin.valueOf(bigValue.longValueExact());
     }
 }
