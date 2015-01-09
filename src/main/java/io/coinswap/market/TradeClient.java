@@ -206,20 +206,24 @@ public class TradeClient extends Thread {
         checkState(Math.abs(System.currentTimeMillis() / 1000 - swap.getTime()) < TIME_EPSILON);
 
         Coin totalVolume = Coin.ZERO,
-             totalPrice = Coin.ZERO;
+             totalPrice = Coin.ZERO,
+             remaining = swap.trade.getAmount();
 
-        for(int id : (List<Integer>) message.get("orders")) {
+        List<Integer> orderIds = (List<Integer>) message.get("orders");
+        boolean partial = false;
+        for(int id : orderIds) {
             Order order = checkNotNull(orders.get(id));
             checkState(swap.trade.buy == order.bid);
             checkState(order.currencies[0].equals(swap.trade.coins[0]));
             checkState(order.currencies[1].equals(swap.trade.coins[1]));
 
-            Coin remaining = swap.trade.getAmount().subtract(totalVolume);
+            remaining = swap.trade.getAmount().subtract(totalVolume);
             checkState(remaining.isGreaterThan(Coin.ZERO));
 
             Coin toAdd = order.amount;
             if(order.amount.isGreaterThan(remaining)) {
                 toAdd = remaining;
+                partial = true;
             }
 
             totalVolume = totalVolume.add(toAdd);
@@ -229,8 +233,17 @@ public class TradeClient extends Thread {
 
         checkState(totalPrice.equals(swap.trade.quantities[1]));
 
-        for(int id : (List<Integer>) message.get("orders")) {
-            orders.remove(id);
+        for(int i = 0; i < orderIds.size() - 1; i++) {
+            orders.remove(orderIds.get(i));
+        }
+
+        // If the last order is being partially filled, update its amount.
+        // Otherwise, just remove it.
+        int lastOrder = orderIds.get(orderIds.size() - 1);
+        if(partial) {
+            orders.get(lastOrder).amount = orders.get(lastOrder).amount.subtract(remaining);
+        } else {
+            orders.remove(lastOrder);
         }
 
         Currency[] swapCurrencies = new Currency[]{
