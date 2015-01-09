@@ -58,4 +58,12 @@ public class Order {
         output.id = (int) checkNotNull(data.get("id"));
         return output;
     }
+
+    public static Coin getTotal(List<? extends Order> orders) {
+        Coin total = Coin.ZERO;
+        for(Order order : orders) {
+            total = total.add(order.amount);
+        }
+        return total;
+    }
 }
