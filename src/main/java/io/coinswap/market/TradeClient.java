@@ -192,6 +192,8 @@ public class TradeClient extends Thread {
         for(int id : (List<Integer>) message.get("orders")) {
             Order order = checkNotNull(orders.get(id));
             checkState(swap.trade.buy == order.bid);
+            checkState(order.currencies[0].equals(swap.trade.coins[0]));
+            checkState(order.currencies[1].equals(swap.trade.coins[1]));
 
             Coin remaining = swap.trade.getAmount().subtract(totalVolume);
             checkState(remaining.isGreaterThan(Coin.ZERO));
