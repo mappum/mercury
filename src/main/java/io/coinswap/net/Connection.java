@@ -29,6 +29,8 @@ public class Connection extends Thread {
     private BufferedWriter out;
     private BufferedReader in;
 
+    private SettableFuture disconnectFuture;
+
     private int id = 0;
 
     private final ReentrantLock lock = Threading.lock("io.coinswap.net.Connection");
@@ -36,6 +38,7 @@ public class Connection extends Thread {
     public Connection(SSLSocket socket) {
         this.socket = socket;
         this.listeners = new HashMap<String, List<ReceiveListener>>();
+        this.disconnectFuture = SettableFuture.create();
 
         try {
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -61,6 +64,10 @@ public class Connection extends Thread {
         } finally {
             lock.unlock();
         }
+    }
+
+    public void onDisconnect(Runnable listener) {
+        disconnectFuture.addListener(listener, Threading.SAME_THREAD);
     }
 
     public void removeMessageListener(String channel, ReceiveListener listener) {
@@ -153,6 +160,9 @@ public class Connection extends Thread {
                 out.close();
             } catch(IOException ex) {
                 log.error(ex.getMessage());
+            } finally {
+                // TODO: maybe indicate how the connection closed?
+                disconnectFuture.set(null);
             }
         }
     }
