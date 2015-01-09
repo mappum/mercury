@@ -9,7 +9,8 @@ coinswap.TradeView = Backbone.View.extend({
     'keydown .values input': 'updateInputs',
     'keyup .values input': 'updateInputs',
     'change .values input': 'updateInputs',
-    'click .accept': 'submit'
+    'click .accept': 'submit',
+    'click .cancel': 'cancel'
   },
 
   template: _.template($('#template-trade').html()),
@@ -171,6 +172,12 @@ coinswap.TradeView = Backbone.View.extend({
         if(err) return;
         t.updateOrders();
       });
+  },
+
+  cancel: function(e) {
+    var id = $(e.currentTarget).attr('data-id');
+    coinswap.trade.cancel(id);
+    this.updateOrders();
   }
 });
 

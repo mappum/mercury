@@ -8,7 +8,6 @@ import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
@@ -19,7 +18,6 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -36,9 +34,10 @@ public class TradeClient extends Thread {
     private Map<String, Currency> currencies;
     private Connection connection;
 
-    private Queue<AtomicSwapTrade> requests;
+    private Queue<AtomicSwapTrade> tradeRequests;
     private Map<AtomicSwapTrade, SettableFuture<Map>> requestFutures;
     private Map<Integer, Order> orders;
+    private Queue<Order> cancelRequests;
 
     public TradeClient(List<Currency> currencies) {
         checkNotNull(currencies);
@@ -47,9 +46,10 @@ public class TradeClient extends Thread {
             this.currencies.put(c.getId().toLowerCase(), c);
         }
 
-        requests = new ConcurrentLinkedQueue<>();
+        tradeRequests = new ConcurrentLinkedQueue<>();
         requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
+        cancelRequests = new ConcurrentLinkedQueue<>();
     }
 
     @Override
@@ -69,9 +69,15 @@ public class TradeClient extends Thread {
         });
 
         while(true) {
-            while (!requests.isEmpty()) {
-                submit(requests.remove());
+            // TODO: should we change to submit trade requests without waiting for responses?
+            while (!tradeRequests.isEmpty()) {
+                submitTrade(tradeRequests.remove());
             }
+            while (!cancelRequests.isEmpty()) {
+                submitCancel(cancelRequests.remove());
+            }
+
+            // TODO: use better signaling instead of polling
             try {
                 Thread.sleep(250);
             } catch(Exception e) {}
@@ -103,14 +109,19 @@ public class TradeClient extends Thread {
     }
 
     public SettableFuture trade(AtomicSwapTrade trade) {
-        requests.add(trade);
+        tradeRequests.add(trade);
 
         SettableFuture<Map> future = SettableFuture.create();
         requestFutures.put(trade, future);
         return future;
     }
 
-    private void submit(AtomicSwapTrade trade) {
+    public void cancel(int id) {
+        Order order = orders.remove(id);
+        if(order != null) cancelRequests.add(order);
+    }
+
+    private void submitTrade(AtomicSwapTrade trade) {
         JSONObject req = new JSONObject();
         req.put("channel", "trade");
         req.put("method", "trade");
@@ -178,6 +189,14 @@ public class TradeClient extends Thread {
         }
 
         requestFutures.remove(trade).set(res);
+    }
+
+    private void submitCancel(Order order) {
+        JSONObject req = new JSONObject();
+        req.put("channel", "trade");
+        req.put("method", "cancel");
+        req.put("order", order.toJson());
+        connection.write(req);
     }
 
     private void onFill(Map message) {

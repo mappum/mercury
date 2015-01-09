@@ -85,6 +85,10 @@ public class TradeController {
         return ordersJs;
     }
 
+    public void cancel(int id) {
+        client.cancel(id);
+    }
+
     private JSObject toJSObject(Map<String, Object> obj) {
         JSObject output = controller.eval("new Object()");
         for(String key : obj.keySet()) {
