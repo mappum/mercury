@@ -60,9 +60,7 @@ public class CoinModel extends Model {
             Address address = new Address(currency.params, addressString);
             org.bitcoinj.core.Coin amount = org.bitcoinj.core.Coin.parseCoin(amountString);
             Wallet.SendRequest req = Wallet.SendRequest.to(address, amount);
-            req.feePerKb = currency.params.getMinFee();
             currency.wallet.wallet().sendCoins(currency.wallet.peerGroup(), req);
-            // TODO(altcoinj): set default feePerKb in altcoinj SendRequest
         } catch(Exception ex) {
             log.error(ex.getClass().getName() + ": " + ex.getMessage());
             ex.printStackTrace();
