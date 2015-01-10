@@ -8,7 +8,6 @@ coinswap.TradeView = Backbone.View.extend({
     'keypress .values input': 'updateInputs',
     'keydown .values input': 'updateInputs',
     'keyup .values input': 'updateInputs',
-    'change .values input': 'updateInputs',
     'click .accept': 'submit',
     'click .cancel': 'cancel'
   },
@@ -32,6 +31,9 @@ coinswap.TradeView = Backbone.View.extend({
     this.updateOrders();
 
     this.model.set('price', this.model.get('bestBid'));
+
+    // TODO: fix possible memory leak (listener never gets removed)
+    coinswap.trade.on('fill', this.updateOrders.bind(this));
   },
 
   onDropdownSelect: function(e) {
@@ -125,16 +127,17 @@ coinswap.TradeView = Backbone.View.extend({
   },
 
   updateValues: function() {
-    this.$el.find('.values .price input').val(this.model.get('price'));
-    this.$el.find('.values .quantity input').val(this.model.get('quantity'));
-    this.$el.find('.values .total input').val(this.model.get('total'));
-    this.$el.find('.overview .quantity').text(this.model.get('quantity'));
-    this.$el.find('.overview .total').text(this.model.get('total'));
+    var m = this.model;
+    this.$el.find('.values .price input').val(m.get('price'));
+    this.$el.find('.values .quantity input').val(m.get('quantity'));
+    this.$el.find('.values .total input').val(m.get('total'));
+    this.$el.find('.overview .quantity').text(m.get('quantity'));
+    this.$el.find('.overview .total').text(m.get('total'));
   },
 
   updateBest: function() {
     var m = this.model;
-    var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk');
+    var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk') || 0;
     m.set('price', bestPrice);
   },
 

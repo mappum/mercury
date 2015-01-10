@@ -56,11 +56,11 @@ coinswap.Trade = Backbone.Model.extend({
   },
 
   updateValues: function() {
-    this.set('total', +this.get('price') * +this.get('quantity'));
+    this.set('total', +this.get('price') * +this.get('quantity'), { silent: true });
   },
   
   updateTotal: function() {
-    this.set('quantity', +this.get('total') / +this.get('price'));
+    this.set('quantity', +this.get('total') / +this.get('price'), { silent: true });
   }
 });
 
