@@ -2,6 +2,7 @@ package io.coinswap.market;
 
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
+import io.coinswap.client.EventEmitter;
 import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapClient;
@@ -39,6 +40,8 @@ public class TradeClient extends Thread {
     private Map<Integer, Order> orders;
     private Queue<Order> cancelRequests;
 
+    private EventEmitter emitter;
+
     public TradeClient(List<Currency> currencies) {
         checkNotNull(currencies);
         this.currencies = new HashMap<String, Currency>();
@@ -50,6 +53,8 @@ public class TradeClient extends Thread {
         requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
         cancelRequests = new ConcurrentLinkedQueue<>();
+
+        emitter = new EventEmitter();
     }
 
     @Override
@@ -246,6 +251,8 @@ public class TradeClient extends Thread {
             orders.remove(lastOrder);
         }
 
+        emitter.emit("fill", orderIds);
+
         Currency[] swapCurrencies = new Currency[]{
             currencies.get(swap.trade.coins[0].toLowerCase()),
             currencies.get(swap.trade.coins[1].toLowerCase())
@@ -267,6 +274,10 @@ public class TradeClient extends Thread {
         Map res = connection.request(req);
         Map ticker = (Map) res.get("data");
         return Ticker.fromJson(ticker);
+    }
+
+    public void on(String event, EventEmitter.Callback cb) {
+        emitter.on(event, cb);
     }
 
     public Map<String, Currency> getCurrencies() {

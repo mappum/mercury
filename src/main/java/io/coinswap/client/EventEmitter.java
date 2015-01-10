@@ -1,11 +1,14 @@
 package io.coinswap.client;
 
 import com.sun.javafx.scene.control.skin.VirtualFlow;
+import netscape.javascript.JSObject;
+import org.bitcoinj.utils.Threading;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public class EventEmitter {
     protected Map<String, List<Callback>> listeners;
@@ -25,11 +28,27 @@ public class EventEmitter {
         List<Callback> l = listeners.get(event);
         if(l == null) return;
 
-        for(Callback cb : l)
-            cb.f(arg);
+        for(Callback cb : l) {
+            cb.executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    cb.f(arg);
+                }
+            });
+        }
     }
 
-    public interface Callback {
-        void f(Object a);
+    public static abstract class Callback {
+        private Executor executor;
+
+        public Callback() {
+            this.executor = Threading.SAME_THREAD;
+        }
+
+        public Callback(Executor executor) {
+            this.executor = executor;
+        }
+
+        public abstract void f(Object a);
     }
 }

@@ -7,12 +7,9 @@ import io.coinswap.market.TradeClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import netscape.javascript.JSObject;
 import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Threading;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class TradeController {
     private TradeClient client;
@@ -52,7 +49,7 @@ public class TradeController {
             @Override
             public void run() {
                 // TODO: send some response data
-                callJSFunction(cb, new Object[]{ null });
+                controller.callFunction(cb, new Object[]{null});
             }
         }, controller.e);
     }
@@ -68,7 +65,7 @@ public class TradeController {
             values[0] = controller.eval("new Error('"+e.getMessage()+"')");
         }
 
-        callJSFunction(cb, values);
+        controller.callFunction(cb, values);
     }
 
     public JSObject orders() {
@@ -89,19 +86,21 @@ public class TradeController {
         client.cancel(id);
     }
 
+    public void on(String event, JSObject listener) {
+        client.on(event, new EventEmitter.Callback(controller.e) {
+            @Override
+            public void f(Object a) {
+                // TODO: convert arguments for JS
+                controller.callFunction(listener, new Object[]{a});
+            }
+        });
+    }
+
     private JSObject toJSObject(Map<String, Object> obj) {
         JSObject output = controller.eval("new Object()");
         for(String key : obj.keySet()) {
             output.setMember(key, obj.get(key));
         }
         return output;
-    }
-
-    private void callJSFunction(JSObject function, Object[] args) {
-        // hack to be able to call function:
-        // create a wrapper object, set the function as a property, then use wrapper.call
-        JSObject wrapper = controller.eval("new Object()");
-        wrapper.setMember("f", function);
-        wrapper.call("f", args);
     }
 }

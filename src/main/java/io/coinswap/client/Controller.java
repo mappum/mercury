@@ -39,4 +39,12 @@ public class Controller {
     }
 
     public JSObject getContext() { return context; }
+
+    public void callFunction(JSObject function, Object[] args) {
+        // hack to be able to call function:
+        // create a wrapper object, set the function as a property, then use wrapper.call
+        JSObject wrapper = eval("new Object()");
+        wrapper.setMember("f", function);
+        wrapper.call("f", args);
+    }
 }
