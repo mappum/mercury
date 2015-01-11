@@ -10,6 +10,7 @@ import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -62,11 +63,11 @@ public abstract class AtomicSwapController {
 
                 List<ECKey> keys = new ArrayList<ECKey>(3);
                 for(String s : keyStrings)
-                    keys.add(ECKey.fromPublicOnly(Base58.decode(checkNotNull(s))));
+                    keys.add(ECKey.fromPublicOnly(Base64.getDecoder().decode(checkNotNull(s))));
                 swap.setKeys(fromAlice, keys);
 
                 if (!fromAlice) {
-                    byte[] xHash = Base58.decode((String) checkNotNull(data.get("x")));
+                    byte[] xHash = Base64.getDecoder().decode((String) checkNotNull(data.get("x")));
                     swap.setXHash(xHash);
                 }
 
@@ -74,15 +75,15 @@ public abstract class AtomicSwapController {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_BAILIN_HASHES);
                 checkState(swap.getBailinHash(fromAlice) == null);
 
-                byte[] hashBytes = Base58.decode((String) checkNotNull(data.get("hash")));
+                byte[] hashBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("hash")));
                 Sha256Hash hash = new Sha256Hash(hashBytes);
                 swap.setBailinHash(fromAlice, hash);
 
             } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_SIGNATURES);
 
-                byte[] payoutSigBytes = Base58.decode((String) checkNotNull(data.get("payout"))),
-                        refundSigBytes = Base58.decode((String) checkNotNull(data.get("refund")));
+                byte[] payoutSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("payout"))),
+                        refundSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("refund")));
                 ECKey.ECDSASignature payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
                         refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes);
 

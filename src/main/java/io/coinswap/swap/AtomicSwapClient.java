@@ -12,6 +12,7 @@ import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -73,14 +74,14 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         swap.setKeys(alice, myKeys);
         List<String> keyStrings = new ArrayList<String>(3);
         for(ECKey key : myKeys)
-            keyStrings.add(Base58.encode(key.getPubKey()));
+            keyStrings.add(Base64.getEncoder().encodeToString(key.getPubKey()));
         message.put("keys", keyStrings);
 
         if (!alice) {
             ECKey xKey = currencies[b].getWallet().wallet().freshReceiveKey();
             myKeys.add(xKey);
             swap.setXKey(xKey);
-            message.put("x", Base58.encode(swap.getXHash()));
+            message.put("x", Base64.getEncoder().encodeToString(swap.getXHash()));
         }
 
         connection.write(message);
@@ -121,7 +122,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
             swap.setBailinTx(alice, tx);
 
-            message.put("hash", Base58.encode(tx.getHash().getBytes()));
+            message.put("hash", Base64.getEncoder().encodeToString(tx.getHash().getBytes()));
             connection.write(message);
         } catch(InsufficientMoneyException ex) {
             log.error(ex.getMessage());
@@ -142,8 +143,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         JSONObject message = new JSONObject();
         message.put("channel", swap.getChannelId(alice));
         message.put("method", AtomicSwapMethod.EXCHANGE_SIGNATURES);
-        message.put("payout", Base58.encode(sigPayout.encodeToDER()));
-        message.put("refund", Base58.encode(sigRefund.encodeToDER()));
+        message.put("payout", Base64.getEncoder().encodeToString(sigPayout.encodeToDER()));
+        message.put("refund", Base64.getEncoder().encodeToString(sigRefund.encodeToDER()));
         connection.write(message);
     }
 
@@ -364,7 +365,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             // TODO: figure out when it is safe to give the courtesy refund signature.
             // It is unsafe e.g. if we are Alice and both parties have broadcasted bailins. Bob would then be able to
             // take both his refund and his payout.
-            //message.put("refundSig", Base58.encode(getCourtesyRefundSignature().encodeToDER()));
+            //message.put("refundSig", Base64.getEncoder().encodeToString(getCourtesyRefundSignature().encodeToDER()));
         }
 
         connection.write(message);
