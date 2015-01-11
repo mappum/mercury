@@ -25,8 +25,6 @@ public abstract class AtomicSwapController {
     protected Currency[] currencies;
     protected boolean switched;
 
-    private static final int REFUND_PERIOD = 4;
-
     private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
 
     protected final ReentrantLock lock = Threading.lock(AtomicSwapController.class.getName());
@@ -96,7 +94,7 @@ public abstract class AtomicSwapController {
                 log.info("Verified payout signature");
                 swap.setPayoutSig(fromAlice, payoutSig);
 
-                Transaction refundTx = createRefund(!fromAlice);
+                Transaction refundTx = createRefund(!fromAlice, true);
                 Sha256Hash refundSigHash = refundTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
                 checkState(swap.getKeys(fromAlice).get(0).verify(refundSigHash, refundSig));
                 log.info("Verified refund signature");
@@ -122,7 +120,7 @@ public abstract class AtomicSwapController {
         return tx;
     }
 
-    protected Transaction createRefund(boolean alice) {
+    protected Transaction createRefund(boolean alice, boolean timelocked) {
         int i = alice ^ switched ? 0 : 1;
 
         Transaction tx = new Transaction(currencies[i].getParams());
@@ -133,8 +131,11 @@ public abstract class AtomicSwapController {
         Coin fee = currencies[i].getParams().getMinFee();
         tx.addOutput(swap.trade.quantities[i].subtract(fee), p2sh);
 
-        int period = REFUND_PERIOD * (alice ? 1 : 2) * 60 * 60;
-        tx.setLockTime(swap.getTime() + period);
+        if(timelocked) {
+            // TODO: use CHECKLOCKTIMEVERIFY in bailin instead of refund TX timelock (when available)
+            tx.setLockTime(swap.getLocktime(alice));
+            tx.getInput(0).setSequenceNumber(0);
+        }
 
         return tx;
     }

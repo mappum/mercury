@@ -4,6 +4,7 @@ import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import org.bitcoinj.wallet.KeyChainGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * Contains the settings and state for one currency. Includes an AltcoinJ wallet,
@@ -50,7 +52,7 @@ public class Currency {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().setMaxConnections(5);
+                peerGroup().setMaxConnections(8);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
                 setup = true;
                 setupFuture.set(null);

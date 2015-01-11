@@ -1,9 +1,5 @@
 package io.coinswap.swap;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import io.coinswap.client.Currency;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.TransactionSignature;
@@ -18,6 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -30,15 +28,17 @@ import static com.google.common.base.Preconditions.checkState;
 public class AtomicSwapClient extends AtomicSwapController implements Connection.ReceiveListener {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AtomicSwapClient.class);
 
-    private List<ECKey> myKeys;
+    private static int REFUND_BROADCAST_DELAY = 10;
 
     // alice = trader on blockchain that accepts hashlocked transactions
     // bob = other trader, generates x for hashlock
     private final boolean alice;
+    private final int a, b;
+    private List<ECKey> myKeys;
 
     private final Connection connection;
 
-    private final int a, b;
+    ScheduledThreadPoolExecutor refundScheduler;
 
     public AtomicSwapClient(AtomicSwap swap, Connection connection, boolean alice, Currency[] currencies) {
         super(swap, currencies);
@@ -49,6 +49,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         this.alice = alice;
         a = alice ^ switched ? 0 : 1;
         b = a ^ 1;
+
+        refundScheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     public void start() {
@@ -128,7 +130,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void sendSignatures() {
         Transaction payout = createPayout(!alice),
-                    refund = createRefund(!alice);
+                    refund = createRefund(!alice, true);
 
         Script multisigRedeem = getMultisigRedeem();
         ECKey key = swap.getKeys(alice).get(0);
@@ -145,19 +147,21 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         connection.write(message);
     }
 
-    private void sendBailin() {
-        Transaction bailin = swap.getBailinTx(alice);
+    private ECKey.ECDSASignature getCourtesyRefundSignature() {
+        Transaction refund = createRefund(!alice, false);
 
-        JSONObject message = new JSONObject();
-        message.put("channel", swap.getChannelId(alice));
-        message.put("method", AtomicSwapMethod.EXCHANGE_BAILIN);
-        // TODO: serialize bailin
+        Script multisigRedeem = getMultisigRedeem();
+        ECKey key = swap.getKeys(alice).get(0);
+        Sha256Hash sigHash = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
+        return key.sign(sigHash);
     }
 
     private void broadcastBailin() {
-        // TODO: don't broadcast bailin until we've seen other party's valid bailin
+        log.info("Broadcasting bailin");
         Transaction bailin = swap.getBailinTx(alice);
         currencies[a].getWallet().peerGroup().broadcastTransaction(bailin);
+
+        waitForRefundTimelock();
     }
 
     private void broadcastPayout() {
@@ -179,12 +183,10 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         Script hashlockScriptSig;
         if(alice) {
             // now that we've seen X (revealed when Bob spent his payout), we can provide X
-
             Script hashlockScript = getHashlockScript(false);
             Sha256Hash hashlockSighash = payout.hashForSignature(1, hashlockScript, Transaction.SigHash.ALL, false);
             TransactionSignature hashlockSig =
                     new TransactionSignature(myKeys.get(0).sign(hashlockSighash).toCanonicalised(), Transaction.SigHash.ALL, false);
-
             hashlockScriptSig = new ScriptBuilder()
                     .data(hashlockSig.encodeToBitcoin())
                     .data(swap.getX())
@@ -192,12 +194,10 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         } else {
             // sign using 4th key and provide p2sh script, revealing X to alice
-
             Script hashlockRedeem = getHashlockScript(true);
             Sha256Hash hashlockSighash = payout.hashForSignature(1, hashlockRedeem, Transaction.SigHash.ALL, false);
             TransactionSignature hashlockSig =
                     new TransactionSignature(myKeys.get(3).sign(hashlockSighash).toCanonicalised(), Transaction.SigHash.ALL, false);
-
             hashlockScriptSig = new ScriptBuilder()
                     .data(hashlockSig.encodeToBitcoin())
                     .data(swap.getX())
@@ -205,9 +205,15 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         }
         payout.getInput(1).setScriptSig(hashlockScriptSig);
 
+        log.info("Broadcasting payout");
         log.info(payout.toString());
         payout.verify();
         currencies[b].getWallet().peerGroup().broadcastTransaction(payout);
+        // TODO: make sure payout got accepted
+
+        refundScheduler.shutdownNow();
+
+        swap.setStep(AtomicSwap.Step.COMPLETE);
     }
 
     private Script getHashlockScript(boolean alice) {
@@ -244,8 +250,17 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 sendSignatures();
 
             } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
+                swap.setStep(AtomicSwap.Step.WAITING_FOR_BAILIN);
                 if(!alice) {
                     broadcastBailin();
+                }
+
+            } else if (method.equals(AtomicSwapMethod.CANCEL_TRANSACTION)) {
+                // If the other party wants to cancel, we will honor it if we are still in the setup stage,
+                // or we are Alice and we haven't broadcasted our bailin yet.
+                if(swap.getStep().ordinal() <= AtomicSwap.Step.EXCHANGING_SIGNATURES.ordinal()
+                || (alice && swap.getStep() == AtomicSwap.Step.WAITING_FOR_BAILIN)) {
+                    cancel();
                 }
             }
         } catch(Exception ex) {
@@ -271,6 +286,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 w.removeEventListener(this);
                 log.info("Received other party's bailin via coin network: " + tx.toString());
 
+                // TODO: use deeper confirmations for high-value swaps
                 tx.getConfidence().getDepthFuture(currencies[b].getConfirmationDepth()).addListener(
                     new Runnable() {
                         @Override
@@ -288,6 +304,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void onBailin(Transaction tx) {
         if(alice) {
+            swap.setStep(AtomicSwap.Step.WAITING_FOR_PAYOUT);
             log.info("Other party's bailin confirmed. Now broadcasting our bailin.");
             listenForPayout();
             broadcastBailin();
@@ -321,5 +338,73 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         });
         currencies[a].getWallet().peerGroup().addWallet(w);
         // TODO: listen for this script when starting up and we have pending swaps
+    }
+
+    private void cancel() {
+        log.info("Cancelling swap");
+        checkState(swap.getStep().ordinal() < AtomicSwap.Step.COMPLETE.ordinal());
+
+        JSONObject message = new JSONObject();
+        message.put("channel", swap.getChannelId(alice));
+        message.put("method", AtomicSwapMethod.CANCEL_TRANSACTION);
+
+        if(swap.getStep().ordinal() <= AtomicSwap.Step.EXCHANGING_SIGNATURES.ordinal()) {
+            log.info("Still in setup stage, no refund necessary");
+            swap.setStep(AtomicSwap.Step.CANCELED);
+
+        } else {
+            if(alice && swap.getStep() == AtomicSwap.Step.WAITING_FOR_BAILIN) {
+                log.info("We haven't broadcasted our bailin yet, no refund necessary");
+                swap.setStep(AtomicSwap.Step.CANCELED);
+            } else {
+                log.info("Our bailin has been broadcasted, now waiting for refund");
+                swap.setStep(AtomicSwap.Step.WAITING_FOR_REFUND);
+            }
+
+            // TODO: figure out when it is safe to give the courtesy refund signature.
+            // It is unsafe e.g. if we are Alice and both parties have broadcasted bailins. Bob would then be able to
+            // take both his refund and his payout.
+            //message.put("refundSig", Base58.encode(getCourtesyRefundSignature().encodeToDER()));
+        }
+
+        connection.write(message);
+    }
+
+    private void broadcastRefund() {
+        Transaction refund = createRefund(alice, true);
+
+        // TODO: create this signature earlier so we don't have to decrypt keys again
+        Script multisigRedeem = getMultisigRedeem();
+        ECKey key = myKeys.get(0);
+        Sha256Hash multisigSighash = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
+        ECKey.ECDSASignature mySig = key.sign(multisigSighash),
+                otherSig = swap.getRefundSig(!alice);
+
+        List<TransactionSignature> sigs = new ArrayList<TransactionSignature>(2);
+        sigs.add(new TransactionSignature(alice ? mySig : otherSig, Transaction.SigHash.ALL, false));
+        sigs.add(new TransactionSignature(alice ? otherSig : mySig, Transaction.SigHash.ALL, false));
+        Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, multisigRedeem);
+        refund.getInput(0).setScriptSig(multisigScriptSig);
+
+        log.info("Broadcasting refund");
+        log.info(refund.toString());
+        refund.verify();
+        currencies[a].getWallet().peerGroup().broadcastTransaction(refund);
+        // TODO: make sure refund got accepted
+
+        swap.setStep(AtomicSwap.Step.COMPLETE);
+    }
+
+    private void waitForRefundTimelock() {
+        long secondsLeft = swap.getLocktime(alice) - System.currentTimeMillis() / 1000;
+        secondsLeft += REFUND_BROADCAST_DELAY; // wait some extra time to make sure we're over the locktime
+        log.info("Refund TX will unlock in ~" + (secondsLeft / 60) + " minutes");
+
+        refundScheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                broadcastRefund();
+            }
+        }, secondsLeft, TimeUnit.SECONDS);
     }
 }

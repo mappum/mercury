@@ -22,7 +22,9 @@ import static com.google.common.base.Preconditions.checkState;
 public class AtomicSwap {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(AtomicSwap.class);
     protected final ReentrantLock lock = Threading.lock(AtomicSwap.class.getName());
+
     public static final int VERSION = 0;
+    private static final int REFUND_PERIOD = 4 * 60; // in minutes
 
     private List<ECKey>[] keys;
 
@@ -45,10 +47,11 @@ public class AtomicSwap {
         EXCHANGING_BAILIN_HASHES,
         EXCHANGING_SIGNATURES,
         EXCHANGING_BAILINS,
-        BROADCASTING_BAILIN,
-        BROADCASTING_PAYOUT,
-        BROADCASTING_REFUND,
-        COMPLETE
+        WAITING_FOR_BAILIN,
+        WAITING_FOR_PAYOUT, // alice-only
+        COMPLETE,
+        WAITING_FOR_REFUND,
+        CANCELED
     }
     private Step step = Step.STARTING;
 
@@ -61,15 +64,6 @@ public class AtomicSwap {
         bailinTxs = new Transaction[2];
         payoutSigs = new ECKey.ECDSASignature[2];
         refundSigs = new ECKey.ECDSASignature[2];
-    }
-
-    public void cancel() {
-        lock.lock();
-        try {
-            step = Step.BROADCASTING_REFUND;
-        } finally {
-            lock.unlock();
-        }
     }
 
     public Step getStep() {
@@ -269,6 +263,11 @@ public class AtomicSwap {
         } finally {
             lock.unlock();
         }
+    }
+
+    public long getLocktime(boolean alice) {
+        int period = REFUND_PERIOD * (alice ? 1 : 2) * 60;
+        return getTime() + period;
     }
 
     public Map toJson() {
