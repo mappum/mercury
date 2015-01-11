@@ -22,6 +22,7 @@ coinswap.CoinView = Backbone.View.extend({
     this.render();
 
     this.listenTo(this.model, 'change:synced change:connected', this.render);
+    this.listenTo(this.model, 'change:balance change:pending', this.render);
     this.listenTo(this.model, 'sync:progress', this.syncProgress);
   },
 

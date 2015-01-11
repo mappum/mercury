@@ -42,6 +42,10 @@ coinswap.Coin = Backbone.Model.extend({
     this.on('initialized', function() {
       this.updateBalance();
     });
+
+    this.on('changed', function() {
+      this.updateBalance();
+    });
   },
 
   newAddress: function(cb) {

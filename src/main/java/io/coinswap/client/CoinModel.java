@@ -40,7 +40,7 @@ public class CoinModel extends Model {
         addTransactionListener();
 
         object.setMember("controller", this);
-        trigger("initialized", null);
+        trigger("initialized");
     }
 
     public boolean isAddressValid(String address) {
@@ -161,10 +161,13 @@ public class CoinModel extends Model {
 
         @Override
         public void onWalletChanged(Wallet wallet) {
+            trigger("changed");
+
             List<Transaction> txs = wallet.getRecentTransactions(100, true);
             for(Transaction tx : txs) {
                 if(tx.getConfidence().getDepthInBlocks() > 6) break;
                 onTransaction(tx);
+
             }
         }
 
