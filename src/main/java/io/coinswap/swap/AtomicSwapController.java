@@ -111,6 +111,7 @@ public abstract class AtomicSwapController {
         NetworkParameters params = currencies[i].getParams();
 
         Transaction tx = new Transaction(params);
+        tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
         tx.addInput(swap.getBailinHash(!alice), 0, OP_NOP_SCRIPT);
         tx.addInput(swap.getBailinHash(!alice), 1, OP_NOP_SCRIPT);
 
@@ -125,6 +126,7 @@ public abstract class AtomicSwapController {
         int i = alice ^ switched ? 0 : 1;
 
         Transaction tx = new Transaction(currencies[i].getParams());
+        tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
         tx.addInput(swap.getBailinHash(alice), 0, OP_NOP_SCRIPT);
 
         Script redeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(2));

@@ -40,6 +40,7 @@ public class CoinModel extends Model {
         addTransactionListener();
 
         object.setMember("controller", this);
+        trigger("initialized", null);
     }
 
     public boolean isAddressValid(String address) {
@@ -66,6 +67,10 @@ public class CoinModel extends Model {
             ex.printStackTrace();
             throw new RuntimeException();
         }
+    }
+
+    public String balance() {
+        return currency.getWallet().wallet().getBalance().toPlainString();
     }
 
     private void addDownloadListener() {

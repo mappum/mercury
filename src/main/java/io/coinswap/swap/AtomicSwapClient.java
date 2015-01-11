@@ -93,6 +93,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
 
         Transaction tx = new Transaction(currencies[a].getParams());
+        tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_PLEDGE);
 
         // first output is p2sh 2-of-2 multisig, with keys A1 and B1
         // amount is how much we are trading to other party
@@ -304,6 +305,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     }
 
     private void onBailin(Transaction tx) {
+        tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_PLEDGE);
+
         if(alice) {
             swap.setStep(AtomicSwap.Step.WAITING_FOR_PAYOUT);
             log.info("Other party's bailin confirmed. Now broadcasting our bailin.");
@@ -329,6 +332,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             @Override
             public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
                 log.info("Received other party's payout via coin network: " + tx.toString());
+                tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
 
                 Script xScript = tx.getInput(1).getScriptSig();
                 swap.setX(xScript.getChunks().get(1).data);

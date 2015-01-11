@@ -2,13 +2,15 @@
 
 coinswap.Coin = Backbone.Model.extend({
   defaults: {
-    balance: 0,
+    balance: '0',
     connected: false,
     synced: false,
     address: ''
   },
 
   initialize: function() {
+    _.bindAll(this, 'updateBalance');
+
     var transactions = new coinswap.TransactionCollection;
     this.set('transactions', transactions);
 
@@ -33,7 +35,12 @@ coinswap.Coin = Backbone.Model.extend({
     });
 
     this.on('transaction', function(tx) {
+      this.updateBalance();
       transactions.add(tx, { merge: true });
+    });
+
+    this.on('initialized', function() {
+      this.updateBalance();
     });
   },
 
@@ -49,6 +56,11 @@ coinswap.Coin = Backbone.Model.extend({
 
   send: function(address, amount) {
     return this.controller.send(address, amount + '');
+  },
+
+  updateBalance: function() {
+    if(!this.controller) return;
+    this.set('balance', this.controller.balance());
   }
 });
 
