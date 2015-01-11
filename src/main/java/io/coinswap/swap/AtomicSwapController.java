@@ -147,4 +147,8 @@ public abstract class AtomicSwapController {
         multiSigKeys.add(swap.getKeys(false).get(0));
         return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
     }
+
+    public boolean settingUp() {
+        return swap.getStep().ordinal() <= AtomicSwap.Step.EXCHANGING_SIGNATURES.ordinal();
+    }
 }

@@ -87,46 +87,42 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         connection.write(message);
     }
 
-    private void sendBailinHash() {
-        try {
-            JSONObject message = new JSONObject();
-            message.put("channel", swap.getChannelId(alice));
-            message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
+    private void sendBailinHash() throws InsufficientMoneyException {
+        JSONObject message = new JSONObject();
+        message.put("channel", swap.getChannelId(alice));
+        message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
 
-            Transaction tx = new Transaction(currencies[a].getParams());
+        Transaction tx = new Transaction(currencies[a].getParams());
 
-            // first output is p2sh 2-of-2 multisig, with keys A1 and B1
-            // amount is how much we are trading to other party
-            Script p2sh = ScriptBuilder.createP2SHOutputScript(getMultisigRedeem());
-            tx.addOutput(swap.trade.quantities[a], p2sh);
+        // first output is p2sh 2-of-2 multisig, with keys A1 and B1
+        // amount is how much we are trading to other party
+        Script p2sh = ScriptBuilder.createP2SHOutputScript(getMultisigRedeem());
+        tx.addOutput(swap.trade.quantities[a], p2sh);
 
-            // second output for Alice's bailin is p2sh pay-to-pubkey with key B1
-            // for Bob's bailin is hashlocked with x, pay-to-pubkey with key A1
-            // amount is the fee for the payout tx
-            // this output is used to lock the payout tx until x is revealed,
-            //   but isn't required for the refund tx
-            Script xScript;
-            if (alice) {
-                xScript = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
-            } else {
-                xScript = getHashlockScript(false);
-            }
-            Coin fee = currencies[a].getParams().getMinFee();
-            tx.addOutput(fee, xScript);
-
-            Wallet.SendRequest req = Wallet.SendRequest.forTx(tx);
-            req.changeAddress = currencies[a].getWallet().wallet().getChangeAddress();
-            req.shuffleOutputs = false;
-            req.feePerKb = fee;
-            currencies[a].getWallet().wallet().completeTx(req);
-
-            swap.setBailinTx(alice, tx);
-
-            message.put("hash", Base64.getEncoder().encodeToString(tx.getHash().getBytes()));
-            connection.write(message);
-        } catch(InsufficientMoneyException ex) {
-            log.error(ex.getMessage());
+        // second output for Alice's bailin is p2sh pay-to-pubkey with key B1
+        // for Bob's bailin is hashlocked with x, pay-to-pubkey with key A1
+        // amount is the fee for the payout tx
+        // this output is used to lock the payout tx until x is revealed,
+        //   but isn't required for the refund tx
+        Script xScript;
+        if (alice) {
+            xScript = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
+        } else {
+            xScript = getHashlockScript(false);
         }
+        Coin fee = currencies[a].getParams().getMinFee();
+        tx.addOutput(fee, xScript);
+
+        Wallet.SendRequest req = Wallet.SendRequest.forTx(tx);
+        req.changeAddress = currencies[a].getWallet().wallet().getChangeAddress();
+        req.shuffleOutputs = false;
+        req.feePerKb = fee;
+        currencies[a].getWallet().wallet().completeTx(req);
+
+        swap.setBailinTx(alice, tx);
+
+        message.put("hash", Base64.getEncoder().encodeToString(tx.getHash().getBytes()));
+        connection.write(message);
     }
 
     private void sendSignatures() {
@@ -257,16 +253,20 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 }
 
             } else if (method.equals(AtomicSwapMethod.CANCEL_TRANSACTION)) {
-                // If the other party wants to cancel, we will honor it if we are still in the setup stage,
-                // or we are Alice and we haven't broadcasted our bailin yet.
-                if(swap.getStep().ordinal() <= AtomicSwap.Step.EXCHANGING_SIGNATURES.ordinal()
-                || (alice && swap.getStep() == AtomicSwap.Step.WAITING_FOR_BAILIN)) {
+                // If the other party wants to cancel, we will honor it if we aren't yet able to commit
+                if(settingUp()) {
                     cancel();
                 }
             }
         } catch(Exception ex) {
             log.error(ex.getMessage());
             ex.printStackTrace();
+
+            // If an exception happens and we aren't able to commit yet, cancel the swap.
+            // Otherwise, we will just ignore it and keep going.
+            if(settingUp()) {
+                cancel();
+            }
         }
     }
 
@@ -407,5 +407,10 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 broadcastRefund();
             }
         }, secondsLeft, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public boolean settingUp() {
+        return super.settingUp() || (alice && swap.getStep() == AtomicSwap.Step.WAITING_FOR_BAILIN);
     }
 }
