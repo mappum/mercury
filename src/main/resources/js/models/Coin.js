@@ -60,7 +60,10 @@ coinswap.Coin = Backbone.Model.extend({
 
   updateBalance: function() {
     if(!this.controller) return;
-    this.set('balance', this.controller.balance());
+    this.set({
+      balance: this.controller.balance(),
+      pending: this.controller.pendingBalance(),
+    });
   }
 });
 

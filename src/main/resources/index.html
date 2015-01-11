@@ -168,7 +168,7 @@
     <h3><%= name %><span class="alt"> - <%= id %></span></h3>
 
     <% if(synced) { %>
-      <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %></div>
+      <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span></div>
       <hr>
       <div>
         <div class="btn-group">

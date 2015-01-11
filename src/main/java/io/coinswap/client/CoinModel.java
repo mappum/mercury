@@ -70,7 +70,15 @@ public class CoinModel extends Model {
     }
 
     public String balance() {
-        return currency.getWallet().wallet().getBalance().toPlainString();
+        return currency.getWallet().wallet().getBalance()
+                .toPlainString();
+    }
+
+    public String pendingBalance() {
+        Wallet w = currency.getWallet().wallet();
+        return w.getBalance(Wallet.BalanceType.ESTIMATED)
+                .subtract(w.getBalance())
+                .toPlainString();
     }
 
     private void addDownloadListener() {

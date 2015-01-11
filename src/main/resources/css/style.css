@@ -58,7 +58,7 @@ hr {
 }
 
 .symbol {
-  margin-right: 3px;
+  margin-right: 1px;
   font-weight: bold;
 }
 
@@ -80,10 +80,15 @@ hr {
 
 .coin h3 {
   font-weight: bold;
+  font-size: 26px;
 }
 
 .coin .balance {
-  font-size: 20px;
+  font-size: 22px;
+}
+
+.coin .balance .pending .symbol {
+  color: #76828e;
 }
 
 .coin .pairs {
@@ -100,7 +105,7 @@ hr {
 body {
   height: 100%;
   overflow: hidden;
-  color: #76828e;
+  color: #16384e;
   font-size: 19px;
   padding: 0;
 }
