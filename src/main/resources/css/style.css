@@ -57,6 +57,10 @@ hr {
   color: #76828e;
 }
 
+.tiny {
+  font-size: 13px;
+}
+
 .symbol {
   margin-right: 1px;
   font-weight: bold;

@@ -48,6 +48,14 @@ coinswap.Coin = Backbone.Model.extend({
     });
   },
 
+  updateBalance: function() {
+    if(!this.controller) return;
+    this.set({
+      balance: this.controller.balance(),
+      pending: this.controller.pendingBalance(),
+    });
+  },
+
   newAddress: function(cb) {
     var address = this.controller.newAddress();
     this.set('address', address);
@@ -60,14 +68,6 @@ coinswap.Coin = Backbone.Model.extend({
 
   send: function(address, amount) {
     return this.controller.send(address, amount + '');
-  },
-
-  updateBalance: function() {
-    if(!this.controller) return;
-    this.set({
-      balance: this.controller.balance(),
-      pending: this.controller.pendingBalance(),
-    });
   }
 });
 

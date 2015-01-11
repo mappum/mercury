@@ -4,6 +4,8 @@ coinswap.Trade = Backbone.Model.extend({
   defaults: {
     buy: true,
     pair: ['LTC', 'BTC'],
+    symbols: ['', ''],
+    balances: [0, 0],
     price: 0,
     quantity: 0,
     total: 0
@@ -30,6 +32,11 @@ coinswap.Trade = Backbone.Model.extend({
     var pairs = pair[0].get('pairs');
     if(pairs.indexOf(pair[1].id) === -1)
       this.get('pair')[1] = pairs[0];
+
+    this.set({
+      symbols: [ pair[0].get('symbol'), pair[1].get('symbol') ],
+      balances: [ pair[0].get('balance'), pair[1].get('balance') ]
+    });
 
     coinswap.trade.ticker(pair[0].id, pair[1].id, function(err, res) {
       if(err) return;
