@@ -109,8 +109,6 @@ coinswap.TradeView = Backbone.View.extend({
   },
 
   updateInputs: function(e) {
-    // TODO: error if value is NaN
-
     var keys = ['price', 'quantity', 'total'];
     var container = $(e.target).parent().parent();
     for(var i = 0; i < keys.length; i++) {
@@ -119,7 +117,7 @@ coinswap.TradeView = Backbone.View.extend({
         if(!val || !+val) return;
 
         try {
-          var val = parseFloat(val);
+          var val = coinmath.truncate(val);
           return this.model.set(keys[i], val);
         } catch(err) {}
       }
@@ -137,8 +135,8 @@ coinswap.TradeView = Backbone.View.extend({
 
   updateBest: function() {
     var m = this.model;
-    var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk') || 0;
-    m.set('price', bestPrice);
+    var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk');
+    if(bestPrice) m.set('price', bestPrice);
   },
 
   updateOrders: function() {

@@ -22,6 +22,7 @@ public class Controller {
         window.setMember("console", new ConsoleController());
         window.setMember("clipboard", new ClipboardController());
         window.setMember("desktop", new DesktopController());
+        window.setMember("coinmath", new CoinMathController());
 
         context = (JSObject) window.getMember("coinswap");
         app = new Model((JSObject) context.getMember("app"));
