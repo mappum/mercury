@@ -182,13 +182,8 @@ public class TradeClient extends Thread {
                    currencies.get(trade.coins[1].toLowerCase())
                 };
 
-                // we are alice if we are selling and the second currency supports hashlock TXs,
-                // or if we are buying and the second currency doesn't support them.
-                // otherwise, we are bob
-                boolean alice = trade.buy ^ !swapCurrencies[1].supportsHashlock();
-
                 AtomicSwapClient client =
-                        new AtomicSwapClient(swap, connection, alice, swapCurrencies);
+                        new AtomicSwapClient(swap, connection, swapCurrencies);
                 client.start();
             }
         }
@@ -258,10 +253,8 @@ public class TradeClient extends Thread {
             currencies.get(swap.trade.coins[1].toLowerCase())
         };
 
-        boolean alice = swap.trade.buy ^ !swapCurrencies[1].supportsHashlock();
-
         AtomicSwapClient client =
-                new AtomicSwapClient(swap, connection, alice, swapCurrencies);
+                new AtomicSwapClient(swap, connection, swapCurrencies);
         client.start();
     }
 

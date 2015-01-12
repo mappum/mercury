@@ -41,15 +41,18 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     ScheduledThreadPoolExecutor refundScheduler;
 
-    public AtomicSwapClient(AtomicSwap swap, Connection connection, boolean alice, Currency[] currencies) {
+    public AtomicSwapClient(AtomicSwap swap, Connection connection, Currency[] currencies) {
         super(swap, currencies);
+
+        // we are alice if we are selling and the second currency supports hashlock TXs,
+        // or if we are buying and the second currency doesn't support them.
+        // otherwise, we are bob
+        alice = swap.trade.buy ^ switched;
+        a = swap.trade.buy ? 1 : 0;
+        b = a ^ 1;
 
         this.connection = checkNotNull(connection);
         connection.onMessage(swap.getChannelId(alice), this);
-
-        this.alice = alice;
-        a = alice ^ switched ? 0 : 1;
-        b = a ^ 1;
 
         refundScheduler = new ScheduledThreadPoolExecutor(1);
     }
