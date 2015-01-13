@@ -8,7 +8,7 @@ coinswap.NavbarView = Backbone.View.extend({
   initialize: function() {
     this.render();
 
-    this.listenTo(this.model, 'change:balance change:pending', this.render);
+    this.listenTo(this.model, 'change:balance change:pending change:page', this.render);
   },
 
   render: function() {

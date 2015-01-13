@@ -30,9 +30,9 @@
     </div>
     <div class="lower">
       <div class="btn-group" data-toggle="buttons-radio">
-        <a href="#" class="home btn btn-primary active"><i class="fa fa-home"></i> Home</a>
-        <a href="#transactions" class="transactions btn btn-primary"><i class="fa fa-list"></i> Transactions</a>
-        <a href="#data" class="data btn btn-primary"><i class="fa fa-bar-chart-o"></i> Data</a>
+        <a href="#" class="home btn btn-primary <%= page.id === 'home' ? 'active' : '' %>"><i class="fa fa-home"></i> Home</a>
+        <a href="#transactions" class="transactions btn btn-primary <%= page.id === 'transactions' ? 'active' : '' %>"><i class="fa fa-list"></i> Transactions</a>
+        <a href="#data" class="data btn btn-primary <%= page.id === 'data' ? 'active' : '' %>"><i class="fa fa-bar-chart-o"></i> Data</a>
       </div>
     </div>
   </script>
