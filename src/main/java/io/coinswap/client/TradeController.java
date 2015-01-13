@@ -54,18 +54,11 @@ public class TradeController {
         }, controller.e);
     }
 
-    public void ticker(String currency1, String currency2, JSObject cb) {
+    public JSObject ticker(String currency1, String currency2) {
         String[] pair = getPair(currency1, currency2);
-        Object[] values = new Object[2];
-        try {
-            Ticker ticker = client.getTicker(pair[0] + "/" + pair[1]);
-            values[1] = toJSObject((Map<String, Object>) ticker.toJson());
-        } catch(Exception e) {
-            e.printStackTrace();
-            values[0] = controller.eval("new Error('"+e.getMessage()+"')");
-        }
-
-        controller.callFunction(cb, values);
+        Ticker ticker = client.getTicker(pair[0] + "/" + pair[1]);
+        if(ticker == null) return null;
+        return toJSObject((Map<String, Object>) ticker.toJson());
     }
 
     public JSObject orders() {

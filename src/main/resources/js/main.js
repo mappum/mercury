@@ -1,8 +1,13 @@
 var coinswap = window.coinswap = {};
 
 coinswap.App = Backbone.Model.extend({
+  defaults: {
+    balance: 0
+  },
+
   initialize: function(options) {
     var t = this;
+    _.bindAll(t, 'onAddCoin', 'updateBalance');
 
     var router = new coinswap.Router;
     this.set('router', router);
@@ -12,6 +17,46 @@ coinswap.App = Backbone.Model.extend({
 
     var coins = new coinswap.CoinCollection;
     this.set('coins', coins);
+
+    this.listenTo(coins, 'add', this.onAddCoin);
+
+    this.on('initialized', function() {
+      coinswap.trade.on('ticker', t.updateBalance);
+    });
+  },
+
+  onAddCoin: function(coin) {
+    var t = this;
+    coin.on('change:balance change:pending', function() {
+      t.updateBalance();
+    });
+    t.updateBalance();
+  },
+
+  updateBalance: function() {
+    var totalBalance = '0',
+        totalPending = '0';
+
+    this.get('coins').each(function(coin) {
+      var balance = coin.get('balance'),
+          pending = coin.get('pending');
+
+      if(coin.id !== 'BTC') {
+        var ticker = coinswap.trade.ticker(coin.id, 'BTC');
+        var bestBid = ticker ? ticker.bestBid : '0';
+        balance = coinmath.multiply(balance, bestBid);
+        pending = coinmath.multiply(pending, bestBid);
+      }
+
+      totalBalance = coinmath.add(totalBalance, balance);
+      totalPending = coinmath.add(totalPending, pending);
+    });
+
+    // TODO: add a field for balance converted to chosen fiat
+    this.set({
+      balance: totalBalance,
+      pending: totalPending
+    });
   }
 });
 
@@ -93,6 +138,11 @@ $(function() {
 
   var mainView = new coinswap.MainView({
     el: $('#main'),
+    model: coinswap.app
+  });
+
+  var navbarView = new coinswap.NavbarView({
+    el: $('#header'),
     model: coinswap.app
   });
 });

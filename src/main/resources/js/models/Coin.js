@@ -3,6 +3,7 @@
 coinswap.Coin = Backbone.Model.extend({
   defaults: {
     balance: '0',
+    pending: '0',
     connected: false,
     synced: false,
     address: ''

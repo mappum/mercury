@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class EventEmitter {
     protected Map<String, List<Callback>> listeners;
@@ -18,7 +20,7 @@ public class EventEmitter {
     }
 
     public void on(String event, Callback cb) {
-        if(!listeners.containsKey(event))
+        if (!listeners.containsKey(event))
             listeners.put(event, new LinkedList<Callback>());
         List<Callback> l = listeners.get(event);
         l.add(cb);
@@ -26,9 +28,9 @@ public class EventEmitter {
 
     public void emit(String event, Object arg) {
         List<Callback> l = listeners.get(event);
-        if(l == null) return;
+        if (l == null) return;
 
-        for(Callback cb : l) {
+        for (Callback cb : l) {
             cb.executor.execute(new Runnable() {
                 @Override
                 public void run() {
@@ -52,3 +54,4 @@ public class EventEmitter {
         public abstract void f(Object a);
     }
 }
+

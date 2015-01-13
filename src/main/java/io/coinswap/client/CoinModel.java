@@ -36,10 +36,11 @@ public class CoinModel extends Model {
         this.controller = controller;
         this.currency = currency;
 
+        object.setMember("controller", this);
+
         addDownloadListener();
         addTransactionListener();
 
-        object.setMember("controller", this);
         trigger("initialized");
     }
 
@@ -167,7 +168,6 @@ public class CoinModel extends Model {
             for(Transaction tx : txs) {
                 if(tx.getConfidence().getDepthInBlocks() > 6) break;
                 onTransaction(tx);
-
             }
         }
 
@@ -209,7 +209,6 @@ public class CoinModel extends Model {
             }
 
             obj.put("address", address);
-
 
             trigger("transaction", obj.toJSONString(JSONStyle.LT_COMPRESS));
         }

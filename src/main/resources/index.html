@@ -8,24 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header class="navbar navbar-default">
-    <div class="upper">
-      <div class="right pull-right">
-        <ul>
-          <li class="btn btn-primary"><i class="fa fa-envelope fa-lg"></i><span class="label label-danger super">4</span></li>
-          <li class="btn btn-primary"><i class="fa fa-cog fa-lg"></i></li>
-        </ul>
-      </div>
-      <span class="balance"><i class="fa fa-bitcoin symbol"></i>0.0 <span class="alt">($0.00)</span></span>
-    </div>
-    <div class="lower">
-      <div class="btn-group" data-toggle="buttons-radio">
-        <a href="#" class="home btn btn-primary active"><i class="fa fa-home"></i> Home</a>
-        <a href="#transactions" class="transactions btn btn-primary"><i class="fa fa-list"></i> Transactions</a>
-        <a href="#data" class="data btn btn-primary"><i class="fa fa-bar-chart-o"></i> Data</a>
-      </div>
-    </div>
-  </header>
+  <header id="header" class="navbar navbar-default"></header>
 
   <section class="body">
     <div class="content container" id="main"></div>
@@ -35,6 +18,24 @@
     <span><i class="fa fa-signal text-success"></i>&nbsp;&nbsp;Connected</span>
   </footer>
 
+  <script type="text/template" id="template-navbar">
+    <div class="upper">
+      <div class="right pull-right">
+        <ul>
+          <li class="btn btn-primary"><i class="fa fa-envelope fa-lg"></i><span class="label label-danger super">4</span></li>
+          <li class="btn btn-primary"><i class="fa fa-cog fa-lg"></i></li>
+        </ul>
+      </div>
+      <span class="balance"><i class="fa fa-bitcoin symbol"></i><%= balance %></span>
+    </div>
+    <div class="lower">
+      <div class="btn-group" data-toggle="buttons-radio">
+        <a href="#" class="home btn btn-primary active"><i class="fa fa-home"></i> Home</a>
+        <a href="#transactions" class="transactions btn btn-primary"><i class="fa fa-list"></i> Transactions</a>
+        <a href="#data" class="data btn btn-primary"><i class="fa fa-bar-chart-o"></i> Data</a>
+      </div>
+    </div>
+  </script>
   <script type="text/template" id="template-transactions">
     <br>
     <div class="row">
@@ -251,5 +252,6 @@
   <script src="js/views/ReceiveView.js"></script>
   <script src="js/views/TransactionsView.js"></script>
   <script src="js/views/SendView.js"></script>
+  <script src="js/views/NavbarView.js"></script>
 </body>
 </html>

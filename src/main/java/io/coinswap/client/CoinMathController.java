@@ -8,7 +8,19 @@ public class CoinMathController {
     private static final BigInteger COIN = BigInteger.valueOf(Coin.COIN.value);
 
     private BigInteger parse(String value) {
-        return BigInteger.valueOf(Coin.parseCoin(value).value);
+        try {
+            return BigInteger.valueOf(Coin.parseCoin(value).value);
+        } catch (Exception e) {
+            return BigInteger.ZERO;
+        }
+    }
+
+    public String add(String aString, String bString) {
+        return Coin.parseCoin(aString).add(Coin.parseCoin(bString)).toPlainString();
+    }
+
+    public String subtract(String aString, String bString) {
+        return Coin.parseCoin(aString).subtract(Coin.parseCoin(bString)).toPlainString();
     }
 
     public String multiply(String aString, String bString) {
@@ -27,5 +39,9 @@ public class CoinMathController {
 
     public String truncate(String value) {
         return Coin.valueOf(parse(value).longValue()).toPlainString();
+    }
+
+    public String format(String value) {
+        return Coin.parseCoin(value).toFriendlyString();
     }
 }

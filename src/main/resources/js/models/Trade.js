@@ -33,18 +33,14 @@ coinswap.Trade = Backbone.Model.extend({
     if(pairs.indexOf(pair[1].id) === -1)
       this.get('pair')[1] = pairs[0];
 
+    var ticker = coinswap.trade.ticker(pair[0].id, pair[1].id);
+
     this.set({
       symbols: [ pair[0].get('symbol'), pair[1].get('symbol') ],
-      balances: [ pair[0].get('balance'), pair[1].get('balance') ]
+      balances: [ pair[0].get('balance'), pair[1].get('balance') ],
+      bestBid: ticker.bestBid,
+      bestAsk: ticker.bestAsk
     });
-
-    coinswap.trade.ticker(pair[0].id, pair[1].id, function(err, res) {
-      if(err) return;
-      this.set({
-        bestBid: res.bestBid,
-        bestAsk: res.bestAsk
-      });
-    }.bind(this));
   },
 
   getPair: function() {

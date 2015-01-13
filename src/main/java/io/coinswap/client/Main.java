@@ -43,8 +43,8 @@ public class Main extends Application {
 
     private static final int MIN_WIDTH = 740;
     private static final int MIN_HEIGHT = 400;
-    private static final int DEFAULT_WIDTH = 800;
-    private static final int DEFAULT_HEIGHT = 720;
+    private static final int DEFAULT_WIDTH = 1024;
+    private static final int DEFAULT_HEIGHT = 768;
 
     private ClientUI ui;
     private Controller controller;
@@ -80,6 +80,7 @@ public class Main extends Application {
                 TradeClient tradeClient = new TradeClient(currencies);
                 tradeClient.start();
                 controller.context.setMember("trade", new TradeController(controller, tradeClient));
+                controller.app.trigger("initialized");
             }
         });
 

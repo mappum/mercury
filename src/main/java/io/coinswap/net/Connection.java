@@ -35,6 +35,8 @@ public class Connection extends Thread {
 
     private final ReentrantLock lock = Threading.lock("io.coinswap.net.Connection");
 
+    // TODO: add asynchronous writing (push messages into a queue)
+
     public Connection(SSLSocket socket) {
         this.socket = socket;
         this.listeners = new HashMap<String, List<ReceiveListener>>();

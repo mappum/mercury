@@ -18,6 +18,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -33,6 +34,7 @@ public class TradeClient extends Thread {
     public static final long TIME_EPSILON = 60;
 
     private Map<String, Currency> currencies;
+    private Map<String, Ticker> tickers;
     private Connection connection;
 
     private Queue<AtomicSwapTrade> tradeRequests;
@@ -49,6 +51,8 @@ public class TradeClient extends Thread {
             this.currencies.put(c.getId().toLowerCase(), c);
         }
 
+        tickers = new ConcurrentHashMap<String, Ticker>();
+
         tradeRequests = new ConcurrentLinkedQueue<>();
         requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
@@ -60,18 +64,6 @@ public class TradeClient extends Thread {
     @Override
     public void run() {
         connect();
-
-        final TradeClient parent = this;
-        connection.onMessage("trade", new Connection.ReceiveListener() {
-            @Override
-            public void onReceive(Map res) {
-                String method = (String) checkNotNull(res.get("method"));
-
-                if(method.equals("fill")) {
-                    parent.onFill(res);
-                }
-            }
-        });
 
         while(true) {
             // TODO: should we change to submit trade requests without waiting for responses?
@@ -106,11 +98,32 @@ public class TradeClient extends Thread {
             SSLSocket socket = (SSLSocket) factory.createSocket(HOST, PORT);
 
             connection = new Connection(socket);
+            initListeners();
             connection.start();
 
         } catch(Exception e) {
             log.error(e.getMessage());
         }
+    }
+
+    private void initListeners() {
+        final TradeClient parent = this;
+        connection.onMessage("trade", new Connection.ReceiveListener() {
+            @Override
+            public void onReceive(Map message) {
+                String method = (String) checkNotNull(message.get("method"));
+
+                if(method.equals("fill")) {
+                    parent.onFill(message);
+                }
+            }
+        });
+        connection.onMessage("ticker", new Connection.ReceiveListener() {
+            @Override
+            public void onReceive(Map message) {
+                parent.onTicker(message);
+            }
+        });
     }
 
     public SettableFuture trade(AtomicSwapTrade trade) {
@@ -258,15 +271,16 @@ public class TradeClient extends Thread {
         client.start();
     }
 
-    public Ticker getTicker(String pairId) {
-        Map req = new JSONObject();
-        req.put("channel", "trade");
-        req.put("method", "ticker");
-        req.put("pair", pairId);
+    private void onTicker(Map message) {
+        String pair = (String) checkNotNull(message.get("pair"));
+        Ticker ticker = Ticker.fromJson((Map) checkNotNull(message.get("data")));
+        tickers.put(pair, ticker);
+        emitter.emit("ticker", ticker);
+        emitter.emit("ticker:"+pair, ticker);
+    }
 
-        Map res = connection.request(req);
-        Map ticker = (Map) res.get("data");
-        return Ticker.fromJson(ticker);
+    public Ticker getTicker(String pair) {
+        return tickers.get(pair);
     }
 
     public void on(String event, EventEmitter.Callback cb) {
