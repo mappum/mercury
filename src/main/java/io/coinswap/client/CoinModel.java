@@ -107,7 +107,7 @@ public class CoinModel extends Model {
         @Override
         public void onPeerConnected(Peer peer, int peerCount) {
             trigger("peers:connected", "{ \"peers\": " + peerCount +
-                    ", \"maxPeers\": " + currency.wallet.peerGroup().getMaxConnections() + " }");
+                    ", \"maxPeers\": " + 2 + " }");
 
             // if we are now connected to the network and already synced, tell the JS model we are done downloading
             if(!connected && peerCount == 2) {
@@ -125,6 +125,7 @@ public class CoinModel extends Model {
         @Override
         protected void progress(double pct, int blocks, Date date) {
             trigger("sync:progress", "{ \"blocks\": " + blocks +
+                    ", \"percent\": " + pct +
                     ", \"date\": " + date.getTime() + " }");
         }
 

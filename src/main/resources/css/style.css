@@ -9,26 +9,44 @@
 position: relative;
 }
 
-.progress {
-  background: white;
-  height: 16px;
-  margin-bottom: 5px;
+.well {
+  background: #222;
+  border-radius: 0;
 }
 
 hr {
-  border-color: #D9DDDE;
+  border-color: #444;
 }
 
-.btn-group .btn {
-  border-right: 1px solid rgba(0, 0, 0, 0.04);
-  margin-right: 1px;
+#left .btn-group-vertical {
+  width: 100%;
 }
-.btn-group .btn-primary {
-  border-right-color: rgba(0, 0, 0, 0.16);
+.btn-group-vertical > .btn {
+  text-align: left;
+  border-radius: 0 !important;
 }
-.btn-group .btn:nth-child(last-child) {
-  border-right: none;
-  margin-right: 0;
+
+.btn-primary {
+  background-color: #3e3e3e;
+  border: none;
+}
+.btn-primary.active, .btn-primary:hover {
+  background-color: #252525;
+  border-color: #222;
+}
+
+#left .btn-primary {
+  background-color: transparent;
+  color: #bbb;
+}
+#left .btn-primary:hover {
+  background-color: #292929;
+}
+#left .btn-primary.active {
+  background-color: #333;
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  color: #fff;
 }
 
 .btn .fa {
@@ -40,7 +58,24 @@ hr {
   color: #fff;
 }
 
+::-webkit-scrollbar {
+  width: 8px;  /* for vertical scrollbars */
+  height: 8px; /* for horizontal scrollbars */;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+}
+
 /* classes */
+
+.no-margin {
+  margin: 0;
+}
 
 .pull-bottom-right {
   position: absolute;
@@ -75,20 +110,23 @@ hr {
   text-align: center;
 }
 
-.syncing {
-  background: #fafafa;
-}
-.syncing h3 {
-  color: #999;
+.coin {
+  width: 100%;
+  height: 100px;
+  margin: 0;
+  border-bottom: 1px solid #262626;
+  padding: 14px 20px;
+  position: relative;
 }
 
 .coin h3 {
   font-weight: bold;
-  font-size: 26px;
+  font-size: 22px;
+  display: inline-block;
 }
 
 .coin .balance {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .coin .balance .pending .symbol {
@@ -100,8 +138,46 @@ hr {
 }
 
 .coin .logo {
-  width: 64px;
-  margin-right: 16px;
+  width: 30px;
+  margin-right: 6px;
+  position: relative;
+  top: -2px;
+}
+
+@-webkit-keyframes progress-bar-stripes{
+  from {
+    background-position:80px 0
+  } to {
+    background-position:0 0
+  }
+}
+@keyframes progress-bar-stripes{
+  from {
+    background-position:80px 0
+  } to {
+    background-position:0 0
+  }
+}
+
+.coin .progress {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  z-index: -10;
+  border-radius: 0;
+  background: transparent;
+}
+.coin .progress > .progress-bar {
+  background-size: 80px 80px;
+}
+
+.chart .line {
+  stroke: #5ce;
+  stroke-width: 2;
+  fill: none;
 }
 
 /* layout */
@@ -109,30 +185,37 @@ hr {
 body {
   height: 100%;
   overflow: hidden;
-  color: #16384e;
+  color: #eee;
   font-size: 19px;
   padding: 0;
+  background: #111;
 }
 
 h1, h2, h3, h4, strong {
-  color: rgb(44, 62, 80);
+  color: #f9f9f9;
   margin-top: 0;
 }
 
-header, footer, .navbar {
-  width: 100%;
-  position: fixed;
-  left: 0;
-  background: #243242;
-  color: #eee;
+header, footer, #left, #right {
+  background: #222;
   border-radius: 0;
+  margin: 0;
+}
+
+header, footer {
+  width: 100%;
+  color: #eee;
+  left: 0;
+  border: 1px solid #333;
+  border-left: none;
+  border-right: none;
 }
 
 header {
   padding: 16px;
   padding-top: 12px;
   top: 0;
-  height: 120px;
+  height: 66px;
 }
 
 header .lower {
@@ -156,28 +239,59 @@ header .right .avatar-clear {
   display: inline-block;
 }
 
-header .balance {
+#left .upper {
+  padding: 18px;
+  text-align: center;
+}
+#left .balance {
   font-size: 25px;
 }
-header .balance .symbol {
+#left .balance .symbol {
   font-weight: normal;
+}
+
+#left {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 20%;
 }
 
 .body {
   position: fixed;
-  top: 120px;
+  top: 66px;
   bottom: 45px;
   width: 100%;
-  padding: 26px 0;
+}
+
+.body > div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
   overflow-y: auto;
 }
 
+#main {
+  left: 20%;
+  width: 58%;
+}
+
+#right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 22%;
+}
+
 footer {
+  width: 100%;
   bottom: 0;
   padding: 12px;
   font-size: 15px;
-  background: #CDD3D8;
   color: white;
+  position: fixed;
 }
 
 table.transactions {
@@ -259,4 +373,14 @@ table.transactions td {
 }
 .send .has-error .error {
   display: block;
+}
+
+.mercury-logo {
+  background: url(../images/icon64.png);
+  background-size: 50px;
+  width: 50px;
+  height: 50px;
+  position: relative;
+  top: -6px;
+  display: inline-block;
 }

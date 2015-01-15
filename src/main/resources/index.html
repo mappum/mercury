@@ -1,17 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Coinswap</title>
+    <title>Mercury</title>
     <link rel="stylesheet" href="css/lato.css">
     <link rel="stylesheet" href="css/font-awesome.css">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <header id="header" class="navbar navbar-default"></header>
+  <header>
+    <div class="left pull-left">
+      <div class="mercury-logo"></div>
+    </div>
+
+    <div class="right pull-right">
+      <ul>
+        <li class="btn btn-primary"><i class="fa fa-envelope fa-lg"></i><span class="label label-danger super">4</span></li>
+        <li class="btn btn-primary"><i class="fa fa-cog fa-lg"></i></li>
+      </ul>
+    </div>
+  </header>
 
   <section class="body">
-    <div class="content container" id="main"></div>
+    <div id="left"></div>
+    <div id="main">
+      <div class="coin">
+      <h3>Bitcoin</h3></div></div>
+    <div id="right">
+      <div class="chart"></div>
+    </div>
   </section>
 
   <footer>
@@ -20,16 +37,11 @@
 
   <script type="text/template" id="template-navbar">
     <div class="upper">
-      <div class="right pull-right">
-        <ul>
-          <li class="btn btn-primary"><i class="fa fa-envelope fa-lg"></i><span class="label label-danger super">4</span></li>
-          <li class="btn btn-primary"><i class="fa fa-cog fa-lg"></i></li>
-        </ul>
-      </div>
       <span class="balance"><i class="fa fa-bitcoin symbol"></i><%= balance %></span>
     </div>
+    <hr class="no-margin">
     <div class="lower">
-      <div class="btn-group" data-toggle="buttons-radio">
+      <div class="btn-group-vertical" data-toggle="buttons-radio">
         <a href="#" class="home btn btn-primary <%= page.id === 'home' ? 'active' : '' %>"><i class="fa fa-home"></i> Home</a>
         <a href="#transactions" class="transactions btn btn-primary <%= page.id === 'transactions' ? 'active' : '' %>"><i class="fa fa-list"></i> Transactions</a>
         <a href="#data" class="data btn btn-primary <%= page.id === 'data' ? 'active' : '' %>"><i class="fa fa-bar-chart-o"></i> Data</a>
@@ -41,7 +53,7 @@
     <div class="row">
       <table class="table table-bordered table-striped table-hover col-xs-12">
         <thead>
-          <tr class="small"><td></td><td>Currency</td><td>Amount</td><td>Date</td><td>Transaction</td><td></td></tr>
+          <tr class="small"><td></td><td>Coin</td><td>Amount</td><td>Date</td><td>Transaction</td><td></td></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -58,8 +70,8 @@
     <td class="text-center">
       <i class="fa <%= !depth ? 'fa-asterisk text-warning' : depth < 6 ? 'fa-clock-o text-info' : 'fa-check text-success' %>"></i>
     </td>
-    <td><%= coin %></td>
-    <td class="text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
+    <td class="small"><%= coin %></td>
+    <td class="small text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
     <td class="small"><%= window.moment(date).format('l H:mm') %></td>
     <td class="small"><span class="text-<%= value > 0 ? 'success' : 'danger' %>"><i class="fa fa-sign-<%= value > 0 ? 'in' : 'out' %>"></i> <%= value > 0 ? 'Received' : 'Sent' %></span><strong><%= address !== 'self' ? ' ' + (value < 0 ? sent : value) : '' %> <%= coin %></strong> <%= value > 0 ? 'with' : 'to' %> <%= address %></td>
     <td class="small"><button class="btn btn-link btn-sm" onClick="desktop.browse('<%= explorerUrl %>')"><i class="fa fa-external-link"></i></button></td>
@@ -170,38 +182,41 @@
     </li>
   </script>
   <script type="text/template" id="template-coinview">
-    <img class="pull-left logo" src="images/<%= id.toLowerCase() %>.png">
+    <div>
+      <img class="logo" src="images/<%= id.toLowerCase() %>.png">
 
-    <h3><%= name %><span class="alt"> - <%= id %></span></h3>
+        <h3><%= name %><span class="alt"> - <%= id %></span></h3>
 
-    <% if(synced) { %>
-      <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span></div>
-      <hr>
-      <div>
-        <div class="btn-group">
-          <a href="#trade/<%= id %>" class="btn btn-success trade"><i class="fa fa-exchange"></i> Trade</a>
+      <% if(synced) { %>
+        <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span></div>
+        <div style="display:none">
+          <hr>
+          <div class="btn-group">
+            <a href="#trade/<%= id %>" class="btn btn-success trade"><i class="fa fa-exchange"></i> Trade</a>
+          </div>
+          <div class="btn-group">
+            <a href= "#send/<%= id %>" class="btn btn-success send"><i class="fa fa-arrow-right"></i> Send</a>
+            <a href="#receive/<%= id %>" class="btn btn-success receive"><i class="fa fa-arrow-left"></i> Receive</a>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-primary transactions"><i class="fa fa-list"></i> Transactions</button>
+          </div>
         </div>
-        <div class="btn-group">
-          <a href= "#send/<%= id %>" class="btn btn-success send"><i class="fa fa-arrow-right"></i> Send</a>
-          <a href="#receive/<%= id %>" class="btn btn-success receive"><i class="fa fa-arrow-left"></i> Receive</a>
+      <% } else if(connected) { %>
+        <br>
+        <div class="progress progress-striped active">
+          <div class="progress-bar" role="progressbar" style="width: 25%"></div>
         </div>
-        <div class="btn-group">
-          <button class="btn btn-primary transactions"><i class="fa fa-list"></i> Transactions</button>
-        </div>
-      </div>
-    <% } else if(connected) { %>
-      <p><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</p>
-      <div class="progress progress-striped active">
-        <div class="progress-bar progress-bar-info" style="width: 0"></div>
-      </div>
-      <% if(typeof syncBlocks !== 'undefined') { %>
-        <span class="alt">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
+        <span><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</span>
+        <% if(typeof syncBlocks !== 'undefined') { %>
+          <span class="alt pull-right">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
+        <% } %>
+
+      <% } else { %>
+        <p><i class="fa fa-clock-o text-warning symbol"></i> Connecting to network...</p>
+
       <% } %>
-
-    <% } else { %>
-      <p><i class="fa fa-clock-o text-warning symbol"></i> Connecting to network...</p>
-
-    <% } %>
+    </div>
   </script>
   <script type="text/template" id="template-send">
     <br>
@@ -243,6 +258,7 @@
   <script src="js/backbone-min.js"></script>
   <script src="js/qrcode.min.js"></script>
   <script src="js/moment.min.js"></script>
+  <script src="js/d3.js"></script>
   <script src="js/main.js"></script>
   <script src="js/models/Coin.js"></script>
   <script src="js/models/Trade.js"></script>

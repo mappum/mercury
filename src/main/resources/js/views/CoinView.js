@@ -16,7 +16,7 @@ var months = [
 
 coinswap.CoinView = Backbone.View.extend({
   template: _.template($('#template-coinview').html()),
-  className: 'row-fluid well coin',
+  className: 'coin',
 
   initialize: function() {
     this.render();
@@ -36,7 +36,7 @@ coinswap.CoinView = Backbone.View.extend({
   syncProgress: function(o) {
     var total = this.model.get('syncBlocks');
     var done =  total - o.blocks;
-    var percent = done / total * 100;
+    var percent = o.percent;
     this.$el.find('.sync-blocks').text(done);
     this.$el.find('.progress-bar').css('width', percent+'%');
 

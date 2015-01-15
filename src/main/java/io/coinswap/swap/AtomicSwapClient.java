@@ -44,22 +44,22 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     public AtomicSwapClient(AtomicSwap swap, Connection connection, Currency[] currencies) {
         super(swap, currencies);
 
-        // we are alice if we are selling and the second currency supports hashlock TXs,
-        // or if we are buying and the second currency doesn't support them.
+        // we are alice if we are buying and the second currency supports hashlock TXs,
+        // or if we are selling and the second currency doesn't support them.
         // otherwise, we are bob
-        alice = swap.trade.buy ^ switched;
+        alice = !swap.trade.buy ^ switched;
         a = swap.trade.buy ? 1 : 0;
         b = a ^ 1;
 
         this.connection = checkNotNull(connection);
-        connection.onMessage(swap.getChannelId(alice), this);
+        connection.onMessage(swap.getChannelId(!swap.trade.buy), this);
 
         refundScheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     public void start() {
         JSONObject message = new JSONObject();
-        message.put("channel", swap.getChannelId(alice));
+        message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.VERSION);
         message.put("version", VERSION);
         connection.write(message);
@@ -67,7 +67,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void sendKeys() {
         JSONObject message = new JSONObject();
-        message.put("channel", swap.getChannelId(alice));
+        message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.KEYS_REQUEST);
 
         myKeys = new ArrayList<ECKey>(4);
@@ -92,7 +92,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void sendBailinHash() throws InsufficientMoneyException {
         JSONObject message = new JSONObject();
-        message.put("channel", swap.getChannelId(alice));
+        message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.BAILIN_HASH_REQUEST);
 
         Transaction tx = new Transaction(currencies[a].getParams());
@@ -141,7 +141,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                              sigRefund = key.sign(sigHashRefund);
 
         JSONObject message = new JSONObject();
-        message.put("channel", swap.getChannelId(alice));
+        message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.EXCHANGE_SIGNATURES);
         message.put("payout", Base64.getEncoder().encodeToString(sigPayout.encodeToDER()));
         message.put("refund", Base64.getEncoder().encodeToString(sigRefund.encodeToDER()));
@@ -353,7 +353,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         checkState(swap.getStep().ordinal() < AtomicSwap.Step.COMPLETE.ordinal());
 
         JSONObject message = new JSONObject();
-        message.put("channel", swap.getChannelId(alice));
+        message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.CANCEL_TRANSACTION);
 
         if(swap.getStep().ordinal() <= AtomicSwap.Step.EXCHANGING_SIGNATURES.ordinal()) {

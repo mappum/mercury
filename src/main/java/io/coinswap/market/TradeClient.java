@@ -27,7 +27,7 @@ import static com.google.common.base.Preconditions.checkState;
 public class TradeClient extends Thread {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(TradeClient.class);
 
-    public static final String HOST = "localhost";
+    public static final String HOST = "localhost";//"trade.mercuryex.com";
     public static final int PORT = Connection.PORT;
     public static final org.bitcoinj.core.Coin FEE = Coin.ZERO;
 
