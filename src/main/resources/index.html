@@ -23,18 +23,23 @@
 
   <section class="body">
     <div id="left"></div>
-    <div id="main">
-      <div class="coin">
-      <h3>Bitcoin</h3></div></div>
-    <div id="right">
-      <div class="chart"></div>
-    </div>
+    <div id="main"></div>
+    <div id="right"></div>
   </section>
 
   <footer>
     <span><i class="fa fa-signal text-success"></i>&nbsp;&nbsp;Connected</span>
   </footer>
 
+  <script type="text/template" id="template-ticker">
+    <svg class="chart"></svg>
+    <span class="pair"><%= pair.join('/') %></span>
+    <span class="last"><%= last %></span>
+    <span class="change <%= (change > 0) ? 'text-success' : (change < 0) ? 'text-danger' : 'text-warning' %>">
+      <i class="fa fa-lg <%= (change > 0) ? 'fa-caret-up' : (change < 0) ? 'fa-caret-down' : 'fa-minus' %>"></i>
+      <span>&nbsp;<%= change %>%</span>
+    </span>
+  </script>
   <script type="text/template" id="template-navbar">
     <div class="upper">
       <span class="balance"><i class="fa fa-bitcoin symbol"></i><%= balance %></span>
@@ -205,11 +210,11 @@
       <% } else if(connected) { %>
         <br>
         <div class="progress progress-striped active">
-          <div class="progress-bar" role="progressbar" style="width: 25%"></div>
+          <div class="progress-bar" role="progressbar"></div>
         </div>
         <span><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</span>
         <% if(typeof syncBlocks !== 'undefined') { %>
-          <span class="alt pull-right">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
+          <span class="sync pull-right">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
         <% } %>
 
       <% } else { %>
@@ -263,11 +268,13 @@
   <script src="js/models/Coin.js"></script>
   <script src="js/models/Trade.js"></script>
   <script src="js/models/Transaction.js"></script>
+  <script src="js/models/Ticker.js"></script>
   <script src="js/views/CoinView.js"></script>
   <script src="js/views/TradeView.js"></script>
   <script src="js/views/ReceiveView.js"></script>
   <script src="js/views/TransactionsView.js"></script>
   <script src="js/views/SendView.js"></script>
   <script src="js/views/NavbarView.js"></script>
+  <script src="js/views/TickerView.js"></script>
 </body>
 </html>

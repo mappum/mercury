@@ -133,7 +133,7 @@ coinswap.Router = Backbone.Router.extend({
 });
 
 $(function() {
-  coinswap.app = new coinswap.App;
+  var app = coinswap.app = new coinswap.App;
   Backbone.history.start();
 
   var mainView = new coinswap.MainView({
@@ -146,24 +146,22 @@ $(function() {
     model: coinswap.app
   });
 
-  var x = d3.time.scale().range([0, 200]);
-  var y = d3.scale.linear().range([140, 0]);
-  var valueline = d3.svg.line()
-      .interpolate('cardinal')
-      .tension(0.8)
-      .x(function(d, i) { return x(i); })
-      .y(function(d) { return y(d); });
-      
-  var data = [1,2,5,6,8,4,6,4,2,14,11,19,10,8,5,3,2];
-  var svg = d3.select(".chart")
-      .append("svg")
-          .attr("width", 200)
-          .attr("height", 140);
-  x.domain(d3.extent(data, function(d, i) { return i; }));
-  y.domain([0, d3.max(data, function(d) { return d; })]);
-  svg.append("path")
-      .attr("class", "line")
-      .attr("d", valueline(data));
-
-
+  //app.on('initialized', function(){
+    for(var i = 0; i < 6; i++) {
+    var el = $('<div class="ticker">');
+    $('#right').append(el);
+    var tickerView = new coinswap.TickerView({
+      el: el,
+      model: new Backbone.Model({
+        pair: ['LTC', 'BTC'],
+        bestBid: 0,
+        bestAsk: 0,
+        last: Math.floor(Math.random() * 100000) / 100000,
+        change: Math.round((Math.random() * 6 - 3) * 100) / 100,
+        volume: 0,
+        history: [Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random()]
+      })//new coinswap.Ticker({ pair: ['LTC', 'BTC'] })
+    });
+  }
+  //});
 });
