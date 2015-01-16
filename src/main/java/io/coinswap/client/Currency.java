@@ -8,10 +8,7 @@ import org.bitcoinj.wallet.KeyChainGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetSocketAddress;
 
 /**
@@ -52,7 +49,7 @@ public class Currency {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().setMaxConnections(5);
+                peerGroup().setMaxConnections(6);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
                 setup = true;
                 setupFuture.set(null);
@@ -62,17 +59,11 @@ public class Currency {
         wallet.setBlockingStartup(false);
 
         // load a checkpoint file (if it exists) to speed up initial blockchain sync
-        try {
-            FileInputStream checkpointStream = null;
-            try {
-                File checkpointFile = new File(checkpointDir.getCanonicalPath() + "/" + name + ".checkpoint");
-                checkpointStream = new FileInputStream(checkpointFile);
-                wallet.setCheckpoints(checkpointStream);
-            } catch (FileNotFoundException ex) {
-                log.info("No checkpoint file found for " + name);
-            }
-        } catch(IOException ex) {
-            log.error(ex.getMessage());
+        InputStream checkpointStream = Main.class.getResourceAsStream("/checkpoints/"+name.toLowerCase()+".txt");
+        if(checkpointStream != null) {
+            wallet.setCheckpoints(checkpointStream);
+        } else {
+            log.info("No checkpoints found for " + name);
         }
     }
 
