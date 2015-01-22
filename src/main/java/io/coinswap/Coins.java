@@ -13,23 +13,23 @@ public class Coins {
 
         currencies.add(new Currency(MainNetParams.get(), dataDir,
                 "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>",
-                new String[]{"LTC", "DOGE", "BTCt", "LTCt"}, currencies.size(), false, 2));
+                new String[]{"LTC", "DOGE", "BTCt"}, currencies.size(), false, 2));
 
         currencies.add(new Currency(LitecoinMainNetParams.get(), dataDir,
                 "Litecoin", "LTC", "&#321;",
-                new String[]{"BTC", "DOGE", "LTCt"}, currencies.size(), false, 10));
+                new String[]{"BTC", "DOGE"}, currencies.size(), false, 10));
 
         currencies.add(new Currency(DogecoinMainNetParams.get(), dataDir,
                 "Dogecoin", "DOGE", "&#272;",
-                new String[] { "BTC", "LTC" }, currencies.size(), false, 10));
+                new String[] {"BTC", "LTC"}, currencies.size(), false, 10));
 
         currencies.add(new Currency(TestNet3Params.get(), dataDir,
                 "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>",
-                new String[]{"BTC", "LTCt"}, currencies.size(), true, 2));
+                new String[]{"BTC"}, currencies.size(), true, 2));
 
-        currencies.add(new Currency(LitecoinTestNetParams.get(), dataDir,
+        /*currencies.add(new Currency(LitecoinTestNetParams.get(), dataDir,
                 "Litecoin Testnet", "LTCt", "&#321;",
-                new String[] { "BTC", "LTC", "BTCt" }, currencies.size(), true, 6));
+                new String[] {"BTC", "LTC", "BTCt"}, currencies.size(), true, 6));*/
 
         // TODO: sort coins by volume
 
