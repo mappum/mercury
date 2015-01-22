@@ -39,8 +39,6 @@ public class Main extends Application {
     public static final String APP_NAME = "Mercury Wallet";
     public static final String APP_VERSION = "0.0.1-SNAPSHOT";
 
-    public static final File dataDir = new File("./data1");
-
     private static final int MIN_WIDTH = 740;
     private static final int MIN_HEIGHT = 400;
     private static final int DEFAULT_WIDTH = 1024;
@@ -58,7 +56,7 @@ public class Main extends Application {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
                 controller = new Controller(ui.engine);
-                currencies = Coins.get(dataDir);
+                currencies = Coins.get(getDataDirectory());
                 models = new HashMap<String, CoinModel>();
 
                 // for each Coin, create JS-side model and insert into JS-side collection
@@ -116,6 +114,14 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+
+    private File getDataDirectory() {
+        String envVar = System.getenv("DIR");
+        if(envVar != null) return new File(envVar);
+
+        String homePath = System.getProperty("user.home");
+        return new File(homePath + "/.mercury");
     }
 }
 
