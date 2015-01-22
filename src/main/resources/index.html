@@ -9,11 +9,11 @@
 </head>
 <body>
   <header>
-    <div class="left pull-left">
-      <div class="mercury-logo"></div>
+    <div class="mercury-logo center-block">
+      <img src="images/icon64.png">
     </div>
 
-    <div class="right pull-right">
+    <div class="right pull-right" style="display: none">
       <ul>
         <li class="btn btn-primary"><i class="fa fa-envelope fa-lg"></i><span class="label label-danger super">4</span></li>
         <li class="btn btn-primary"><i class="fa fa-cog fa-lg"></i></li>
@@ -104,78 +104,67 @@
   </script>
   <script type="text/template" id="template-trade">
     <br>
-    <div class="row">
-      <div class="col-xs-8">
-        <div class="row trade-pair">
-          <div class="col-xs-2 col-xs-push-2"><div class="dropdown dropdown-coin pull-left">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
-            <ul class="dropdown-menu"></ul>
-          </div></div>
-          <div class="separator col-xs-2 col-xs-push-3">/</div>
-          <div class="col-xs-2 col-xs-push-4"><div class="dropdown dropdown-coin pull-right">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
-            <ul class="dropdown-menu"></ul>
-          </div></div>
-        </div>
-        <br><br>
-        <div class="row">
-          <div class="form well">
-            <div class="row">
-              <div class="btn-group col-xs-12 buysell" data-toggle="buttons-radio">
-                <button class="btn btn-default buy active">Buy</button>
-                <button class="btn btn-default sell">Sell</button>
-              </div>
-            </div>
-            <hr>
-            <div class="row values">
-              <div class="form-group col-xs-4 price">
-                <label>Price</label>
-                <div class="input-group">
-                  <span class="input-group-addon symbol"></span>
-                  <input class="form-control" type="text" placeholder="0.00">
-                </div>
-              </div>
-              <div class="form-group col-xs-4 quantity">
-                <label>Quantity</label>
-                <div class="input-group">
-                  <span class="input-group-addon symbol"></span>
-                  <input class="form-control" type="text" placeholder="0.00">
-                </div>
-                <span class="tiny">
-                  <strong>Balance:</strong> <span class="symbol"><%= symbols[0] %></span><%= balances[0] %>
-                </span>
-              </div>
-              <div class="form-group col-xs-4 total">
-                <label>Total</label>
-                <div class="input-group">
-                  <span class="input-group-addon symbol"></span>
-                  <input class="form-control" type="text" placeholder="0.00">
-                </div>
-                <span class="tiny">
-                  <strong>Balance:</strong> <span class="symbol"><%= symbols[1] %></span><%= balances[1] %>
-                </span>
-              </div>
-            </div>
-            <hr>
-            <div class="row">
-              <div class="col-xs-12 text-center overview">
-                <p>You will <span class="type"></span> <strong><span class="quantity"></span> <span class="alt"></span></strong></p>
-                <p>for <strong><span class="total"></span> <span class="alt"></span></strong></p>
-              </div>
-            </div>
-            <hr>
-            <div class="row">
-              <div class="col-xs-12">
-                <button class="btn btn-lg btn-success pull-right accept">Accept Trade</button>
-                <button class="btn btn-default pull-right cancel">Cancel</button>
-              </div>
-            </div>
-          </div>
+    <div class="trade-pair">
+      <div class="col-xs-2 col-xs-push-2"><div class="dropdown dropdown-coin pull-left">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
+        <ul class="dropdown-menu"></ul>
+      </div></div>
+      <div class="separator col-xs-2 col-xs-push-3">/</div>
+      <div class="col-xs-2 col-xs-push-4"><div class="dropdown dropdown-coin pull-right">
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value"></span> <span class="caret"></span></a>
+        <ul class="dropdown-menu"></ul>
+      </div></div>
+    </div>
+    <br><br><br><br>
+    <div class="form col-xs-10 col-xs-push-1">
+      <div class="row">
+        <div class="btn-group col-xs-12 buysell" data-toggle="buttons-radio">
+          <button class="btn btn-default buy active">Buy</button>
+          <button class="btn btn-default sell">Sell</button>
         </div>
       </div>
-      <div class="col-xs-4">
-        <h4>Open Orders</h4>
-        <ul class="list-group orders"> </ul>
+      <br>
+      <div class="row values">
+        <div class="form-group col-xs-4 price">
+          <label>Price</label>
+          <div class="input-group">
+            <span class="input-group-addon symbol"></span>
+            <input class="form-control" type="text" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-group col-xs-4 quantity">
+          <label>Quantity</label>
+          <div class="input-group">
+            <span class="input-group-addon symbol"></span>
+            <input class="form-control" type="text" placeholder="0.00">
+          </div>
+          <span class="tiny">
+            <strong>Balance:</strong> <span class="symbol"><%= symbols[0] %></span><%= balances[0] %>
+          </span>
+        </div>
+        <div class="form-group col-xs-4 total">
+          <label>Total</label>
+          <div class="input-group">
+            <span class="input-group-addon symbol"></span>
+            <input class="form-control" type="text" placeholder="0.00">
+          </div>
+          <span class="tiny">
+            <strong>Balance:</strong> <span class="symbol"><%= symbols[1] %></span><%= balances[1] %>
+          </span>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-xs-12 text-center overview">
+          <p>You will <span class="type"></span> <strong><span class="quantity"></span> <span class="alt"></span></strong></p>
+          <p>for <strong><span class="total"></span> <span class="alt"></span></strong></p>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-xs-12">
+          <button class="btn btn-lg btn-success pull-right accept">Accept Trade</button>
+        </div>
       </div>
     </div>
   </script>
@@ -194,8 +183,7 @@
 
       <% if(synced) { %>
         <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span></div>
-        <div style="display:none">
-          <hr>
+        <div>
           <div class="btn-group">
             <a href="#trade/<%= id %>" class="btn btn-success trade"><i class="fa fa-exchange"></i> Trade</a>
           </div>

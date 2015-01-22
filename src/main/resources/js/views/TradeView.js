@@ -14,7 +14,7 @@ coinswap.TradeView = Backbone.View.extend({
 
   template: _.template($('#template-trade').html()),
   orderTemplate: _.template($('#template-trade-order').html()),
-  className: 'container trade',
+  className: 'trade',
 
   initialize: function() {
     _.bindAll(this, 'render', 'submit');

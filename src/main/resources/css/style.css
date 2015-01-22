@@ -26,13 +26,21 @@ hr {
   border-radius: 0 !important;
 }
 
+.btn {
+  border: none;
+}
 .btn-primary {
   background-color: #3e3e3e;
-  border: none;
 }
 .btn-primary.active, .btn-primary:hover {
   background-color: #252525;
   border-color: #222;
+}
+.btn-success {
+  background-color: #088c9c;
+}
+.btn-success.active, .btn-success:hover {
+  background-color: #04707e;
 }
 
 #left .btn-primary {
@@ -69,6 +77,24 @@ hr {
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.4);
   border-radius: 4px;
+}
+
+.form-control {
+  color: #eee;
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 2px;
+}
+.form-control:focus {
+  border-color: #3c6ec0;
+}
+.input-group-addon {
+  font-size: 20px;
+  line-height: 19px;
+  color: #aaa;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 2px;
 }
 
 /* classes */
@@ -249,10 +275,10 @@ header, footer {
 }
 
 header {
-  padding: 16px;
+  padding: 8px;
   padding-top: 12px;
   top: 0;
-  height: 66px;
+  height: 48px;
 }
 
 header .lower {
@@ -292,12 +318,12 @@ header .right .avatar-clear {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 20%;
+  width: 22%;
 }
 
 .body {
   position: fixed;
-  top: 66px;
+  top: 48px;
   bottom: 45px;
   width: 100%;
 }
@@ -310,8 +336,8 @@ header .right .avatar-clear {
 }
 
 #main {
-  left: 20%;
-  width: 58%;
+  left: 22%;
+  width: 56%;
 }
 
 #right {
@@ -386,9 +412,6 @@ table.transactions td {
 .trade .type.sell {
   color: red;
 }
-.trade .input-group-addon.symbol {
-  background: #f2f7f8;
-}
 .trade .cancel {
   position: absolute;
   bottom: 0;
@@ -413,11 +436,9 @@ table.transactions td {
 }
 
 .mercury-logo {
-  background: url(../images/icon64.png);
-  background-size: 50px;
-  width: 50px;
-  height: 50px;
   position: relative;
-  top: -6px;
-  display: inline-block;
+  top: -5px;
+}
+.mercury-logo, .mercury-logo img {
+  width: 32px;
 }
