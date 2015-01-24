@@ -73,6 +73,11 @@ coinswap.MainView = Backbone.View.extend({
   render: function() {
     this.$el.empty();
 
+    // javafx webview doesn't always properly redraw the whole page.
+    // we do this hack to make sure it redraws
+    this.$el.hide();
+    setTimeout(this.$el.show.bind(this.$el), 0);
+
     var page = this.model.get('page');
     console.log('rendering ' + page.id);
 

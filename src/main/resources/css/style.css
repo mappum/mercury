@@ -338,6 +338,7 @@ header .right .avatar-clear {
 #main {
   left: 22%;
   width: 56%;
+  background: #111;
 }
 
 #right {
