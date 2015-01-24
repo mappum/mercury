@@ -49,7 +49,7 @@ public class Currency {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
-                peerGroup().setMaxConnections(6);
+                peerGroup().setMaxConnections(8);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
                 setup = true;
                 setupFuture.set(null);
