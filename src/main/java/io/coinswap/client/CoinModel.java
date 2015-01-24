@@ -85,6 +85,13 @@ public class CoinModel extends Model {
     private void addDownloadListener() {
         UIDownloadListener udl = new UIDownloadListener();
         currency.wallet.peerGroup().addEventListener(udl, controller.e);
+
+        // trigger events for any peers we are already connected to
+        // (probably only happens for nodes running on localhost)
+        int i = 0;
+        for(Peer peer : currency.getWallet().peerGroup().getConnectedPeers()) {
+            udl.onPeerConnected(peer, ++i);
+        }
     }
 
     private void addTransactionListener() {
@@ -101,20 +108,20 @@ public class CoinModel extends Model {
 
     class UIDownloadListener extends DownloadListener {
         private boolean done = false,
-                started = false,
                 connected = false;
 
         @Override
         public void onPeerConnected(Peer peer, int peerCount) {
             trigger("peers:connected", "{ \"peers\": " + peerCount +
-                    ", \"maxPeers\": " + 2 + " }");
+                    ", \"maxPeers\": " + 1 + " }");
 
             // if we are now connected to the network and already synced, tell the JS model we are done downloading
-            if(!connected && peerCount == 2) {
+            if(!connected) {
                 connected = true;
+
                 try {
-                    long limit = new Date().getTime() / 1000 - 60 * 15;
-                    if (currency.wallet.store().getChainHead().getHeader().getTimeSeconds() > limit)
+                    // if this peer has the same height as we do, tell the client we're done syncing
+                    if (currency.wallet.store().getChainHead().getHeight() == peer.getBestHeight())
                         doneDownload();
                 } catch(BlockStoreException ex) {
                     log.error(ex.getMessage());
@@ -131,8 +138,6 @@ public class CoinModel extends Model {
 
         @Override
         protected void startDownload(int blocks) {
-            if(started) return;
-            started = true;
             try {
                 int height = currency.wallet.store().getChainHead().getHeight();
                 trigger("sync:start", height + blocks + "");
