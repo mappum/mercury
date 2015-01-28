@@ -18,9 +18,10 @@ coinswap.TickerView = Backbone.View.extend({
 
   drawChart: function() {
     var chartEl = this.$el.find('.chart');
-    var data = this.model.get('history');
+    var data = _.map(this.model.get('history'), function(point) {
+      return point[1];
+    });
 
-    console.log(chartEl.width())
     var x = d3.time.scale().range([margin, (chartEl.width()||250) - margin])
       .domain([0, data.length - 1]);
     var y = d3.scale.linear().range([(chartEl.height()||90) - margin, margin])

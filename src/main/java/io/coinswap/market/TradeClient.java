@@ -275,8 +275,8 @@ public class TradeClient extends Thread {
         String pair = (String) checkNotNull(message.get("pair"));
         Ticker ticker = Ticker.fromJson((Map) checkNotNull(message.get("data")));
         tickers.put(pair, ticker);
-        emitter.emit("ticker", ticker);
-        emitter.emit("ticker:"+pair, ticker);
+        emitter.emit("ticker", pair);
+        emitter.emit("ticker:" + pair, pair);
     }
 
     public Ticker getTicker(String pair) {

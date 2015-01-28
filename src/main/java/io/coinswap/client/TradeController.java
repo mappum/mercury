@@ -3,6 +3,7 @@ package io.coinswap.client;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.market.Order;
 import io.coinswap.market.Ticker;
+import io.coinswap.market.TickerHistory;
 import io.coinswap.market.TradeClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import netscape.javascript.JSObject;
@@ -58,7 +59,17 @@ public class TradeController {
         String[] pair = getPair(currency1, currency2);
         Ticker ticker = client.getTicker(pair[0] + "/" + pair[1]);
         if(ticker == null) return null;
-        return toJSObject((Map<String, Object>) ticker.toJson());
+
+        Map<String, Object> tickerJson = (Map<String, Object>) ticker.toJson();
+        JSObject output = toJSObject(tickerJson);
+        JSObject history = controller.eval("[]");
+        int i = 0;
+        for(List point : (List<List>) tickerJson.get("history")) {
+            history.setSlot(i++, toJSArray(point));
+        }
+        output.setMember("history", history);
+        output.setMember("change", ticker.change().toPlainString());
+        return output;
     }
 
     public JSObject orders() {
@@ -82,9 +93,8 @@ public class TradeController {
     public void on(String event, JSObject listener) {
         client.on(event, new EventEmitter.Callback(controller.e) {
             @Override
-            public void f(Object a) {
-                // TODO: convert arguments for JS
-                controller.callFunction(listener, new Object[]{a});
+            public void f(Object data) {
+                controller.callFunction(listener, new Object[]{data});
             }
         });
     }
@@ -93,6 +103,14 @@ public class TradeController {
         JSObject output = controller.eval("new Object()");
         for(String key : obj.keySet()) {
             output.setMember(key, obj.get(key));
+        }
+        return output;
+    }
+
+    private JSObject toJSArray(List<Object> list) {
+        JSObject output = controller.eval("[]");
+        for(int i = 0; i < list.size(); i++) {
+            output.setSlot(i, list.get(i));
         }
         return output;
     }

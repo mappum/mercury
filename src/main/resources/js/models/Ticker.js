@@ -2,18 +2,18 @@
 
 coinswap.Ticker = Backbone.Model.extend({
   defaults: {
-    pair: ['LTC', 'BTC'],
+    pair: ['', ''],
     bestBid: 0,
     bestAsk: 0,
-    last: 0.000146,
-    change: 2.43,
+    last: 0,
+    change: 0,
     volume: 0,
-    history: [0,0,0,5,3.5,3.6,3.8,0,1,2,6,10,9,5,3,2]
+    history: [[0,0], [0,0]]
   },
 
   initialize: function(attributes, options) {
     _.bindAll(this, 'update');
-    coinswap.trade.on('ticker:' + this.pairId(), this.update);
+    coinswap.trade.on('ticker:' + this.pairId().toLowerCase(), this.update);
     this.update();
   },
 

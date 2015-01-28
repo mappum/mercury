@@ -21,6 +21,8 @@ coinswap.App = Backbone.Model.extend({
     this.listenTo(coins, 'add', this.onAddCoin);
 
     this.on('initialized', function() {
+      console.log('app initialized');
+      this.set('initialized', true);
       coinswap.trade.on('ticker', t.updateBalance);
     });
   },
@@ -151,22 +153,9 @@ $(function() {
     model: coinswap.app
   });
 
-  //app.on('initialized', function(){
-    for(var i = 0; i < 6; i++) {
-    var el = $('<div class="ticker">');
-    $('#right').append(el);
-    var tickerView = new coinswap.TickerView({
-      el: el,
-      model: new Backbone.Model({
-        pair: ['LTC', 'BTC'],
-        bestBid: 0,
-        bestAsk: 0,
-        last: Math.floor(Math.random() * 100000) / 100000,
-        change: Math.round((Math.random() * 6 - 3) * 100) / 100,
-        volume: 0,
-        history: [Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random(),Math.random()]
-      })//new coinswap.Ticker({ pair: ['LTC', 'BTC'] })
-    });
-  }
-  //});
+  var tickerListView = new coinswap.TickerListView({
+    el: $('#right'),
+    model: coinswap.app
+  });
+
 });

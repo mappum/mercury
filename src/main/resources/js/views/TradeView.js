@@ -56,7 +56,6 @@ coinswap.TradeView = Backbone.View.extend({
 
   updateDropdowns: function() {
     var dropdowns = this.$el.find('.dropdown-coin');
-    var coins = this.model.get('coins');
 
     var pair = [
       dropdowns.eq(0).find('.dropdown-toggle .value').text(),

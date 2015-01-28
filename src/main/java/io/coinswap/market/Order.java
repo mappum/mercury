@@ -3,6 +3,7 @@ package io.coinswap.market;
 import io.coinswap.client.Currency;
 import org.bitcoinj.core.Coin;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,11 +60,16 @@ public class Order {
         return output;
     }
 
-    public static Coin getTotal(List<? extends Order> orders) {
-        Coin total = Coin.ZERO;
+    public static Coin[] getTotals(List<? extends Order> orders) {
+        Coin[] totals = new Coin[]{ Coin.ZERO, Coin.ZERO };
         for(Order order : orders) {
-            total = total.add(order.amount);
+            totals[0] = totals[0].add(order.amount);
+            totals[1] = totals[1].add(Coin.valueOf(
+                    BigInteger.valueOf(order.amount.value)
+                            .multiply(BigInteger.valueOf(order.price.value))
+                            .divide(BigInteger.valueOf(Coin.COIN.value))
+                            .longValueExact()));
         }
-        return total;
+        return totals;
     }
 }
