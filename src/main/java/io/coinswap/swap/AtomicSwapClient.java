@@ -112,7 +112,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         if (alice) {
             xScript = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
         } else {
-            xScript = getHashlockScript(false);
+            xScript = ScriptBuilder.createP2SHOutputScript(getHashlockScript(false));
         }
         Coin fee = currencies[a].getParams().getMinFee();
         tx.addOutput(fee, xScript);
@@ -184,13 +184,14 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         Script hashlockScriptSig;
         if(alice) {
             // now that we've seen X (revealed when Bob spent his payout), we can provide X
-            Script hashlockScript = getHashlockScript(false);
-            Sha256Hash hashlockSighash = payout.hashForSignature(1, hashlockScript, Transaction.SigHash.ALL, false);
+            Script hashlockRedeem = getHashlockScript(false);
+            Sha256Hash hashlockSighash = payout.hashForSignature(1, hashlockRedeem, Transaction.SigHash.ALL, false);
             TransactionSignature hashlockSig =
                     new TransactionSignature(myKeys.get(0).sign(hashlockSighash).toCanonicalised(), Transaction.SigHash.ALL, false);
             hashlockScriptSig = new ScriptBuilder()
                     .data(hashlockSig.encodeToBitcoin())
                     .data(swap.getX())
+                    .data(hashlockRedeem.getProgram())
                     .build();
 
         } else {
