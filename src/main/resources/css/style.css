@@ -1,10 +1,5 @@
 /* overrides */
 
-.btn {
-  font-weight: bold;
-  position: relative;
-}
-
 .row {
 position: relative;
 }
@@ -27,10 +22,13 @@ hr {
 }
 
 .btn {
+  font-weight: bold;
+  position: relative;
   border: none;
+  border-radius: 2;
 }
 .btn-primary {
-  background-color: #3e3e3e;
+  background-color: #333;
 }
 .btn-primary.active, .btn-primary:hover {
   background-color: #252525;
@@ -43,15 +41,22 @@ hr {
   background-color: #04707e;
 }
 
+.btn-group .btn.btn-primary {
+  border-left: 1px solid #2e2e2e;
+}
+.btn-group .btn.btn-primary:first-child {
+  border-left: none;
+}
+
 #left .btn-primary {
   background-color: transparent;
-  color: #bbb;
+  color: #ddd;
 }
 #left .btn-primary:hover {
   background-color: #292929;
 }
 #left .btn-primary.active {
-  background-color: #333;
+  background-color: #303030;
   box-shadow: none;
   -webkit-box-shadow: none;
   color: #fff;
@@ -80,7 +85,7 @@ hr {
 }
 
 .form-control {
-  color: #eee;
+  color: #ddd;
   background-color: #222;
   border: 1px solid #333;
   border-radius: 2px;
@@ -91,13 +96,41 @@ hr {
 .input-group-addon {
   font-size: 20px;
   line-height: 19px;
-  color: #aaa;
+  color: #ddd;
   background-color: #1a1a1a;
   border: 1px solid #333;
   border-radius: 2px;
 }
 
+table>thead{
+  font-size: 0.7em;
+  text-transform: uppercase;
+  color: #aaa;
+}
+
+.table-bordered,
+.table-bordered tr {
+  border: 1px solid #2d2d2d;
+}
+.table-bordered>tbody>tr:hover,
+.table-bordered>tbody>tr:hover>td {
+  background: #222;
+}
+.table-bordered tr.active {
+  background: #333;
+}
+.table-bordered>thead>tr>td,
+.table-bordered>tbody>tr>td {
+  border: none;
+}
+
 /* classes */
+
+.btn-round {
+  border-radius: 1000px;
+  padding-left: 22px;
+  padding-right: 22px;
+}
 
 .no-margin {
   margin: 0;
@@ -123,7 +156,7 @@ hr {
 }
 
 .symbol {
-  margin-right: 1px;
+  margin-right: 2px;
   font-weight: bold;
 }
 
@@ -138,7 +171,7 @@ hr {
 
 .coin {
   width: 100%;
-  height: 100px;
+  min-height: 100px;
   margin: 0;
   border-bottom: 1px solid #262626;
   padding: 14px 20px;
@@ -146,13 +179,14 @@ hr {
 }
 
 .coin h3 {
-  font-weight: bold;
+  font-weight: normal;
   font-size: 22px;
   display: inline-block;
 }
 
 .coin .balance {
   font-size: 20px;
+  margin-bottom: 10px;
 }
 
 .coin .balance .pending .symbol {
@@ -168,6 +202,11 @@ hr {
   margin-right: 6px;
   position: relative;
   top: -2px;
+}
+
+.coin .buttons {
+  position: relative;
+  top: -55px;
 }
 
 .ticker {
@@ -248,7 +287,7 @@ hr {
 body {
   height: 100%;
   overflow: hidden;
-  color: #eee;
+  color: #ddd;
   font-size: 19px;
   padding: 0;
   background: #111;
@@ -267,7 +306,7 @@ header, footer, #left, #right {
 
 header, footer {
   width: 100%;
-  color: #eee;
+  color: #ddd;
   left: 0;
   border: 1px solid #333;
   border-left: none;
@@ -380,7 +419,7 @@ table.transactions td {
   padding: 0.4em 0;
   border-radius: 5px;
   display: block;
-  background: rgba(236, 240, 241, 0.6);
+  background: #333;
 }
 
 .dropdown-coin {
@@ -389,12 +428,15 @@ table.transactions td {
   text-align: center;
 }
 .dropdown-coin .dropdown-toggle {
-  background-color: rgba(236, 240, 241, 0.6);
+  background-color: #333;
   font-size: 30px;
   font-weight: bold;
 }
 .dropdown-coin a {
   cursor: pointer;
+}
+.dropdown-menu {
+  background-color: #444;
 }
 
 .trade-pair .separator {

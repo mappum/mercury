@@ -55,14 +55,12 @@
   </script>
   <script type="text/template" id="template-transactions">
     <br>
-    <div class="row">
-      <table class="table table-bordered table-striped table-hover col-xs-12">
-        <thead>
-          <tr class="small"><td></td><td>Coin</td><td>Amount</td><td>Date</td><td>Transaction</td><td></td></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+    <table class="table table-bordered table-hover col-xs-12">
+      <thead>
+        <tr class="small"><td></td><td>Coin</td><td>Amount</td><td>Date</td><td>Transaction</td><td></td></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </script>
   <script type="text/template" id="template-transactions-row">
   <% var explorerUrl = {
@@ -182,17 +180,14 @@
         <h3><%= name %><span class="alt"> - <%= id %></span></h3>
 
       <% if(synced) { %>
-        <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span></div>
-        <div>
+        <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span>
+        </div>
+        <div class="buttons pull-right">
           <div class="btn-group">
-            <a href="#trade/<%= id %>" class="btn btn-success trade"><i class="fa fa-exchange"></i> Trade</a>
-          </div>
-          <div class="btn-group">
-            <a href= "#send/<%= id %>" class="btn btn-success send"><i class="fa fa-arrow-right"></i> Send</a>
-            <a href="#receive/<%= id %>" class="btn btn-success receive"><i class="fa fa-arrow-left"></i> Receive</a>
-          </div>
-          <div class="btn-group">
-            <button class="btn btn-primary transactions"><i class="fa fa-list"></i> Transactions</button>
+            <a href="#trade/<%= id %>" class="btn btn-primary trade"><i class="fa fa-exchange"></i></a>
+            <a href= "#send/<%= id %>" class="btn btn-primary send"><i class="fa fa-arrow-right"></i></a>
+            <a href="#receive/<%= id %>" class="btn btn-primary receive"><i class="fa fa-arrow-left"></i></a>
+            <button class="btn btn-primary transactions"><i class="fa fa-list"></i></button>
           </div>
         </div>
       <% } else if(connected) { %>
