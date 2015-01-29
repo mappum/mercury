@@ -16,6 +16,7 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
+import java.net.ConnectException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,14 +96,24 @@ public class TradeClient extends Thread {
             context.init(null, tmf.getTrustManagers(), null);
 
             SSLSocketFactory factory = context.getSocketFactory();
-            SSLSocket socket = (SSLSocket) factory.createSocket(HOST, PORT);
 
-            connection = new Connection(socket);
-            initListeners();
-            connection.start();
+            try {
+                log.info("Connecting to trade server ("+HOST+":"+PORT+")");
+                SSLSocket socket = (SSLSocket) factory.createSocket(HOST, PORT);
+
+                connection = new Connection(socket);
+                initListeners();
+                connection.start();
+
+            } catch (ConnectException e) {
+                log.info("Could not connect to trade server");
+                Thread.sleep(5000);
+                connect();
+            }
 
         } catch(Exception e) {
             log.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -122,6 +133,14 @@ public class TradeClient extends Thread {
             @Override
             public void onReceive(Map message) {
                 parent.onTicker(message);
+            }
+        });
+
+        connection.onDisconnect(new Runnable() {
+            @Override
+            public void run() {
+                log.info("Disconnected from trade server");
+                connect();
             }
         });
     }
