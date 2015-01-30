@@ -129,6 +129,14 @@ class ClientUI extends Region {
     WebView browser;
     WebEngine engine;
 
+    private static final String[] FONTS = new String[]{
+            "/fonts/lato-regular.woff",
+            "/fonts/lato-bold.woff",
+            "/fonts/lato-black.woff",
+            "/fonts/lato-italic.woff",
+            "/fonts/fontawesome-webfont.woff",
+    };
+
     public ClientUI() {
         Platform.setImplicitExit(true);
 
@@ -141,21 +149,15 @@ class ClientUI extends Region {
         engine.setUserStyleSheetLocation(getClass().getResource("/css/browser.css").toExternalForm());
         browser.setFontSmoothingType(FontSmoothingType.GRAY);
 
-        // load fonts
-        // TODO: put this somewhere else
-        Font.loadFont(getClass().getResource("/fonts/lato-regular.woff").toExternalForm(), 10);
-        Font.loadFont(getClass().getResource("/fonts/lato-bold.woff").toExternalForm(), 10);
-        Font.loadFont(getClass().getResource("/fonts/lato-black.woff").toExternalForm(), 10);
-        Font.loadFont(getClass().getResource("/fonts/lato-italic.woff").toExternalForm(), 10);
-        Font.loadFont(getClass().getResource("/fonts/fontawesome-webfont.woff").toExternalForm(), 10);
+        loadFonts();
 
         getChildren().add(browser);
     }
 
-    private Node createSpacer() {
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        return spacer;
+    private void loadFonts() {
+        for(String font : FONTS) {
+            Font.loadFont(getClass().getResource(font).toExternalForm(), 10);
+        }
     }
 
     @Override
