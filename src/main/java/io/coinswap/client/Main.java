@@ -147,7 +147,7 @@ class ClientUI extends Region {
         Font.loadFont(getClass().getResource("/fonts/lato-bold.woff").toExternalForm(), 10);
         Font.loadFont(getClass().getResource("/fonts/lato-black.woff").toExternalForm(), 10);
         Font.loadFont(getClass().getResource("/fonts/lato-italic.woff").toExternalForm(), 10);
-        Font.loadFont(getClass().getResource("/fonts/fontawesome-webfont.eot").toExternalForm(), 10);
+        Font.loadFont(getClass().getResource("/fonts/fontawesome-webfont.woff").toExternalForm(), 10);
 
         getChildren().add(browser);
     }
