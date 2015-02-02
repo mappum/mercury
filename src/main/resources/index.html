@@ -9,6 +9,7 @@
 </head>
 <body>
   <header>
+    <div class="controls pull-left"></div>
     <div class="mercury-logo center-block">
       <img src="images/icon64.png">
     </div>
@@ -34,6 +35,14 @@
     <span><i class="fa fa-signal text-success"></i>&nbsp;&nbsp;Connected</span>
   </footer>
 
+  <script type="text/template" id="template-controls">
+    <button class="back btn btn-link <%= hasBack ? '' : 'disabled' %>">
+      <i class="fa fa-lg fa-angle-left"></i>
+    </button>
+    <button class="forward btn btn-link <%= hasForward ? '' : 'disabled' %>">
+      <i class="fa fa-lg fa-angle-right"></i>
+    </button>
+  </script>
   <script type="text/template" id="template-ticker">
     <svg class="chart"></svg>
     <span class="pair"><%= pair.join('/') %></span>
@@ -289,6 +298,7 @@
   <script src="js/models/Trade.js"></script>
   <script src="js/models/Transaction.js"></script>
   <script src="js/models/Ticker.js"></script>
+  <script src="js/models/History.js"></script>
   <script src="js/views/CoinView.js"></script>
   <script src="js/views/TradeView.js"></script>
   <script src="js/views/ReceiveView.js"></script>
@@ -298,5 +308,6 @@
   <script src="js/views/TickerView.js"></script>
   <script src="js/views/TickerListView.js"></script>
   <script src="js/views/OrderListView.js"></script>
+  <script src="js/views/ControlsView.js"></script>
 </body>
 </html>

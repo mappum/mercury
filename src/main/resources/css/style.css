@@ -519,3 +519,23 @@ table.transactions td {
   border-bottom: 1px solid #444;
   padding: 2px;
 }
+
+header .controls {
+  margin-left: 5px;
+}
+header .controls > button {
+  padding: 2px;
+  position: relative;
+  top: -4px;
+  font-size: 18px;
+}
+header .controls > button:hover {
+  color: #bed;
+}
+header .controls > button.disabled {
+  color: #404544;
+  opacity: 1;
+}
+header .controls > button.disabled:hover {
+  color: inherit;
+}

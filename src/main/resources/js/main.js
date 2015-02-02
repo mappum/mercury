@@ -119,7 +119,9 @@ coinswap.MainView = Backbone.View.extend({
     var coins = this.model.get('coins');
     var view = new coinswap.SendView({ collection: coins, id: id });
     this.$el.append(view.el);
-  }
+  },
+
+  data: function(){}
 });
 
 coinswap.Router = Backbone.Router.extend({
@@ -151,6 +153,11 @@ $(function() {
   new coinswap.NavbarView({
     el: $('#left'),
     model: coinswap.app
+  });
+
+  new coinswap.ControlsView({
+    el: $('header .controls'),
+    model: new coinswap.History
   });
 
   new coinswap.TickerListView({
