@@ -1,7 +1,7 @@
 /* overrides */
 
 .row {
-position: relative;
+  position: relative;
 }
 
 .well {
@@ -288,7 +288,7 @@ body {
   height: 100%;
   overflow: hidden;
   color: #ddd;
-  font-size: 19px;
+  font-size: 18px;
   padding: 0;
   background: #111;
 }
@@ -468,6 +468,9 @@ table.transactions td {
 
 .address .btn:active {
   background-color: #8aa;
+}
+.address>input.form-control.value {
+  background-color: #222;
 }
 
 .send .error {

@@ -1,15 +1,15 @@
 package io.coinswap.client;
 
+import com.google.common.collect.ImmutableList;
 import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import org.bitcoinj.wallet.KeyChainGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.net.InetSocketAddress;
+import java.util.List;
 
 /**
  * Contains the settings and state for one currency. Includes an AltcoinJ wallet,
@@ -87,15 +87,11 @@ public class Currency {
 
     public String[] getPairs() { return pairs; }
 
-    public boolean isSetup() {
-        return setup;
-    }
+    public boolean isSetup() { return setup; }
 
     public WalletAppKit getWallet() { return wallet; }
 
     public NetworkParameters getParams() { return params; }
 
-    public ListenableFuture<Object> getSetupFuture() {
-        return setupFuture;
-    }
+    public ListenableFuture<Object> getSetupFuture() { return setupFuture; }
 }

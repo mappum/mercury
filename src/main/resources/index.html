@@ -76,7 +76,37 @@
     <td class="small"><%= coin %></td>
     <td class="small text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
     <td class="small"><%= window.moment(date).format('l H:mm') %></td>
-    <td class="small"><span class="text-<%= value > 0 ? 'success' : 'danger' %>"><i class="fa fa-sign-<%= value > 0 ? 'in' : 'out' %>"></i> <%= value > 0 ? 'Received' : 'Sent' %></span><strong><%= address !== 'self' ? ' ' + (value < 0 ? sent : value) : '' %> <%= coin %></strong> <%= value > 0 ? 'with' : 'to' %> <%= address %></td>
+    <td class="small">
+      <% if(type === 'payment') { %>
+      <span class="text-<%= value > 0 ? 'success' : 'danger' %>">
+        <i class="fa fa-sign-<%= value > 0 ? 'in' : 'out' %>"></i>&nbsp;
+        <%= value > 0 ? 'Received' : 'Sent' %>
+      </span>
+      <strong>
+        <%= address !== 'self' ? ' ' + (value < 0 ? sent : value) : '' %>&nbsp;
+        <span class="alt"><%= coin %></span>
+      </strong>&nbsp;
+      <%= value > 0 ? 'with' : 'to' %>&nbsp;
+      <%= address %>
+      <% } else if (type === 'trade') { %>
+      <span>
+        <span><%= which === 'bailin' ? '<span class="text-info">Deposit</span>' : which === 'payout' ? '<span class="text-success">Payout</span>' : '<span class="text-warning"><i class="fa fa-warning"></i> Refund</span>' %>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
+        <span class="<%= trade.buy ? 'text-success' : 'text-danger' %>">
+          <i class="fa fa-exchange"></i>&nbsp;
+          <%= trade.buy ? 'Bought' : 'Sold' %>&nbsp;
+        </span>
+        <strong>
+          <%= trade.quantities[0] %>&nbsp;
+          <span class="alt"><%= trade.coins[0].toUpperCase() %></span>
+        </strong>
+        <span> @ </span>
+        <strong>
+          <%= trade.price %>&nbsp;
+          <span class="alt"><%= trade.coins[1].toUpperCase() %></span>
+        </strong>
+      </span>
+      <% } %>
+    </td>
     <td class="small"><button class="btn btn-link btn-sm" onClick="desktop.browse('<%= explorerUrl %>')"><i class="fa fa-external-link"></i></button></td>
   </script>
   <script type="text/template" id="template-receive">

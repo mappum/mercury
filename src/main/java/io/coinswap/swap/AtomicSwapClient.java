@@ -47,7 +47,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         // we are alice if we are buying and the second currency supports hashlock TXs,
         // or if we are selling and the second currency doesn't support them.
         // otherwise, we are bob
-        alice = !swap.trade.buy ^ switched;
+        alice = !swap.trade.buy ^ swap.switched;
         a = swap.trade.buy ? 1 : 0;
         b = a ^ 1;
 
@@ -215,6 +215,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         refundScheduler.shutdownNow();
 
+        swap.setPayoutHash(alice, payout.getHash());
         swap.setStep(AtomicSwap.Step.COMPLETE);
     }
 
@@ -338,6 +339,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 log.info("Received other party's payout via coin network: " + tx.toString());
                 tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
 
+                swap.setPayoutHash(!alice, tx.getHash());
+
                 Script xScript = tx.getInput(1).getScriptSig();
                 swap.setX(xScript.getChunks().get(1).data);
 
@@ -401,6 +404,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         currencies[a].getWallet().peerGroup().broadcastTransaction(refund);
         // TODO: make sure refund got accepted
 
+        swap.setRefundHash(alice, refund.getHash());
         swap.setStep(AtomicSwap.Step.COMPLETE);
     }
 

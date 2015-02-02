@@ -1,5 +1,8 @@
 package io.coinswap.client;
 
+import com.sun.javafx.menu.MenuBase;
+import com.sun.javafx.scene.control.GlobalMenuAdapter;
+import com.sun.javafx.tk.Toolkit;
 import io.coinswap.Coins;
 import io.coinswap.market.TradeClient;
 import javafx.application.Application;
@@ -12,6 +15,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Menu;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -26,11 +30,11 @@ import netscape.javascript.JSObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Main extends Application {
@@ -41,12 +45,13 @@ public class Main extends Application {
 
     private static final int MIN_WIDTH = 740;
     private static final int MIN_HEIGHT = 400;
-    private static final int DEFAULT_WIDTH = 1024;
-    private static final int DEFAULT_HEIGHT = 768;
+    private static final int DEFAULT_WIDTH = 1200;
+    private static final int DEFAULT_HEIGHT = 760;
 
     private ClientUI ui;
     private Controller controller;
     private ArrayList<Currency> currencies;
+    private SwapCollection swaps;
     private Map<String, CoinModel> models;
 
     @Override
@@ -55,9 +60,15 @@ public class Main extends Application {
         ui.engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
+                File dataDirectory = getDataDirectory();
+
                 controller = new Controller(ui.engine);
-                currencies = Coins.get(getDataDirectory());
+                currencies = Coins.get(dataDirectory);
                 models = new HashMap<String, CoinModel>();
+
+                File swapCollectionFile = new File(dataDirectory, "swaps");
+                swaps = SwapCollection.load(swapCollectionFile);
+                if(swaps == null) swaps = new SwapCollection(swapCollectionFile);
 
                 // for each Coin, create JS-side model and insert into JS-side collection
                 final JSObject coinCollection = (JSObject) controller.app.get("coins");
@@ -66,7 +77,7 @@ public class Main extends Application {
                     currency.getSetupFuture().addListener(new Runnable() {
                         @Override
                         public void run() {
-                            CoinModel model = new CoinModel(controller, c);
+                            CoinModel model = new CoinModel(controller, c, swaps);
                             models.put(c.id, model);
                             coinCollection.call("add", new Object[]{ model.object });
                         }
@@ -75,7 +86,7 @@ public class Main extends Application {
                     currency.start();
                 }
 
-                TradeClient tradeClient = new TradeClient(currencies);
+                TradeClient tradeClient = new TradeClient(currencies, swaps);
                 tradeClient.start();
                 controller.context.setMember("trade", new TradeController(controller, tradeClient));
                 controller.app.trigger("initialized");
@@ -99,6 +110,7 @@ public class Main extends Application {
                 try {
                     stop();
                 } catch(Exception ex) {
+                    ex.printStackTrace();
                 } finally {
                     System.exit(0);
                 }

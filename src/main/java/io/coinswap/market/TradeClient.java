@@ -3,6 +3,7 @@ package io.coinswap.market;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.coinswap.client.EventEmitter;
+import io.coinswap.client.SwapCollection;
 import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapClient;
@@ -15,6 +16,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
 import java.io.FileInputStream;
 import java.net.ConnectException;
 import java.security.KeyStore;
@@ -43,9 +45,11 @@ public class TradeClient extends Thread {
     private Map<Integer, Order> orders;
     private Queue<Order> cancelRequests;
 
+    private SwapCollection swapCollection;
+
     private EventEmitter emitter;
 
-    public TradeClient(List<Currency> currencies) {
+    public TradeClient(List<Currency> currencies, SwapCollection swapCollection) {
         checkNotNull(currencies);
         this.currencies = new HashMap<String, Currency>();
         for(Currency c : currencies) {
@@ -58,6 +62,8 @@ public class TradeClient extends Thread {
         requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
         cancelRequests = new ConcurrentLinkedQueue<>();
+
+        this.swapCollection = swapCollection;
 
         emitter = new EventEmitter();
     }
@@ -213,10 +219,7 @@ public class TradeClient extends Thread {
                    currencies.get(trade.coins[0].toLowerCase()),
                    currencies.get(trade.coins[1].toLowerCase())
                 };
-
-                AtomicSwapClient client =
-                        new AtomicSwapClient(swap, connection, swapCurrencies);
-                client.start();
+                startSwap(swap, swapCurrencies);
             }
         }
 
@@ -284,9 +287,13 @@ public class TradeClient extends Thread {
             currencies.get(swap.trade.coins[0].toLowerCase()),
             currencies.get(swap.trade.coins[1].toLowerCase())
         };
+        startSwap(swap, swapCurrencies);
+    }
 
+    private void startSwap(AtomicSwap swap, Currency[] swapCurrencies) {
         AtomicSwapClient client =
                 new AtomicSwapClient(swap, connection, swapCurrencies);
+        swapCollection.add(swap);
         client.start();
     }
 

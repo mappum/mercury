@@ -24,7 +24,6 @@ public abstract class AtomicSwapController {
 
     protected final AtomicSwap swap;
     protected Currency[] currencies;
-    protected boolean switched;
 
     private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
 
@@ -42,7 +41,7 @@ public abstract class AtomicSwapController {
         checkState(swap.trade.quantities[0].isGreaterThan(currencies[0].getParams().getMinFee()));
         checkState(swap.trade.quantities[1].isGreaterThan(currencies[1].getParams().getMinFee()));
 
-        switched = !currencies[1].supportsHashlock();
+        this.swap.switched = !currencies[1].supportsHashlock();
     }
 
     public void onMessage(boolean fromAlice, Map data) throws Exception {
@@ -107,7 +106,7 @@ public abstract class AtomicSwapController {
     }
 
     protected Transaction createPayout(boolean alice) {
-        int i = alice ^ switched ? 1 : 0;
+        int i = alice ^ swap.switched ? 1 : 0;
         NetworkParameters params = currencies[i].getParams();
 
         Transaction tx = new Transaction(params);
@@ -123,7 +122,7 @@ public abstract class AtomicSwapController {
     }
 
     protected Transaction createRefund(boolean alice, boolean timelocked) {
-        int i = alice ^ switched ? 0 : 1;
+        int i = alice ^ swap.switched ? 0 : 1;
 
         Transaction tx = new Transaction(currencies[i].getParams());
         tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);

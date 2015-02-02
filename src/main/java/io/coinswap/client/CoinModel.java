@@ -1,6 +1,8 @@
 package io.coinswap.client;
 
 
+import com.google.common.collect.ImmutableList;
+import io.coinswap.swap.AtomicSwap;
 import org.bitcoinj.core.*;
 import org.bitcoinj.store.BlockStoreException;
 import com.google.common.base.Joiner;
@@ -12,14 +14,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class CoinModel extends Model {
     private static final Logger log = LoggerFactory.getLogger(CoinModel.class);
 
     private Controller controller;
     private Currency currency;
+    private SwapCollection swaps;
 
-    public CoinModel(Controller controller, Currency currency) {
+    public CoinModel(Controller controller, Currency currency, SwapCollection swaps) {
         // build JSON string with arguments,
         // eval to create object via JS constructor,
         // pass to Model() to initialize Java-side handling of object
@@ -35,6 +39,7 @@ public class CoinModel extends Model {
 
         this.controller = controller;
         this.currency = currency;
+        this.swaps = swaps;
 
         object.setMember("controller", this);
 
@@ -180,18 +185,34 @@ public class CoinModel extends Model {
         public void onTransaction(Transaction tx) {
             Wallet w = currency.wallet.wallet();
             JSONObject obj = new JSONObject();
-            obj.put("type", "payment");
+            Sha256Hash txid = tx.getHash();
+
+            AtomicSwap swap = swaps.get(txid);
+            if(swap == null) {
+                obj.put("type", "payment");
+            } else {
+                obj.put("type", "trade");
+                if(txid.equals(swap.getBailinHash(swap.isAlice())))
+                    obj.put("which", "bailin");
+                else if(txid.equals(swap.getPayoutHash(swap.isAlice())))
+                    obj.put("which", "payout");
+                else if(txid.equals(swap.getRefundHash(swap.isAlice())))
+                    obj.put("which", "refund");
+                else return;
+
+                Map trade = swap.trade.toJson();
+                trade.put("price", swap.trade.getPrice().toPlainString());
+                obj.put("trade", trade);
+            }
             obj.put("coin", currency.id);
+            obj.put("value", tx.getValue(w).toPlainString());
             obj.put("id", Utils.HEX.encode(tx.getHash().getBytes()));
             obj.put("date", tx.getUpdateTime().getTime());
             obj.put("depth", tx.getConfidence().getDepthInBlocks());
             obj.put("dead", tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.DEAD);
 
-            org.bitcoinj.core.Coin value = tx.getValue(w);
-            obj.put("value", Double.parseDouble(value.toPlainString()));
-
             String address = null;
-            boolean received = value.compareTo(org.bitcoinj.core.Coin.ZERO) == 1;
+            boolean received = tx.getValue(w).compareTo(org.bitcoinj.core.Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
                 try {
                     if (received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
