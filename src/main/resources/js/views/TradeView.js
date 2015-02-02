@@ -8,12 +8,10 @@ coinswap.TradeView = Backbone.View.extend({
     'keypress .values input': 'updateInputs',
     'keydown .values input': 'updateInputs',
     'keyup .values input': 'updateInputs',
-    'click .accept': 'submit',
-    'click .cancel': 'cancel'
+    'click .accept': 'submit'
   },
 
   template: _.template($('#template-trade').html()),
-  orderTemplate: _.template($('#template-trade-order').html()),
   className: 'trade',
 
   initialize: function() {
@@ -28,12 +26,8 @@ coinswap.TradeView = Backbone.View.extend({
     this.render();
     this.updatePair();
     this.updateValues();
-    this.updateOrders();
 
     this.model.set('price', this.model.get('bestBid'));
-
-    // TODO: fix possible memory leak (listener never gets removed)
-    coinswap.trade.on('fill', this.updateOrders.bind(this));
   },
 
   onDropdownSelect: function(e) {
@@ -138,21 +132,6 @@ coinswap.TradeView = Backbone.View.extend({
     if(bestPrice) m.set('price', bestPrice);
   },
 
-  updateOrders: function() {
-    console.log('updateOrders')
-    var t = this;
-    var orders = coinswap.trade.orders();
-    var ordersEl = this.$el.find('.orders').empty();
-    _.each(orders, function(order) {
-      order.symbols = [
-        t.model.get('coins').get(order.currencies[0]).get('symbol'),
-        t.model.get('coins').get(order.currencies[1]).get('symbol')
-      ];
-      var el = $(t.orderTemplate(order));
-      ordersEl.append(el);
-    });
-  },
-
   submit: function() {
     var t = this;
     this.$el.find('.accept')
@@ -170,14 +149,7 @@ coinswap.TradeView = Backbone.View.extend({
       m.get('pair')[0], m.get('pair')[1],
       m.get('quantity'), m.get('total'), function(err, res) {
         if(err) return;
-        t.updateOrders();
       });
-  },
-
-  cancel: function(e) {
-    var id = $(e.currentTarget).attr('data-id');
-    coinswap.trade.cancel(id);
-    this.updateOrders();
   }
 });
 

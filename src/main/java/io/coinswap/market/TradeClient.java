@@ -181,6 +181,8 @@ public class TradeClient extends Thread {
 
             orders.put(order.id, order);
             log.info("Opened order: " + order.toJson().toString());
+            emitter.emit("orders:change", null);
+            emitter.emit("orders:add", order.toJson());
         }
 
         if(res.containsKey("swaps")) {
@@ -208,6 +210,8 @@ public class TradeClient extends Thread {
 
                 // increment total
                 totalAmount = totalAmount.add(swap.trade.getAmount());
+
+                emitter.emit("swap", swap);
             }
 
             // verify the total amount isn't bigger than we requested
@@ -232,6 +236,9 @@ public class TradeClient extends Thread {
         req.put("method", "cancel");
         req.put("order", order.toJson());
         connection.write(req);
+        // TODO: get response
+        emitter.emit("orders:change", null);
+        emitter.emit("orders:cancel",  order.toJson());
     }
 
     private void onFill(Map message) {
@@ -281,7 +288,8 @@ public class TradeClient extends Thread {
             orders.remove(lastOrder);
         }
 
-        emitter.emit("fill", orderIds);
+        emitter.emit("orders:change", null);
+        emitter.emit("orders:fill", orderIds);
 
         Currency[] swapCurrencies = new Currency[]{
             currencies.get(swap.trade.coins[0].toLowerCase()),

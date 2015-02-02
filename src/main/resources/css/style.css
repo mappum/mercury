@@ -357,7 +357,7 @@ header .right .avatar-clear {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 22%;
+  width: 240px;
 }
 
 .body {
@@ -375,8 +375,8 @@ header .right .avatar-clear {
 }
 
 #main {
-  left: 22%;
-  width: 56%;
+  left: 240px;
+  right: 240px;
   background: #111;
 }
 
@@ -385,7 +385,21 @@ header .right .avatar-clear {
   top: 0;
   bottom: 0;
   right: 0;
-  width: 22%;
+  width: 240px;
+}
+
+#right > .tickers {
+  height: 68%;
+}
+
+#right > .orders {
+  height: 32%;
+  padding: 12px;
+}
+
+#right > div {
+  overflow: auto;
+  width: 100%;
 }
 
 footer {
@@ -487,4 +501,12 @@ table.transactions td {
 }
 .mercury-logo, .mercury-logo img {
   width: 32px;
+}
+
+.orders>ul.list>.order {
+  background: none;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #444;
+  padding: 2px;
 }

@@ -24,7 +24,10 @@
   <section class="body">
     <div id="left"></div>
     <div id="main"></div>
-    <div id="right"></div>
+    <div id="right">
+      <div class="tickers"></div>
+      <div class="orders"></div>
+    </div>
   </section>
 
   <footer>
@@ -196,7 +199,11 @@
       </div>
     </div>
   </script>
-  <script type="text/template" id="template-trade-order">
+  <script type="text/template" id="template-order-list">
+    <h4>Open Orders</h4>
+    <ul class="list-group list"></ul>
+  </script>
+  <script type="text/template" id="template-order">
     <li class="list-group-item order">
       <span class="small"><%= currencies.join('/').toUpperCase() %></span><br>
       <strong class="small"><span class="type" style="color: <%= bid ? 'green' : 'red' %>"><%= bid ? 'Buy' : 'Sell' %></span> <%= symbols[0] %><%= amount %> <span class="alt">@</span> <%= symbols[1] %><%= price %> </strong>
@@ -290,5 +297,6 @@
   <script src="js/views/NavbarView.js"></script>
   <script src="js/views/TickerView.js"></script>
   <script src="js/views/TickerListView.js"></script>
+  <script src="js/views/OrderListView.js"></script>
 </body>
 </html>

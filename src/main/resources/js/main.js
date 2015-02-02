@@ -143,19 +143,25 @@ $(function() {
   var app = coinswap.app = new coinswap.App;
   Backbone.history.start();
 
-  var mainView = new coinswap.MainView({
+  new coinswap.MainView({
     el: $('#main'),
     model: coinswap.app
   });
 
-  var navbarView = new coinswap.NavbarView({
+  new coinswap.NavbarView({
     el: $('#left'),
     model: coinswap.app
   });
 
-  var tickerListView = new coinswap.TickerListView({
-    el: $('#right'),
+  new coinswap.TickerListView({
+    el: $('#right .tickers'),
     model: coinswap.app
   });
 
+  app.on('initialized', function() {
+    new coinswap.OrderListView({
+      el: $('#right .orders'),
+      model: coinswap.app
+    });
+  });
 });
