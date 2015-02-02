@@ -287,15 +287,20 @@ table>thead{
 body {
   height: 100%;
   overflow: hidden;
-  color: #ddd;
+  color: #ccc;
   font-size: 18px;
   padding: 0;
   background: #111;
 }
 
-h1, h2, h3, h4, strong {
-  color: #f9f9f9;
+h1, h2, h3, h4, h5, h6, strong {
+  color: #ddd;
   margin-top: 0;
+}
+h4, h5, h6 {
+  text-transform: uppercase;
+  font-size: 0.72em;
+  color: #aaa;
 }
 
 header, footer, #left, #right {
