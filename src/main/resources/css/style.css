@@ -341,6 +341,10 @@ header .right .avatar-clear {
   display: inline-block;
 }
 
+#left, #right {
+  background-color: #1b1b1b;
+}
+
 #left .upper {
   padding: 18px;
   text-align: center;
