@@ -18,6 +18,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.security.KeyStore;
 import java.util.*;
@@ -90,9 +91,9 @@ public class TradeClient extends Thread {
 
     private void connect() {
         try {
-            FileInputStream storeFile = new FileInputStream("coinswap.jks");
+            InputStream ksStream = getClass().getResourceAsStream("/keys/coinswap.jks");
             KeyStore ks = KeyStore.getInstance("jks");
-            ks.load(storeFile, "password".toCharArray());
+            ks.load(ksStream, "password".toCharArray());
 
             TrustManagerFactory tmf =
                 TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -238,7 +239,7 @@ public class TradeClient extends Thread {
         connection.write(req);
         // TODO: get response
         emitter.emit("orders:change", null);
-        emitter.emit("orders:cancel",  order.toJson());
+        emitter.emit("orders:cancel", order.toJson());
     }
 
     private void onFill(Map message) {
