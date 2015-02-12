@@ -114,24 +114,25 @@ public abstract class AtomicSwapController {
         tx.addInput(swap.getBailinHash(!alice), 0, OP_NOP_SCRIPT);
         tx.addInput(swap.getBailinHash(!alice), 1, OP_NOP_SCRIPT);
 
-        Script outRedeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(1));
-        Script outP2sh = ScriptBuilder.createP2SHOutputScript(outRedeem);
-        tx.addOutput(swap.trade.quantities[i], outP2sh);
+        Address address = swap.getKeys(alice).get(2).toAddress(params);
+        Script output = ScriptBuilder.createOutputScript(address);
+        tx.addOutput(swap.trade.quantities[i], output);
 
         return tx;
     }
 
     protected Transaction createRefund(boolean alice, boolean timelocked) {
         int i = alice ^ swap.switched ? 0 : 1;
+        NetworkParameters params = currencies[i].getParams();
 
         Transaction tx = new Transaction(currencies[i].getParams());
         tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
         tx.addInput(swap.getBailinHash(alice), 0, OP_NOP_SCRIPT);
 
-        Script redeem = ScriptBuilder.createOutputScript(swap.getKeys(alice).get(2));
-        Script p2sh = ScriptBuilder.createP2SHOutputScript(redeem);
+        Address address = swap.getKeys(alice).get(1).toAddress(params);
+        Script output = ScriptBuilder.createOutputScript(address);
         Coin fee = currencies[i].getParams().getMinFee();
-        tx.addOutput(swap.trade.quantities[i].subtract(fee), p2sh);
+        tx.addOutput(swap.trade.quantities[i].subtract(fee), output);
 
         if(timelocked) {
             // TODO: use CHECKLOCKTIMEVERIFY in bailin instead of refund TX timelock (when available)
