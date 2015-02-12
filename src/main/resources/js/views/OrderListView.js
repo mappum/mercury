@@ -19,7 +19,7 @@ coinswap.OrderListView = Backbone.View.extend({
     console.log('rendering order list');
 
     var orders = coinswap.trade.orders();
-    t.$el.html(t.template(orders));
+    t.$el.html(t.template({ orders: orders }));
 
     var listEl = t.$el.find('ul');
     _.each(orders, function(order) {

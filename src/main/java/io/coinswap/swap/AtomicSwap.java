@@ -372,11 +372,15 @@ public class AtomicSwap implements Serializable {
         }
     }
 
-    public Map toJson() {
+    public Map toJson(boolean compact) {
         JSONObject data = new JSONObject();
         data.put("id", id);
         data.put("trade", trade.toJson());
         data.put("time", time + "");
+        if(!compact) {
+            data.put("step", step);
+            data.put("trade", trade.toJson());
+        }
         return data;
     }
 

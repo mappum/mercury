@@ -3,6 +3,7 @@ package io.coinswap.market;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.coinswap.client.EventEmitter;
+import io.coinswap.client.Main;
 import io.coinswap.client.SwapCollection;
 import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwap;
@@ -10,13 +11,13 @@ import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;
 import org.bitcoinj.core.Coin;
+import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -31,7 +32,7 @@ import static com.google.common.base.Preconditions.checkState;
 public class TradeClient extends Thread {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(TradeClient.class);
 
-    public static final String HOST = "localhost";//"trade.mercuryex.com";
+    public static final String HOST = "trade.mercuryex.com";
     public static final int PORT = Connection.PORT;
     public static final org.bitcoinj.core.Coin FEE = Coin.ZERO;
 
@@ -63,10 +64,15 @@ public class TradeClient extends Thread {
         requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
         cancelRequests = new ConcurrentLinkedQueue<>();
+        emitter = new EventEmitter();
 
         this.swapCollection = swapCollection;
-
-        emitter = new EventEmitter();
+        swapCollection.addEventListener(new SwapCollection.StateListener() {
+            @Override
+            public void onStateChange(AtomicSwap swap) {
+                emitter.emit("swap", swap);
+            }
+        }, Threading.SAME_THREAD);
     }
 
     @Override
@@ -316,6 +322,10 @@ public class TradeClient extends Thread {
 
     public Ticker getTicker(String pair) {
         return tickers.get(pair);
+    }
+
+    public List<AtomicSwap> getPendingSwaps() {
+        return swapCollection.getPending();
     }
 
     public void on(String event, EventEmitter.Callback cb) {

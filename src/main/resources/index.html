@@ -28,6 +28,7 @@
     <div id="right">
       <div class="tickers"></div>
       <div class="orders"></div>
+      <div class="trades"></div>
     </div>
   </section>
 
@@ -66,7 +67,6 @@
     </div>
   </script>
   <script type="text/template" id="template-transactions">
-    <br>
     <table class="table table-bordered table-hover col-xs-12">
       <thead>
         <tr class="small"><td></td><td>Coin</td><td>Amount</td><td>Date</td><td>Transaction</td><td></td></tr>
@@ -208,8 +208,52 @@
       </div>
     </div>
   </script>
+  <script type="text/template" id="template-trade-list">
+    <h4>
+      Pending Trades&nbsp;
+      <% if(swaps.length) { %><strong>(<%= swaps.length %>)</strong><% } %>
+    </h4>
+    <ul class="list-group list"></ul>
+  </script>
+  <script type="text/template" id="template-trade-listitem">
+    <% var steps = {
+      STARTING: 0,
+      EXCHANGING_KEYS: 10,
+      EXCHANGING_BAILIN_HASHES: 20,
+      EXCHANGING_SIGNATURES: 30,
+      EXCHANGING_BAILINS: 40,
+      WAITING_FOR_BAILIN: 50,
+      WAITING_FOR_PAYOUT: 75, // alice-only
+      COMPLETE: 100,
+      WAITING_FOR_REFUND: 75,
+      CANCELED: 100
+    };
+    var setupMessage = 'Setting up swap';
+    var stepMessages = {
+      STARTING: 'Starting swap',
+      EXCHANGING_KEYS: setupMessage,
+      EXCHANGING_BAILIN_HASHES: setupMessage,
+      EXCHANGING_SIGNATURES: setupMessage,
+      EXCHANGING_BAILINS: setupMessage,
+      WAITING_FOR_BAILIN: 'Waiting for deposit transaction',
+      WAITING_FOR_PAYOUT: 'Waiting for payout transaction', // alice-only
+      COMPLETE: 'Complete',
+      WAITING_FOR_REFUND: 'Waiting for refund transaction',
+      CANCELED: 'Canceled'
+    }; %>
+    <li class="list-group-item trade small">
+      <span><span class="<%= trade.buy ? 'text-success' : 'text-danger' %>"><%= trade.buy ? 'Bought' : 'Sold' %></span> <%= trade.quantities[0] %> <span class="alt"><%= trade.coins[0].toUpperCase() %></span> @ <%= trade.price %> <span class="alt"><%= trade.coins[1].toUpperCase() %></span></span><br>
+      <span class="small"><%= stepMessages[step] %></span><br>
+      <div class="progress">
+        <div class="progress-bar" style="width: <%= steps[step] %>%"></div>
+      </div>
+    </li>
+  </script>
   <script type="text/template" id="template-order-list">
-    <h4>Open Orders</h4>
+    <h4>
+      Open Orders&nbsp;
+      <% if(orders.length) { %><strong>(<%= orders.length %>)</strong><% } %>
+    </h4>
     <ul class="list-group list"></ul>
   </script>
   <script type="text/template" id="template-order">
@@ -309,5 +353,6 @@
   <script src="js/views/TickerListView.js"></script>
   <script src="js/views/OrderListView.js"></script>
   <script src="js/views/ControlsView.js"></script>
+  <script src="js/views/TradeListView.js"></script>
 </body>
 </html>

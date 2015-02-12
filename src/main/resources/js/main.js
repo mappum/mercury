@@ -170,5 +170,10 @@ $(function() {
       el: $('#right .orders'),
       model: coinswap.app
     });
+
+    new coinswap.TradeListView({
+      el: $('#right .trades'),
+      model: coinswap.app
+    });
   });
 });

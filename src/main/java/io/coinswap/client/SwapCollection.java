@@ -65,7 +65,8 @@ public class SwapCollection implements AtomicSwap.StateListener {
     public List<AtomicSwap> getPending() {
         List<AtomicSwap> output = new ArrayList<AtomicSwap>();
         for(AtomicSwap swap : list) {
-            if(swap.getStep() != AtomicSwap.Step.COMPLETE) {
+            if(swap.getStep() != AtomicSwap.Step.COMPLETE
+            && swap.getStep() != AtomicSwap.Step.CANCELED) {
                 output.add(swap);
             }
         }

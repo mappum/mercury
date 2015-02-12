@@ -77,6 +77,7 @@ public class AtomicSwapTrade implements Serializable {
         data.put("fee", fee.longValue());
         data.put("coins", coins);
         data.put("quantities", new String[]{ quantities[0].toPlainString(), quantities[1].toPlainString() });
+        data.put("price", getPrice().toPlainString());
         data.put("immediate", immediate);
         return data;
     }

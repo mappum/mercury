@@ -3,12 +3,15 @@ package io.coinswap.client;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.market.Order;
 import io.coinswap.market.Ticker;
-import io.coinswap.market.TickerHistory;
 import io.coinswap.market.TradeClient;
+import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapTrade;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 import netscape.javascript.JSObject;
 import org.bitcoinj.core.Coin;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -84,6 +87,15 @@ public class TradeController {
             ordersJs.setSlot(i, toJSObject(orderJson));
         }
         return ordersJs;
+    }
+
+    public JSObject pendingSwaps() {
+        List<AtomicSwap> swaps = client.getPendingSwaps();
+        JSONArray swapsJson = new JSONArray();
+        for(AtomicSwap swap : swaps) {
+           swapsJson.add(swap.toJson(false));
+        }
+        return controller.eval(swapsJson.toJSONString());
     }
 
     public void cancel(int id) {
