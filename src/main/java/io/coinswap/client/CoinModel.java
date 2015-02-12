@@ -190,22 +190,30 @@ public class CoinModel extends Model {
             AtomicSwap swap = swaps.get(txid);
             if(swap == null) {
                 obj.put("type", "payment");
+                obj.put("value", tx.getValue(w).toPlainString());
+
             } else {
                 obj.put("type", "trade");
-                if(txid.equals(swap.getBailinHash(swap.isAlice())))
+                // TODO: support other party's trade transactions too?
+                // (we're assuming the bailin was sent from us, payout is paying to us)
+                if (txid.equals(swap.getBailinHash(swap.isAlice()))) {
                     obj.put("which", "bailin");
-                else if(txid.equals(swap.getPayoutHash(swap.isAlice())))
+                    Coin paid = tx.getOutput(0).getValue()
+                            .add(tx.getOutput(1).getValue());
+                    obj.put("value", paid.negate().toPlainString());
+                } else if (txid.equals(swap.getPayoutHash(swap.isAlice()))) {
                     obj.put("which", "payout");
-                else if(txid.equals(swap.getRefundHash(swap.isAlice())))
+                    obj.put("value", tx.getOutput(0).getValue().toPlainString());
+                } else if(txid.equals(swap.getRefundHash(swap.isAlice()))) {
                     obj.put("which", "refund");
-                else return;
+                    obj.put("value", tx.getOutput(0).getValue().toPlainString());
+                } else {
+                    return;
+                }
 
-                Map trade = swap.trade.toJson();
-                trade.put("price", swap.trade.getPrice().toPlainString());
-                obj.put("trade", trade);
+                obj.put("trade", swap.trade.toJson());
             }
             obj.put("coin", currency.id);
-            obj.put("value", tx.getValue(w).toPlainString());
             obj.put("id", Utils.HEX.encode(tx.getHash().getBytes()));
             obj.put("date", tx.getUpdateTime().getTime());
             obj.put("depth", tx.getConfidence().getDepthInBlocks());
