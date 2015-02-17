@@ -25,9 +25,10 @@ public class AtomicSwap implements Serializable {
     protected static final ReentrantLock LOCK = Threading.lock(AtomicSwap.class.getName());
     protected ReentrantLock lock = LOCK;
 
+    private static final long serialVersionUID = 0;
     public static final int VERSION = 0;
     private static final int REFUND_PERIOD = 4 * 60; // in minutes
-    private static final int SERIALIZATION_VERSION = 0;
+    private static final int REFUND_BROADCAST_DELAY = 10 * 1000;
 
     private Map<StateListener, Executor> listeners;
 
@@ -55,7 +56,6 @@ public class AtomicSwap implements Serializable {
         EXCHANGING_KEYS,
         EXCHANGING_BAILIN_HASHES,
         EXCHANGING_SIGNATURES,
-        EXCHANGING_BAILINS,
         WAITING_FOR_BAILIN,
         WAITING_FOR_PAYOUT, // alice-only
         COMPLETE,
@@ -80,6 +80,19 @@ public class AtomicSwap implements Serializable {
 
     public boolean isAlice() {
         return !trade.buy ^ switched;
+    }
+
+    public boolean isSettingUp() {
+        return getStep().ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal();
+    }
+
+    public boolean isStarted() {
+        return !getStep().equals(Step.STARTING);
+    }
+
+    public boolean isDone() {
+        Step step = getStep();
+        return step.equals(Step.COMPLETE) || step.equals(Step.CANCELED);
     }
 
     public Step getStep() {
@@ -346,6 +359,12 @@ public class AtomicSwap implements Serializable {
         return getTime() + period;
     }
 
+    public long getTimeUntilRefund(boolean alice) {
+        long millisLeft = getLocktime(alice) - System.currentTimeMillis();
+        millisLeft += REFUND_BROADCAST_DELAY; // wait some extra time to make sure we're over the locktime
+        return millisLeft;
+    }
+
     public String getChannelId(boolean alice) {
         return "swap:" + id + ":" + (alice ? "0" : "1");
     }
@@ -394,7 +413,6 @@ public class AtomicSwap implements Serializable {
     private void writeObject(ObjectOutputStream out) throws IOException {
         lock.lock();
         try {
-            out.writeObject(SERIALIZATION_VERSION);
             out.writeObject(x);
             out.writeObject(xHash);
             out.writeObject(bailinHashes);
@@ -427,9 +445,6 @@ public class AtomicSwap implements Serializable {
         this.lock = LOCK;
         lock.lock();
         try {
-            int version = (int) in.readObject();
-            checkState(version == SERIALIZATION_VERSION);
-
             x = (byte[]) in.readObject();
             xHash = (byte[]) in.readObject();
             bailinHashes = (Sha256Hash[]) in.readObject();
