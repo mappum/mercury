@@ -124,6 +124,18 @@ table>thead{
   border: none;
 }
 
+.alert {
+  border-radius: 0;
+}
+.alert .close {
+  color: rgba(255,255,255,0.4);
+  opacity: 1;
+  margin-bottom: 64px;
+}
+.alert .close:hover {
+  color: #fff;
+}
+
 /* classes */
 
 .btn-round {
@@ -383,7 +395,7 @@ header .right .avatar-clear {
   overflow-y: auto;
 }
 
-#main {
+#middle {
   left: 240px;
   right: 240px;
   background: #111;
