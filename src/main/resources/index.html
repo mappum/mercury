@@ -110,7 +110,6 @@
       <%= address %>
       <% } else if (type === 'trade') { %>
       <span>
-        <span><%= which === 'bailin' ? '<span class="text-info">Deposit</span>' : which === 'payout' ? '<span class="text-success">Payout</span>' : '<span class="text-warning"><i class="fa fa-warning"></i> Refund</span>' %>&nbsp;&nbsp;-&nbsp;&nbsp;</span>
         <span class="<%= trade.buy ? 'text-success' : 'text-danger' %>">
           <i class="fa fa-exchange"></i>&nbsp;
           <%= trade.buy ? 'Bought' : 'Sold' %>&nbsp;
@@ -124,6 +123,7 @@
           <%= trade.price %>&nbsp;
           <span class="alt"><%= trade.coins[1].toUpperCase() %></span>
         </strong>
+        <span>&nbsp;&nbsp;(<%= which === 'bailin' ? '<span class="text-info">Deposit</span>' : which === 'payout' ? '<span class="text-success">Payout</span>' : '<span class="text-warning"><i class="fa fa-warning"></i> Refund</span>' %>)</span>
       </span>
       <% } %>
     </td>
