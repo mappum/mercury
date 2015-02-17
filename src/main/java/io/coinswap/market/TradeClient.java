@@ -78,6 +78,7 @@ public class TradeClient extends Thread {
     @Override
     public void run() {
         connect();
+        resumeSwaps();
 
         while(true) {
             // TODO: should we change to submit trade requests without waiting for responses?
@@ -158,6 +159,15 @@ public class TradeClient extends Thread {
         });
     }
 
+    private void resumeSwaps() {
+        List<AtomicSwap> swaps = swapCollection.getPending();
+        if(swaps.size() == 0) return;
+        log.info("Resuming " + swaps.size() + " pending swaps");
+        for(AtomicSwap swap : swaps) {
+            startSwap(swap, getPair(swap.trade.coins));
+        }
+    }
+
     public SettableFuture trade(AtomicSwapTrade trade) {
         tradeRequests.add(trade);
 
@@ -226,11 +236,7 @@ public class TradeClient extends Thread {
 
             log.debug("Swaps are valid, starting AtomicSwapClients");
             for(AtomicSwap swap : swaps) {
-                Currency[] swapCurrencies = new Currency[]{
-                   currencies.get(trade.coins[0].toLowerCase()),
-                   currencies.get(trade.coins[1].toLowerCase())
-                };
-                startSwap(swap, swapCurrencies);
+                startSwap(swap, getPair(trade.coins));
             }
         }
 
@@ -298,16 +304,12 @@ public class TradeClient extends Thread {
         emitter.emit("orders:change", null);
         emitter.emit("orders:fill", orderIds);
 
-        Currency[] swapCurrencies = new Currency[]{
-            currencies.get(swap.trade.coins[0].toLowerCase()),
-            currencies.get(swap.trade.coins[1].toLowerCase())
-        };
-        startSwap(swap, swapCurrencies);
+        startSwap(swap, getPair(swap.trade.coins));
     }
 
-    private void startSwap(AtomicSwap swap, Currency[] swapCurrencies) {
+    private void startSwap(AtomicSwap swap, Currency[] pair) {
         AtomicSwapClient client =
-                new AtomicSwapClient(swap, connection, swapCurrencies);
+                new AtomicSwapClient(swap, connection, pair);
         swapCollection.add(swap);
         client.start();
     }
@@ -334,6 +336,13 @@ public class TradeClient extends Thread {
 
     public Map<String, Currency> getCurrencies() {
         return currencies;
+    }
+
+    public Currency[] getPair(String[] ids) {
+        return new Currency[]{
+                currencies.get(ids[0].toLowerCase()),
+                currencies.get(ids[1].toLowerCase())
+        };
     }
 
     public List<Order> getOrders() {

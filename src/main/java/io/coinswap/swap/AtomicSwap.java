@@ -5,6 +5,7 @@ import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.Utils;
+import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ public class AtomicSwap implements Serializable {
     private static final long serialVersionUID = 0;
     public static final int VERSION = 0;
     private static final int REFUND_PERIOD = 4 * 60; // in minutes
-    private static final int REFUND_BROADCAST_DELAY = 10 * 1000;
+    private static final int REFUND_BROADCAST_DELAY = 10; // in seconds
 
     private Map<StateListener, Executor> listeners;
 
@@ -64,6 +65,7 @@ public class AtomicSwap implements Serializable {
     }
     private Step step = Step.STARTING;
 
+    // the state machine for a swap
     public AtomicSwap(String id, AtomicSwapTrade trade, long time) {
         this.id = checkNotNull(id);
         this.trade = checkNotNull(trade);
@@ -78,21 +80,31 @@ public class AtomicSwap implements Serializable {
         listeners = new HashMap<StateListener, Executor>();
     }
 
+    // we are alice if we are buying and the second currency supports hashlock
+    // TXs, or if we are selling and the second currency doesn't support them.
+    // otherwise, we are bob
     public boolean isAlice() {
         return !trade.buy ^ switched;
     }
 
+    // returns true if we are still in the setup stage, e.g. have not yet
+    // committed to any transactions
     public boolean isSettingUp() {
-        return getStep().ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal();
+        return getStep().ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal()
+                || (isAlice() && getStep().equals(AtomicSwap.Step.WAITING_FOR_BAILIN));
     }
 
+    // returns true if we have started communicating with the other party to
+    // start the atomic swap
     public boolean isStarted() {
         return !getStep().equals(Step.STARTING);
     }
 
+    // returns true if we have either successfully finished the swap, or have
+    // canceled it and recovered our funds
     public boolean isDone() {
         Step step = getStep();
-        return step.equals(Step.COMPLETE) || step.equals(Step.CANCELED);
+        return step == Step.COMPLETE || step == Step.CANCELED;
     }
 
     public Step getStep() {
@@ -116,7 +128,7 @@ public class AtomicSwap implements Serializable {
         }
 
         // trigger event
-        if(!step.equals(previous)) {
+        if(step != previous) {
             final AtomicSwap parent = this;
             for(StateListener listener : listeners.keySet()) {
                 listeners.get(listener).execute(new Runnable() {
@@ -360,9 +372,21 @@ public class AtomicSwap implements Serializable {
     }
 
     public long getTimeUntilRefund(boolean alice) {
-        long millisLeft = getLocktime(alice) - System.currentTimeMillis();
-        millisLeft += REFUND_BROADCAST_DELAY; // wait some extra time to make sure we're over the locktime
-        return millisLeft;
+        long secondsLeft = getLocktime(alice) - System.currentTimeMillis() / 1000;
+        secondsLeft += REFUND_BROADCAST_DELAY; // wait some extra time to make sure we're over the locktime
+        return secondsLeft;
+    }
+
+    protected Script getMultisigRedeem() {
+        lock.lock();
+        try {
+            List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
+            multiSigKeys.add(keys[0].get(0));
+            multiSigKeys.add(keys[1].get(0));
+            return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public String getChannelId(boolean alice) {
@@ -465,6 +489,8 @@ public class AtomicSwap implements Serializable {
             for(byte[] key : keys[0]) this.keys[0].add(ECKey.fromPublicOnly(key));
             this.keys[1] = new ArrayList<ECKey>(keys[1].size());
             for(byte[] key : keys[1]) this.keys[1].add(ECKey.fromPublicOnly(key));
+
+            listeners = new HashMap<StateListener, Executor>();
 
         } catch (Exception e) {
             e.printStackTrace();

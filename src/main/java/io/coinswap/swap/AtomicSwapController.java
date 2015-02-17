@@ -86,7 +86,7 @@ public abstract class AtomicSwapController {
                 ECKey.ECDSASignature payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
                         refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes);
 
-                Script redeem = getMultisigRedeem();
+                Script redeem = swap.getMultisigRedeem();
 
                 Transaction payoutTx = createPayout(!fromAlice);
                 Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
@@ -143,14 +143,7 @@ public abstract class AtomicSwapController {
         return tx;
     }
 
-    protected Script getMultisigRedeem() {
-        List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
-        multiSigKeys.add(swap.getKeys(true).get(0));
-        multiSigKeys.add(swap.getKeys(false).get(0));
-        return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
-    }
-
     public boolean settingUp() {
-        return swap.getStep().ordinal() <= AtomicSwap.Step.EXCHANGING_SIGNATURES.ordinal();
+        return swap.isSettingUp();
     }
 }
