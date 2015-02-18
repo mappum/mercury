@@ -84,7 +84,11 @@ coinswap.MainView = Backbone.View.extend({
     var page = this.model.get('page');
     console.log('rendering ' + page.id);
 
-    this[page.id].apply(this, page.args);
+    try {
+      this[page.id].apply(this, page.args);
+    } catch(e) {
+      console.log('Uncaught exception: ' + e)
+    }
   },
 
   home: function() {
@@ -116,6 +120,11 @@ coinswap.MainView = Backbone.View.extend({
     this.$el.append(view.el);
   },
 
+  trades: function(filter) {
+    var view = new coinswap.TradesView();
+    this.$el.append(view.el);
+  },
+
   send: function(id) {
     var coins = this.model.get('coins');
     var view = new coinswap.SendView({ collection: coins, id: id });
@@ -138,11 +147,14 @@ coinswap.Router = Backbone.Router.extend({
     'transactions/:coin': 'transactions',
     'data': 'data',
     'data/:coin': 'data',
-    'data/:coin1/:coin2': 'data'
+    'data/:coin1/:coin2': 'data',
+    'trades': 'trades',
+    'trades/:coin': 'trades',
+    'trades/:coin1/:coin2': 'trades'
   }
 });
 
-$(function() {
+function init() {
   var app = coinswap.app = new coinswap.App;
   Backbone.history.start();
 
@@ -181,4 +193,12 @@ $(function() {
       el: $('footer')
     });
   });
+}
+
+$(function() {
+  try {
+    init();
+  } catch(e) {
+    console.log('Uncaught exception: ' + e)
+  }
 });

@@ -73,6 +73,14 @@ public class SwapCollection implements AtomicSwap.StateListener {
         return output;
     }
 
+    public List<AtomicSwap> getAll() {
+        List<AtomicSwap> output = new ArrayList<AtomicSwap>(list.size());
+        for(AtomicSwap swap : list) {
+            output.add(swap);
+        }
+        return output;
+    }
+
     public int size() {
         lock.lock();
         try {

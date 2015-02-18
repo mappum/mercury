@@ -98,6 +98,15 @@ public class TradeController {
         return controller.eval(swapsJson.toJSONString());
     }
 
+    public JSObject swaps() {
+        List<AtomicSwap> swaps = client.getSwaps();
+        JSONArray swapsJson = new JSONArray();
+        for(AtomicSwap swap : swaps) {
+            swapsJson.add(swap.toJson(false));
+        }
+        return controller.eval(swapsJson.toJSONString());
+    }
+
     public void cancel(int id) {
         client.cancel(id);
     }

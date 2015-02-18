@@ -74,7 +74,7 @@
       <div class="btn-group-vertical" data-toggle="buttons-radio">
         <a href="#" class="home btn btn-primary <%= page.id === 'home' ? 'active' : '' %>"><i class="fa fa-home"></i> Home</a>
         <a href="#transactions" class="transactions btn btn-primary <%= page.id === 'transactions' ? 'active' : '' %>"><i class="fa fa-list"></i> Transactions</a>
-        <a href="#data" class="data btn btn-primary <%= page.id === 'data' ? 'active' : '' %>"><i class="fa fa-bar-chart-o"></i> Data</a>
+        <a href="#trades" class="data btn btn-primary <%= page.id === 'trades' ? 'active' : '' %>"><i class="fa fa-exchange"></i> Trades</a>
       </div>
     </div>
   </script>
@@ -341,6 +341,60 @@
       </div>
     </div>
   </script>
+  <script type="text/template" id="template-trades">
+    <table class="table table-bordered table-hover col-xs-12">
+      <thead>
+        <tr class="small">
+          <td>Date</td>
+          <td>Pair</td>
+          <td>Type</td>
+          <td>Quantity</td>
+          <td>Price</td>
+          <td>Status</td>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </script>
+  <script type="text/template" id="template-trades-row">
+    <% var steps = {
+      STARTING: 0,
+      EXCHANGING_KEYS: 10,
+      EXCHANGING_BAILIN_HASHES: 20,
+      EXCHANGING_SIGNATURES: 30,
+      EXCHANGING_BAILINS: 40,
+      WAITING_FOR_BAILIN: 50,
+      WAITING_FOR_PAYOUT: 75, // alice-only
+      COMPLETE: 100,
+      WAITING_FOR_REFUND: 75,
+      CANCELED: 100
+    };
+    var setupMessage = 'Setting up swap';
+    var stepMessages = {
+      STARTING: 'Starting swap',
+      EXCHANGING_KEYS: setupMessage,
+      EXCHANGING_BAILIN_HASHES: setupMessage,
+      EXCHANGING_SIGNATURES: setupMessage,
+      EXCHANGING_BAILINS: setupMessage,
+      WAITING_FOR_BAILIN: 'Waiting for deposit transaction',
+      WAITING_FOR_PAYOUT: 'Waiting for payout transaction', // alice-only
+      COMPLETE: 'Complete',
+      WAITING_FOR_REFUND: 'Waiting for refund transaction',
+      CANCELED: 'Canceled'
+    }; %>
+    <tr>
+      <td class="small"><%= window.moment(time * 1000).format('l H:mm') %></td>
+      <td class="small"><%= trade.coins.join('/').toUpperCase() %></td>
+      <td class="small text-<%= trade.buy ? 'success' : 'danger' %>"><%= trade.buy ? 'Buy' : 'Sell' %></td>
+      <td class="small"><%= trade.quantities[0] %> <span class="alt"><%= trade.coins[0].toUpperCase() %></span></td>
+      <td class="small"><%= trade.price %> <span class="alt"><%= trade.coins[1].toUpperCase() %></span></td>
+      <td class="small alt">
+        <span class="text-<%= step === 'CANCELED' ? 'warning' : step === 'COMPLETE' ? 'success' : 'info' %>">
+        <%= step === 'CANCELED' ? '<i class="fa fa-warning"></i> ' : '' %> <%= stepMessages[step] %>
+        </span>
+      </td>
+    </tr>
+  </script>
 
   <script src="js/jquery-2.0.2.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
@@ -359,6 +413,7 @@
   <script src="js/views/TradeView.js"></script>
   <script src="js/views/ReceiveView.js"></script>
   <script src="js/views/TransactionsView.js"></script>
+  <script src="js/views/TradesView.js"></script>
   <script src="js/views/SendView.js"></script>
   <script src="js/views/NavbarView.js"></script>
   <script src="js/views/TickerView.js"></script>

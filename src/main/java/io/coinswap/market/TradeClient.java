@@ -44,6 +44,8 @@ public class TradeClient extends Thread {
     public static final int PORT = Connection.PORT;
     public static final org.bitcoinj.core.Coin FEE = Coin.ZERO;
 
+    public static final int CLIENT_VERSION = 0;
+
     public static final long TIME_EPSILON = 60;
 
     private Map<String, Currency> currencies;
@@ -153,10 +155,19 @@ public class TradeClient extends Thread {
                 }
             }
         });
+
         connection.onMessage("ticker", new Connection.ReceiveListener() {
             @Override
             public void onReceive(Map message) {
                 parent.onTicker(message);
+            }
+        });
+
+        connection.onMessage("version", new Connection.ReceiveListener() {
+            @Override
+            public void onReceive(Map message) {
+                int version = (int) message.get("version");
+                emitter.emit("version", version);
             }
         });
 
@@ -340,6 +351,10 @@ public class TradeClient extends Thread {
 
     public List<AtomicSwap> getPendingSwaps() {
         return swapCollection.getPending();
+    }
+
+    public List<AtomicSwap> getSwaps() {
+        return swapCollection.getAll();
     }
 
     public void on(String event, EventEmitter.Callback cb) {
