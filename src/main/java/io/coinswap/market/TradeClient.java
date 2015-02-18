@@ -29,6 +29,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+/**
+ * Connects to an order-matching service to find counterparties to trade with. When market orders
+ * or trade requests get filled by the service, TradeClient will create `market.AtomicSwapClient`s
+ * to execute the trade with the atomic swap protocol.
+ *
+ * Note that even though the order-matching service is centralized, no trust is being placed in it
+ * (it never holds the funds involved in the trades), so this exchange scheme is fully trustless.
+ */
 public class TradeClient extends Thread {
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(TradeClient.class);
 
@@ -119,7 +127,9 @@ public class TradeClient extends Thread {
                 initListeners();
                 connection.start();
 
-            } catch (ConnectException e) {
+                emitter.emit("connect", null);
+
+            } catch (Exception e) {
                 log.info("Could not connect to trade server");
                 Thread.sleep(5000);
                 connect();
@@ -153,7 +163,9 @@ public class TradeClient extends Thread {
         connection.onDisconnect(new Runnable() {
             @Override
             public void run() {
+                connection = null;
                 log.info("Disconnected from trade server");
+                emitter.emit("disconnect", null);
                 connect();
             }
         });
@@ -347,5 +359,9 @@ public class TradeClient extends Thread {
 
     public List<Order> getOrders() {
         return new ArrayList<>(orders.values());
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 }

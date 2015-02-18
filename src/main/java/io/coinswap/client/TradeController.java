@@ -102,6 +102,10 @@ public class TradeController {
         client.cancel(id);
     }
 
+    public boolean isConnected() {
+        return client.getConnection() != null && client.getConnection().isConnected();
+    }
+
     public void on(String event, JSObject listener) {
         client.on(event, new EventEmitter.Callback(controller.e) {
             @Override

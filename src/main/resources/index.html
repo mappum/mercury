@@ -40,10 +40,14 @@
     </div>
   </section>
 
-  <footer>
-    <span><i class="fa fa-signal text-success"></i>&nbsp;&nbsp;Connected</span>
-  </footer>
+  <footer><span>Connected</span></footer>
 
+  <script type="text/template" id="template-footer">
+    <span>
+      <i class="signal signal-<%= connected ? '4' : '0' %>"></i>&nbsp;&nbsp;
+      <%= connected ? 'Connected to' : 'Diconnected from' %> orderbook server
+    </span>
+  </script>
   <script type="text/template" id="template-controls">
     <button class="back btn btn-link <%= hasBack ? '' : 'disabled' %>">
       <i class="fa fa-lg fa-angle-left"></i>
@@ -362,5 +366,6 @@
   <script src="js/views/OrderListView.js"></script>
   <script src="js/views/ControlsView.js"></script>
   <script src="js/views/TradeListView.js"></script>
+  <script src="js/views/FooterView.js"></script>
 </body>
 </html>

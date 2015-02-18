@@ -176,5 +176,9 @@ $(function() {
       el: $('#right .trades'),
       model: coinswap.app
     });
+
+    new coinswap.FooterView({
+      el: $('footer')
+    });
   });
 });

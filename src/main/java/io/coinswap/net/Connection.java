@@ -169,6 +169,10 @@ public class Connection extends Thread {
         }
     }
 
+    public boolean isConnected() {
+        return isAlive();
+    }
+
     public SSLSocket getSocket() { return socket; }
 
     public interface ReceiveListener {

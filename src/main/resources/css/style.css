@@ -66,6 +66,50 @@ hr {
   margin-right: 0.3em;
 }
 
+.signal {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  font: normal normal normal 14px/1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+  top: 2px;
+}
+.signal:before, .signal:after {
+  content: "\f012";
+  overflow: hidden;
+  display: block;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.signal:after {
+  color: rgba(255,255,255,0.25);
+}
+.signal-0:before {
+  width: 3px;
+  color: #e74c3c;
+}
+.signal-1:before {
+  width: 6px;
+  color: #e74c3c;
+}
+.signal-2:before {
+  width: 9px;
+  color: #f39c12;
+}
+.signal-3:before {
+  width: 12px;
+  color: #f39c12;
+}
+.signal-4:before {
+  width: 15px;
+  color: #18bc9c;
+}
+
 .dropdown-menu>li>a:hover strong,
 .dropdown-menu>li>a:focus strong {
   color: #fff;
@@ -570,4 +614,9 @@ header .controls > button.disabled {
 }
 header .controls > button.disabled:hover {
   color: inherit;
+}
+
+footer {
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
 }
