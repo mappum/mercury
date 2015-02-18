@@ -381,6 +381,13 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private void listenForPayout() {
         checkState(swap.isAlice());
 
+        // check to see if we have already received the payout TX
+        Transaction tx = currencies[a].getWallet().wallet().getTransaction(swap.getPayoutHash(!swap.isAlice()));
+        if(tx != null) {
+            onPayout(tx);
+            return;
+        }
+
         Transaction payout = createPayout(false);
 
         Wallet w = new Wallet(currencies[a].getParams());
@@ -390,20 +397,24 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         w.addEventListener(new AbstractWalletEventListener() {
             @Override
             public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
-                log.info("Received other party's payout via coin network: " + tx.toString());
-                tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
-
-                swap.setPayoutHash(!swap.isAlice(), tx.getHash());
-
-                Script xScript = tx.getInput(1).getScriptSig();
-                swap.setX(xScript.getChunks().get(1).data);
-
-                broadcastPayout();
+                onPayout(tx);
                 currencies[b].getWallet().peerGroup().removeWallet(w);
             }
         });
         currencies[a].getWallet().peerGroup().addWallet(w);
         // TODO: listen for this script when starting up and we have pending swaps
+    }
+
+    private void onPayout(Transaction tx) {
+        log.info("Received other party's payout via coin network: " + tx.toString());
+        tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
+
+        swap.setPayoutHash(!swap.isAlice(), tx.getHash());
+
+        Script xScript = tx.getInput(1).getScriptSig();
+        swap.setX(xScript.getChunks().get(1).data);
+
+        broadcastPayout();
     }
 
     private void cancel() {
