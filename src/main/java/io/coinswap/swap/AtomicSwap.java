@@ -5,8 +5,10 @@ import org.bitcoinj.core.ECKey;
 import org.bitcoinj.core.Sha256Hash;
 import org.bitcoinj.core.Transaction;
 import org.bitcoinj.core.Utils;
+import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,7 @@ public class AtomicSwap implements Serializable {
     protected static final ReentrantLock LOCK = Threading.lock(AtomicSwap.class.getName());
     protected ReentrantLock lock = LOCK;
 
-    private static final long serialVersionUID = 0;
+    private static final long serialVersionUID = 1;
     public static final int VERSION = 0;
     private static final int REFUND_PERIOD = 4 * 60; // in minutes
     private static final int REFUND_BROADCAST_DELAY = 10; // in seconds
@@ -43,8 +45,8 @@ public class AtomicSwap implements Serializable {
     private Sha256Hash[] refundHashes;
 
     private Transaction[] bailinTxs;
-    private byte[][] payoutSigs;
-    private byte[][] refundSigs;
+    private byte[][][] payoutSigs;
+    private byte[][][] refundSigs;
 
     private long time;
 
@@ -75,8 +77,8 @@ public class AtomicSwap implements Serializable {
         payoutHashes = new Sha256Hash[2];
         refundHashes = new Sha256Hash[2];
         bailinTxs = new Transaction[2];
-        payoutSigs = new byte[2][];
-        refundSigs = new byte[2][];
+        payoutSigs = new byte[2][3][];
+        refundSigs = new byte[2][2][];
         listeners = new HashMap<StateListener, Executor>();
     }
 
@@ -325,47 +327,41 @@ public class AtomicSwap implements Serializable {
         }
     }
 
-    public void setPayoutSig(boolean alice, ECKey.ECDSASignature sig) {
-        int a = alice ? 0 : 1;
-
+    public void setPayoutSig(boolean aliceTx, int i, ECKey.ECDSASignature sig) {
         lock.lock();
         try {
-            checkState(payoutSigs[a] == null);
-            payoutSigs[a] = sig.encodeToDER();
+            checkState(payoutSigs[aliceTx ? 0 : 1][i] == null);
+            payoutSigs[aliceTx ? 0 : 1][i] = sig.encodeToDER();
         } finally {
             lock.unlock();
         }
     }
 
-    public ECKey.ECDSASignature getPayoutSig(boolean alice) {
-        int a = alice ? 0 : 1;
-
+    public TransactionSignature getPayoutSig(boolean aliceTx, int i) {
         lock.lock();
         try {
-            return ECKey.ECDSASignature.decodeFromDER(payoutSigs[a]);
+            ECKey.ECDSASignature sig = ECKey.ECDSASignature.decodeFromDER(payoutSigs[aliceTx ? 0 : 1][i]);
+            return new TransactionSignature(sig, Transaction.SigHash.ALL, false);
         } finally {
             lock.unlock();
         }
     }
 
-    public void setRefundSig(boolean alice, ECKey.ECDSASignature sig) {
-        int a = alice ? 0 : 1;
-
+    public void setRefundSig(boolean aliceTx, int i, ECKey.ECDSASignature sig) {
         lock.lock();
         try {
-            checkState(refundSigs[a] == null);
-            refundSigs[a] = sig.encodeToDER();
+            checkState(refundSigs[aliceTx ? 0 : 1][i] == null);
+            refundSigs[aliceTx ? 0 : 1][i] = sig.encodeToDER();
         } finally {
             lock.unlock();
         }
     }
 
-    public ECKey.ECDSASignature getRefundSig(boolean alice) {
-        int a = alice ? 0 : 1;
-
+    public TransactionSignature getRefundSig(boolean aliceTx, int i) {
         lock.lock();
         try {
-            return ECKey.ECDSASignature.decodeFromDER(refundSigs[a]);
+            ECKey.ECDSASignature sig = ECKey.ECDSASignature.decodeFromDER(refundSigs[aliceTx ? 0 : 1][i]);
+            return new TransactionSignature(sig, Transaction.SigHash.ALL, false);
         } finally {
             lock.unlock();
         }
@@ -389,6 +385,24 @@ public class AtomicSwap implements Serializable {
             multiSigKeys.add(keys[0].get(0));
             multiSigKeys.add(keys[1].get(0));
             return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    protected Script getHashlockScript(boolean alice) {
+        lock.lock();
+        try {
+            if (alice) return new Script(getX());
+
+            return new ScriptBuilder()
+                    .op(ScriptOpCodes.OP_HASH160)
+                    .data(getXHash())
+                    .op(ScriptOpCodes.OP_EQUALVERIFY)
+                    .data(getKeys(true).get(0).getPubKey())
+                    .op(ScriptOpCodes.OP_CHECKSIG)
+                    .build();
+
         } finally {
             lock.unlock();
         }
@@ -480,8 +494,8 @@ public class AtomicSwap implements Serializable {
             payoutHashes = (Sha256Hash[]) in.readObject();
             refundHashes = (Sha256Hash[]) in.readObject();
             bailinTxs = (Transaction[]) in.readObject();
-            payoutSigs = (byte[][]) in.readObject();
-            refundSigs = (byte[][]) in.readObject();
+            payoutSigs = (byte[][][]) in.readObject();
+            refundSigs = (byte[][][]) in.readObject();
             time = (long) in.readObject();
             id = (String) in.readObject();
             trade = (AtomicSwapTrade) in.readObject();

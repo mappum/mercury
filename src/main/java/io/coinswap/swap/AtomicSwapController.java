@@ -81,24 +81,42 @@ public abstract class AtomicSwapController {
             } else if (method.equals(AtomicSwapMethod.EXCHANGE_SIGNATURES)) {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_SIGNATURES);
 
-                byte[] payoutSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("payout"))),
-                        refundSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("refund")));
-                ECKey.ECDSASignature payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
-                        refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes);
+                // deserialize signatures in message
+                List<String> ownPayoutSigStrings = (List<String>) checkNotNull(data.get("myPayout"));
+                byte[]
+                    payoutSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("payout"))),
+                    refundSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("refund"))),
+                    ownPayoutSigBytes[] = new byte[][] {
+                            Base64.getDecoder().decode(checkNotNull(ownPayoutSigStrings.get(0))),
+                            Base64.getDecoder().decode(checkNotNull(ownPayoutSigStrings.get(1)))},
+                    ownRefundSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("myRefund")));
+                ECKey.ECDSASignature
+                    payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
+                    refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes),
+                    ownPayoutSigs[] = new ECKey.ECDSASignature[] {
+                            ECKey.ECDSASignature.decodeFromDER(ownPayoutSigBytes[0]),
+                            ECKey.ECDSASignature.decodeFromDER(ownPayoutSigBytes[1])},
+                    ownRefundSig = ECKey.ECDSASignature.decodeFromDER(ownRefundSigBytes);
 
+                // verify signature for counterparty's payout
                 Script redeem = swap.getMultisigRedeem();
-
                 Transaction payoutTx = createPayout(!fromAlice);
                 Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
                 checkState(swap.getKeys(fromAlice).get(0).verify(payoutSigHash, payoutSig));
                 log.info("Verified payout signature");
-                swap.setPayoutSig(fromAlice, payoutSig);
 
+                // verify signature for counterparty's refund
                 Transaction refundTx = createRefund(!fromAlice, true);
                 Sha256Hash refundSigHash = refundTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
                 checkState(swap.getKeys(fromAlice).get(0).verify(refundSigHash, refundSig));
                 log.info("Verified refund signature");
-                swap.setRefundSig(fromAlice, refundSig);
+
+                // save signatures in AtomicSwap state
+                swap.setPayoutSig(fromAlice, fromAlice ? 0 : 1, ownPayoutSigs[0]);
+                swap.setPayoutSig(fromAlice, 2, ownPayoutSigs[1]);
+                swap.setRefundSig(fromAlice, fromAlice ? 0 : 1, ownRefundSig);
+                swap.setPayoutSig(!fromAlice, fromAlice ? 0 : 1, payoutSig);
+                swap.setRefundSig(!fromAlice, fromAlice ? 0 : 1, refundSig);
             }
         } finally {
             lock.unlock();

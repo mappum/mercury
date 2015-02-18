@@ -8,7 +8,6 @@ import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import io.coinswap.net.Connection;
 import net.minidev.json.JSONObject;
-import org.bitcoinj.script.ScriptOpCodes;
 import org.bitcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
@@ -143,7 +142,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         if (swap.isAlice()) {
             xScript = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
         } else {
-            xScript = ScriptBuilder.createP2SHOutputScript(getHashlockScript(false));
+            xScript = ScriptBuilder.createP2SHOutputScript(swap.getHashlockScript(false));
         }
         Coin fee = currencies[a].getParams().getMinFee();
         tx.addOutput(fee, xScript);
@@ -161,21 +160,34 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     }
 
     private void sendSignatures() {
+        // create our signatures for counterparty's payout and refund
         Transaction payout = createPayout(!swap.isAlice()),
                     refund = createRefund(!swap.isAlice(), true);
-
         Script multisigRedeem = swap.getMultisigRedeem();
         ECKey key = swap.getKeys(swap.isAlice()).get(0);
         Sha256Hash sigHashPayout = payout.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false),
                    sigHashRefund = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
         ECKey.ECDSASignature sigPayout = key.sign(sigHashPayout),
                              sigRefund = key.sign(sigHashRefund);
+        swap.setPayoutSig(!swap.isAlice(), swap.isAlice() ? 0 : 1, sigPayout);
+        swap.setRefundSig(!swap.isAlice(), swap.isAlice() ? 0 : 1, sigRefund);
+
+        // create our signatures for our own payout and refund
+        TransactionSignature[] myPayout = createPayoutSignatures();
+        swap.setPayoutSig(swap.isAlice(), swap.isAlice() ? 0 : 1, myPayout[0]);
+        swap.setPayoutSig(swap.isAlice(), 2, myPayout[1]); // sig for hashlock output
+        TransactionSignature myRefund = createRefundSignature(swap.isAlice());
+        swap.setRefundSig(swap.isAlice(), swap.isAlice() ? 0 : 1, myRefund);
 
         JSONObject message = new JSONObject();
         message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.EXCHANGE_SIGNATURES);
         message.put("payout", Base64.getEncoder().encodeToString(sigPayout.encodeToDER()));
         message.put("refund", Base64.getEncoder().encodeToString(sigRefund.encodeToDER()));
+        message.put("myPayout", ImmutableList.of(
+                Base64.getEncoder().encodeToString(myPayout[0].encodeToDER()),
+                Base64.getEncoder().encodeToString(myPayout[1].encodeToDER())));
+        message.put("myRefund", Base64.getEncoder().encodeToString(myRefund.encodeToDER()));
         connection.write(message);
     }
 
@@ -197,15 +209,11 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     }
 
     private void broadcastPayout() {
-        Transaction payout = createPayout(swap.isAlice());;
-
-        TransactionSignature[] signatures = getPayoutSignatures();
-        TransactionSignature mySig = signatures[0],
-            otherSig = new TransactionSignature(swap.getPayoutSig(!swap.isAlice()), Transaction.SigHash.ALL, false);
+        Transaction payout = createPayout(swap.isAlice());
 
         List<TransactionSignature> sigList = ImmutableList.of(
-                swap.isAlice() ? mySig : otherSig,
-                swap.isAlice() ? otherSig : mySig);
+            swap.getPayoutSig(swap.isAlice(), 0),
+            swap.getPayoutSig(swap.isAlice(), 1));
         Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigList, swap.getMultisigRedeem());
         payout.getInput(0).setScriptSig(multisigScriptSig);
 
@@ -213,20 +221,21 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         if(swap.isAlice()) {
             // now that we've seen X (revealed when Bob spent his payout), we can provide X
             hashlockScriptSig = new ScriptBuilder()
-                .data(signatures[1].encodeToBitcoin())
+                .data(swap.getPayoutSig(swap.isAlice(), 2).encodeToBitcoin())
                 .data(swap.getX())
-                .data(getHashlockScript(!swap.isAlice()).getProgram())
+                .data(swap.getHashlockScript(!swap.isAlice()).getProgram())
                 .build();
 
         } else {
             // sign using 4th key and provide p2sh script, revealing X to alice
             hashlockScriptSig = new ScriptBuilder()
-                .data(signatures[1].encodeToBitcoin())
+                .data(swap.getPayoutSig(swap.isAlice(), 2).encodeToBitcoin())
                 .data(swap.getX())
                 .build();
         }
         payout.getInput(1).setScriptSig(hashlockScriptSig);
 
+        swap.setPayoutHash(swap.isAlice(), payout.getHash());
         log.info("Broadcasting payout");
         log.info(payout.toString());
         payout.verify();
@@ -235,11 +244,10 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         refundScheduler.shutdownNow();
 
-        swap.setPayoutHash(swap.isAlice(), payout.getHash());
         swap.setStep(AtomicSwap.Step.COMPLETE);
     }
 
-    private TransactionSignature[] getPayoutSignatures() {
+    private TransactionSignature[] createPayoutSignatures() {
         TransactionSignature[] signatures = new TransactionSignature[2];
         Transaction payout = createPayout(swap.isAlice());
         List<ECKey> myKeys = swap.getKeys(swap.isAlice());
@@ -252,25 +260,12 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         // sign the second output of the bailin (for Bob, it's a p2sh pay-to-pubkey,
         // for Alice it requires the hash preimage of X and our pubkey sig)
-        Script hashlockRedeem = getHashlockScript(!swap.isAlice());
+        Script hashlockRedeem = swap.getHashlockScript(!swap.isAlice());
         Sha256Hash hashlockSighash = payout.hashForSignature(1, hashlockRedeem, Transaction.SigHash.ALL, false);
         signatures[1] = new TransactionSignature(myKeys.get(swap.isAlice() ? 0 : 3).sign(hashlockSighash).toCanonicalised(),
                 Transaction.SigHash.ALL, false);
 
         return signatures;
-    }
-
-    private Script getHashlockScript(boolean alice) {
-        if(alice) return new Script(swap.getX());
-
-        return new ScriptBuilder()
-                .op(ScriptOpCodes.OP_HASH160)
-                .data(swap.getXHash())
-                .op(ScriptOpCodes.OP_EQUALVERIFY)
-                .data(swap.getKeys(true).get(0).getPubKey())
-                .op(ScriptOpCodes.OP_CHECKSIG)
-                .build();
-
     }
 
     @Override
@@ -401,9 +396,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         Transaction payout = createPayout(false);
 
         Wallet w = new Wallet(currencies[a].getParams());
-        List<Script> scripts = new ArrayList<>(1);
-        scripts.add(payout.getOutput(0).getScriptPubKey());
-        w.addWatchedScripts(scripts);
+        w.addWatchedScripts(ImmutableList.of(payout.getOutput(0).getScriptPubKey()));
         w.addEventListener(new AbstractWalletEventListener() {
             @Override
             public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
@@ -449,29 +442,31 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void broadcastRefund() {
         checkState(swap.getTimeUntilRefund(swap.isAlice()) <= 0);
+
         Transaction refund = createRefund(swap.isAlice(), true);
-
-        // TODO: create this signature earlier so we don't have to decrypt keys again
-        Script multisigRedeem = swap.getMultisigRedeem();
-        ECKey key = swap.getKeys(swap.isAlice()).get(0);
-        Sha256Hash multisigSighash = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
-        ECKey.ECDSASignature mySig = key.sign(multisigSighash),
-                otherSig = swap.getRefundSig(!swap.isAlice());
-
-        List<TransactionSignature> sigs = new ArrayList<TransactionSignature>(2);
-        sigs.add(new TransactionSignature(swap.isAlice() ? mySig : otherSig, Transaction.SigHash.ALL, false));
-        sigs.add(new TransactionSignature(swap.isAlice() ? otherSig : mySig, Transaction.SigHash.ALL, false));
-        Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, multisigRedeem);
+        List<TransactionSignature> sigs = ImmutableList.of(
+                swap.getRefundSig(swap.isAlice(), 0),
+                swap.getRefundSig(swap.isAlice(), 1));
+        Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem());
         refund.getInput(0).setScriptSig(multisigScriptSig);
 
+        swap.setRefundHash(swap.isAlice(), refund.getHash());
         log.info("Broadcasting refund");
         log.info(refund.toString());
         refund.verify();
         currencies[a].getWallet().peerGroup().broadcastTransaction(refund);
         // TODO: make sure refund got accepted
 
-        swap.setRefundHash(swap.isAlice(), refund.getHash());
         swap.setStep(AtomicSwap.Step.CANCELED);
+    }
+
+    private TransactionSignature createRefundSignature(boolean alice) {
+        Transaction refund = createRefund(alice, true);
+
+        Script multisigRedeem = swap.getMultisigRedeem();
+        ECKey key = swap.getKeys(swap.isAlice()).get(0);
+        Sha256Hash multisigSighash = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
+        return new TransactionSignature(key.sign(multisigSighash).toCanonicalised(), Transaction.SigHash.ALL, false);
     }
 
     private void waitForRefundTimelock() {
