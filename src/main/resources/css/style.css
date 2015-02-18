@@ -398,6 +398,8 @@ header .right .avatar-clear {
 #middle {
   left: 240px;
   right: 240px;
+}
+#middle, #main {
   background: #111;
 }
 
