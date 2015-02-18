@@ -25,12 +25,7 @@
   <section class="body">
     <div id="left"></div>
     <div id="middle">
-      <div class="alert alert-warning alert-dismissible">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <p><strong><i class="fa fa-warning"></i> WARNING:</strong> This is alpha software. Please use this version of Mercury for <u>testing purposes only</u>, and do not rely on it for large sums of money. We'll let you know when it's ready for primetime.</p>
-      </div>
+      <div id="alerts"></div>
       <div id="main"></div>
     </div>
     <div id="right">
@@ -42,6 +37,14 @@
 
   <footer><span>Connected</span></footer>
 
+  <script type="text/template" id="template-alert">
+    <div class="alert alert-<%= level %> alert-dismissible">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <p><%= content %></p>
+    </div>
+  </script>
   <script type="text/template" id="template-footer">
     <span>
       <i class="signal signal-<%= connected ? '4' : '0' %>"></i>&nbsp;&nbsp;
@@ -422,5 +425,6 @@
   <script src="js/views/ControlsView.js"></script>
   <script src="js/views/TradeListView.js"></script>
   <script src="js/views/FooterView.js"></script>
+  <script src="js/views/AlertsView.js"></script>
 </body>
 </html>

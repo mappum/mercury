@@ -43,6 +43,8 @@ public class Main extends Application {
     public static final String APP_NAME = "Mercury Wallet";
     public static final String APP_VERSION = "0.0.1-SNAPSHOT";
 
+    public static final int CLIENT_VERSION = 0;
+
     private static final int MIN_WIDTH = 740;
     private static final int MIN_HEIGHT = 400;
     private static final int DEFAULT_WIDTH = 1200;

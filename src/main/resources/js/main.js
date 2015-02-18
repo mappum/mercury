@@ -24,6 +24,12 @@ coinswap.App = Backbone.Model.extend({
       console.log('app initialized');
       this.set('initialized', true);
       coinswap.trade.on('ticker', t.updateBalance);
+
+      coinswap.trade.on('version', function(version) {
+        if(version > coinswap.version) {
+          t.set('update', true);
+        }
+      });
     });
   },
 
@@ -67,6 +73,7 @@ coinswap.MainView = Backbone.View.extend({
     _.bindAll(this, 'render');
 
     this.listenTo(this.model, 'change:page', this.render);
+    this.listenTo(this.model, 'change:update', this.showUpdateAlert);
     this.listenTo(this.model.get('coins'), 'add', this.render);
 
     this.render();
@@ -157,6 +164,11 @@ coinswap.Router = Backbone.Router.extend({
 function init() {
   var app = coinswap.app = new coinswap.App;
   Backbone.history.start();
+
+  new coinswap.AlertsView({
+    el: $('#alerts'),
+    model: coinswap.app
+  });
 
   new coinswap.MainView({
     el: $('#main'),
