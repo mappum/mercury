@@ -90,8 +90,13 @@ public class AtomicSwap implements Serializable {
     // returns true if we are still in the setup stage, e.g. have not yet
     // committed to any transactions
     public boolean isSettingUp() {
-        return getStep().ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal()
-                || (isAlice() && getStep().equals(AtomicSwap.Step.WAITING_FOR_BAILIN));
+        lock.lock();
+        try {
+            return step.ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal()
+                || (isAlice() && step.equals(AtomicSwap.Step.WAITING_FOR_BAILIN) && bailinHashes[1] != null);
+        } finally {
+            lock.unlock();
+        }
     }
 
     // returns true if we have started communicating with the other party to
