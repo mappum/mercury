@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Main extends Application {
-    private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static Logger log;
 
     public static final String APP_NAME = "Mercury Wallet";
     public static final String APP_VERSION = "0.0.1-SNAPSHOT";
@@ -56,11 +56,15 @@ public class Main extends Application {
 
     @Override
     public void start(Stage mainWindow) {
+        File dataDirectory = getDataDirectory();
+        String logPath = new File(dataDirectory, "logs/debug.log").getAbsolutePath();
+        System.setProperty("logs.file", logPath);
+        log = LoggerFactory.getLogger(Main.class);
+
         ui = new ClientUI();
         ui.engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
-                File dataDirectory = getDataDirectory();
 
                 controller = new Controller(ui.engine);
                 currencies = Coins.get(dataDirectory);
