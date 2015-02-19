@@ -94,7 +94,7 @@ coinswap.MainView = Backbone.View.extend({
     try {
       this[page.id].apply(this, page.args);
     } catch(e) {
-      console.log('Uncaught exception: ' + e)
+      console.log('Uncaught exception: ' + e);
     }
   },
 
@@ -149,6 +149,7 @@ coinswap.Router = Backbone.Router.extend({
     'trade/:coin': 'trade',
     'send': 'send',
     'send/:coin': 'send',
+    'receive': 'receive',
     'receive/:coin': 'receive',
     'transactions': 'transactions',
     'transactions/:coin': 'transactions',

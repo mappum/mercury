@@ -55,6 +55,8 @@ hr {
 #left .btn-primary {
   background-color: transparent;
   color: #ddd;
+  font-weight: normal;
+  padding: 8px 15px;
 }
 #left .btn-primary:hover {
   background-color: #292929;
@@ -64,6 +66,11 @@ hr {
   box-shadow: none;
   -webkit-box-shadow: none;
   color: #fff;
+}
+#left .navigation > h4 {
+  margin-left: 14px;
+  margin-top: 20px;
+  margin-bottom: 4px;
 }
 
 .btn .fa {
@@ -587,7 +594,7 @@ table.transactions td {
   width: 32px;
 }
 
-.orders, .trades {
+div.orders, div.trades {
   background: #222;
   border-top: 1px solid #333;
 }
