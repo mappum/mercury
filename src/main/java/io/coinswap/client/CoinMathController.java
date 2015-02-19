@@ -37,6 +37,12 @@ public class CoinMathController {
                 .toPlainString();
     }
 
+    public int compare(String aString, String bString) {
+        BigInteger a = parse(aString),
+                b = parse(bString);
+        return a.compareTo(b);
+    }
+
     public String truncate(String value) {
         return Coin.valueOf(parse(value).longValue()).toPlainString();
     }

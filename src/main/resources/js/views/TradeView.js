@@ -124,6 +124,16 @@ coinswap.TradeView = Backbone.View.extend({
     this.$el.find('.values .total input').val(m.get('total'));
     this.$el.find('.overview .quantity').text(m.get('quantity'));
     this.$el.find('.overview .total').text(m.get('total'));
+
+    // TODO: take transaction fees into account
+    if((!m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[0]) === 1)
+    || (m.get('buy') && coinmath.compare(coinmath.multiply(m.get('total'), m.get('price')), m.get('balances')[1]) === 1)) {
+      this.$el.find('.values input').addClass('error');
+      this.$el.find('.accept').addClass('disabled');
+    } else {
+      this.$el.find('.values input').removeClass('error');
+      this.$el.find('.accept').removeClass('disabled');
+    }
   },
 
   updateBest: function() {

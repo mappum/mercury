@@ -21,11 +21,15 @@ hr {
   border-radius: 0 !important;
 }
 
-.btn {
+.btn, .btn-lg {
   font-weight: bold;
   position: relative;
   border: none;
   border-radius: 2;
+}
+.btn.disabled {
+  opacity: 1;
+  color: #ccc;
 }
 .btn-primary {
   background-color: #333;
@@ -547,6 +551,12 @@ table.transactions td {
   position: absolute;
   bottom: 0;
 }
+.trade .values input.error {
+  border: 1px solid #e74c3c;
+}
+.trade .accept.disabled {
+  background-color: rgb(77, 119, 124);
+}
 
 .receive .qr {
   width: 90px;
@@ -612,7 +622,6 @@ header .controls > button:hover {
 }
 header .controls > button.disabled {
   color: #404544;
-  opacity: 1;
 }
 header .controls > button.disabled:hover {
   color: inherit;
