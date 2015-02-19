@@ -17,7 +17,6 @@ coinswap.TradesView = Backbone.View.extend({
 
     var tbody = t.$el.find('tbody');
     var trades = coinswap.trade.swaps();
-    console.log(trades[0]+'')
     _.each(trades, function(trade) {
       var el = $(t.rowTemplate(trade));
       tbody.prepend(el);

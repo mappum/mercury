@@ -258,6 +258,7 @@ public class TradeClient extends Thread {
             log.debug("Swaps are valid, starting AtomicSwapClients");
             for(AtomicSwap swap : swaps) {
                 startSwap(swap, getPair(trade.coins));
+                swapCollection.add(swap);
             }
         }
 
@@ -326,12 +327,12 @@ public class TradeClient extends Thread {
         emitter.emit("orders:fill", orderIds);
 
         startSwap(swap, getPair(swap.trade.coins));
+        swapCollection.add(swap);
     }
 
     private void startSwap(AtomicSwap swap, Currency[] pair) {
         AtomicSwapClient client =
                 new AtomicSwapClient(swap, connection, pair);
-        swapCollection.add(swap);
         client.start();
     }
 
