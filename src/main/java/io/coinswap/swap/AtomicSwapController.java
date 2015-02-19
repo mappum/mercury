@@ -1,5 +1,6 @@
 package io.coinswap.swap;
 
+import com.google.common.collect.ImmutableList;
 import io.coinswap.client.Currency;
 import io.coinswap.net.Connection;
 import org.bitcoinj.core.*;
@@ -129,12 +130,43 @@ public abstract class AtomicSwapController {
 
         Transaction tx = new Transaction(params);
         tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
+
+        // create inputs
         tx.addInput(swap.getBailinHash(!alice), 0, OP_NOP_SCRIPT);
         tx.addInput(swap.getBailinHash(!alice), 1, OP_NOP_SCRIPT);
 
-        Address address = swap.getKeys(alice).get(2).toAddress(params);
-        Script output = ScriptBuilder.createOutputScript(address);
-        tx.addOutput(swap.trade.quantities[i], output);
+        // create output
+        tx.addOutput(swap.trade.quantities[i], swap.getPayoutOutput(params, alice));
+
+        // if we have both signatures, we can create the scriptsig to spend the bailin multisig output
+        if(swap.getPayoutSig(alice, 0) != null && swap.getPayoutSig(alice, 1) != null) {
+            List<TransactionSignature> sigList = ImmutableList.of(
+                    swap.getPayoutSig(alice, 0),
+                    swap.getPayoutSig(alice, 1));
+            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigList, swap.getMultisigRedeem());
+            tx.getInput(0).setScriptSig(multisigScriptSig);
+        }
+
+        // if we know X and the hashlock signature, we can create the hashlock scriptsig
+        if(swap.getX() != null && swap.getPayoutSig(alice, 2) != null) {
+            Script hashlockScriptSig;
+            if (alice) {
+                // now that we've seen X (revealed when Bob spent his payout), we can provide X
+                hashlockScriptSig = new ScriptBuilder()
+                        .data(swap.getPayoutSig(alice, 2).encodeToBitcoin())
+                        .data(swap.getX())
+                        .data(swap.getHashlockScript(!swap.isAlice()).getProgram())
+                        .build();
+
+            } else {
+                // sign using 4th key and provide p2sh script, revealing X to alice
+                hashlockScriptSig = new ScriptBuilder()
+                        .data(swap.getPayoutSig(alice, 2).encodeToBitcoin())
+                        .data(swap.getX())
+                        .build();
+            }
+            tx.getInput(1).setScriptSig(hashlockScriptSig);
+        }
 
         return tx;
     }

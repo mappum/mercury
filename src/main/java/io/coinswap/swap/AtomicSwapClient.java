@@ -210,32 +210,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     private void broadcastPayout() {
         Transaction payout = createPayout(swap.isAlice());
-
-        List<TransactionSignature> sigList = ImmutableList.of(
-            swap.getPayoutSig(swap.isAlice(), 0),
-            swap.getPayoutSig(swap.isAlice(), 1));
-        Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigList, swap.getMultisigRedeem());
-        payout.getInput(0).setScriptSig(multisigScriptSig);
-
-        Script hashlockScriptSig;
-        if(swap.isAlice()) {
-            // now that we've seen X (revealed when Bob spent his payout), we can provide X
-            hashlockScriptSig = new ScriptBuilder()
-                .data(swap.getPayoutSig(swap.isAlice(), 2).encodeToBitcoin())
-                .data(swap.getX())
-                .data(swap.getHashlockScript(!swap.isAlice()).getProgram())
-                .build();
-
-        } else {
-            // sign using 4th key and provide p2sh script, revealing X to alice
-            hashlockScriptSig = new ScriptBuilder()
-                .data(swap.getPayoutSig(swap.isAlice(), 2).encodeToBitcoin())
-                .data(swap.getX())
-                .build();
-        }
-        payout.getInput(1).setScriptSig(hashlockScriptSig);
-
         swap.setPayoutHash(swap.isAlice(), payout.getHash());
+
         log.info("Broadcasting payout");
         log.info(payout.toString());
         payout.verify();

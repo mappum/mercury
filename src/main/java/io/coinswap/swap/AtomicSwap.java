@@ -1,10 +1,7 @@
 package io.coinswap.swap;
 
 import net.minidev.json.JSONObject;
-import org.bitcoinj.core.ECKey;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.core.Transaction;
-import org.bitcoinj.core.Utils;
+import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
@@ -214,7 +211,6 @@ public class AtomicSwap implements Serializable {
     public byte[] getX() {
         lock.lock();
         try {
-            checkNotNull(x);
             return x;
         } finally {
             lock.unlock();
@@ -340,6 +336,7 @@ public class AtomicSwap implements Serializable {
     public TransactionSignature getPayoutSig(boolean aliceTx, int i) {
         lock.lock();
         try {
+            if(payoutSigs[aliceTx ? 0 : 1][i] == null) return null;
             ECKey.ECDSASignature sig = ECKey.ECDSASignature.decodeFromDER(payoutSigs[aliceTx ? 0 : 1][i]);
             return new TransactionSignature(sig, Transaction.SigHash.ALL, false);
         } finally {
@@ -360,6 +357,7 @@ public class AtomicSwap implements Serializable {
     public TransactionSignature getRefundSig(boolean aliceTx, int i) {
         lock.lock();
         try {
+            if(refundSigs[aliceTx ? 0 : 1][i] == null) return null;
             ECKey.ECDSASignature sig = ECKey.ECDSASignature.decodeFromDER(refundSigs[aliceTx ? 0 : 1][i]);
             return new TransactionSignature(sig, Transaction.SigHash.ALL, false);
         } finally {
@@ -378,7 +376,7 @@ public class AtomicSwap implements Serializable {
         return secondsLeft;
     }
 
-    protected Script getMultisigRedeem() {
+    public Script getMultisigRedeem() {
         lock.lock();
         try {
             List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
@@ -390,7 +388,7 @@ public class AtomicSwap implements Serializable {
         }
     }
 
-    protected Script getHashlockScript(boolean alice) {
+    public Script getHashlockScript(boolean alice) {
         lock.lock();
         try {
             if (alice) return new Script(getX());
@@ -406,6 +404,11 @@ public class AtomicSwap implements Serializable {
         } finally {
             lock.unlock();
         }
+    }
+
+    public Script getPayoutOutput(NetworkParameters params, boolean alice) {
+        Address address = getKeys(alice).get(2).toAddress(params);
+        return ScriptBuilder.createOutputScript(address);
     }
 
     public String getChannelId(boolean alice) {
