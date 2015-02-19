@@ -7,7 +7,7 @@ coinswap.TradesView = Backbone.View.extend({
 
   initialize: function() {
     _.bindAll(this, 'render');
-    console.log('initializing TradesView')
+    coinswap.trade.on('swap', this.render);
     this.render();
   },
 
