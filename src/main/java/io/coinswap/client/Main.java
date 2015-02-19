@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,9 @@ public class Main extends Application {
                 controller = new Controller(ui.engine);
                 currencies = Coins.get(dataDirectory);
                 models = new HashMap<String, CoinModel>();
+                String[] args = new String[getParameters().getRaw().size()];
+                getParameters().getRaw().toArray(args);
+                Map<String, List<InetSocketAddress>> connectPeers = getConnectPeers(args, currencies);
 
                 File swapCollectionFile = new File(dataDirectory, "swaps");
                 swaps = SwapCollection.load(swapCollectionFile);
@@ -88,6 +92,13 @@ public class Main extends Application {
                             coinCollection.call("add", new Object[]{ model.object });
                         }
                     }, controller.e);
+
+                    List<InetSocketAddress> peers = connectPeers.get(c.getId().toLowerCase());
+                    if(peers != null) {
+                        for(InetSocketAddress peer : peers) {
+                            c.getWallet().peerGroup().connectTo(peer);
+                        }
+                    }
 
                     currency.start();
                 }
@@ -140,6 +151,38 @@ public class Main extends Application {
 
         String homePath = System.getProperty("user.home");
         return new File(homePath + "/.mercury");
+    }
+
+    public static Map<String, List<InetSocketAddress>> getConnectPeers(String[] args, List<Currency> currencies) {
+        Map<String, List<InetSocketAddress>> output = new HashMap<String, List<InetSocketAddress>>();
+        for(String s : args) {
+            s = s.toLowerCase();
+            if(!s.startsWith("-connect-")) continue;
+
+            String currency = s.substring(9, s.indexOf("=")),
+                    address = s.substring(s.indexOf("=")+1),
+                    host;
+            int port = 0;
+
+            if(address.contains(":")) {
+                host = address.substring(0, address.indexOf(":"));
+                port = Integer.parseInt(address.substring(address.indexOf(":")+1));
+            } else {
+                host = address;
+                for(Currency c : currencies) {
+                    if(c.getId().toLowerCase().equals(currency)) {
+                        port = c.getParams().getPort();
+                        break;
+                    }
+                }
+            }
+
+            if(output.get(currency) == null) {
+                output.put(currency, new ArrayList<InetSocketAddress>(1));
+            }
+            output.get(currency).add(new InetSocketAddress(host, port));
+        }
+        return output;
     }
 }
 
