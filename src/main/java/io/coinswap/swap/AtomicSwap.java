@@ -79,20 +79,12 @@ public class AtomicSwap implements Serializable {
         listeners = new HashMap<StateListener, Executor>();
     }
 
-    // we are alice if we are buying and the second currency supports hashlock
-    // TXs, or if we are selling and the second currency doesn't support them.
-    // otherwise, we are bob
-    public boolean isAlice() {
-        return !trade.buy ^ switched;
-    }
-
     // returns true if we are still in the setup stage, e.g. have not yet
     // committed to any transactions
     public boolean isSettingUp() {
         lock.lock();
         try {
-            return step.ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal()
-                || (isAlice() && step.equals(AtomicSwap.Step.WAITING_FOR_BAILIN) && bailinHashes[1] != null);
+            return step.ordinal() <= Step.EXCHANGING_SIGNATURES.ordinal();
         } finally {
             lock.unlock();
         }

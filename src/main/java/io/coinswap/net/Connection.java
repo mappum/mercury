@@ -85,6 +85,17 @@ public class Connection extends Thread {
         }
     }
 
+    public void removeMessageListeners(String channel) {
+        lock.lock();
+        try {
+            if(!listeners.containsKey(channel)) return;
+
+            listeners.remove(channel);
+        } finally {
+            lock.unlock();
+        }
+    }
+
     public void write(Map obj) {
         String data = ((JSONObject) obj).toJSONString(JSONStyle.LT_COMPRESS);
         log.info(">> " + data);

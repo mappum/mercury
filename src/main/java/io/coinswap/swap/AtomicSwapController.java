@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -25,6 +27,8 @@ public abstract class AtomicSwapController {
 
     protected final AtomicSwap swap;
     protected Currency[] currencies;
+
+    protected ScheduledThreadPoolExecutor refundScheduler;
 
     private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
 
@@ -43,6 +47,8 @@ public abstract class AtomicSwapController {
         checkState(swap.trade.quantities[1].isGreaterThan(currencies[1].getParams().getMinFee()));
 
         this.swap.switched = !currencies[1].supportsHashlock();
+
+        refundScheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     public void onMessage(boolean fromAlice, Map data) throws Exception {
@@ -124,6 +130,7 @@ public abstract class AtomicSwapController {
         }
     }
 
+    // TODO: make this a method of AtomicSwap
     protected Transaction createPayout(boolean alice) {
         int i = alice ^ swap.switched ? 1 : 0;
         NetworkParameters params = currencies[i].getParams();
@@ -140,10 +147,10 @@ public abstract class AtomicSwapController {
 
         // if we have both signatures, we can create the scriptsig to spend the bailin multisig output
         if(swap.getPayoutSig(alice, 0) != null && swap.getPayoutSig(alice, 1) != null) {
-            List<TransactionSignature> sigList = ImmutableList.of(
+            List<TransactionSignature> sigs = ImmutableList.of(
                     swap.getPayoutSig(alice, 0),
                     swap.getPayoutSig(alice, 1));
-            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigList, swap.getMultisigRedeem());
+            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem());
             tx.getInput(0).setScriptSig(multisigScriptSig);
         }
 
@@ -155,7 +162,7 @@ public abstract class AtomicSwapController {
                 hashlockScriptSig = new ScriptBuilder()
                         .data(swap.getPayoutSig(alice, 2).encodeToBitcoin())
                         .data(swap.getX())
-                        .data(swap.getHashlockScript(!swap.isAlice()).getProgram())
+                        .data(swap.getHashlockScript(!alice).getProgram())
                         .build();
 
             } else {
@@ -171,6 +178,7 @@ public abstract class AtomicSwapController {
         return tx;
     }
 
+    // TODO: make this a method of AtomicSwap
     protected Transaction createRefund(boolean alice, boolean timelocked) {
         int i = alice ^ swap.switched ? 0 : 1;
         NetworkParameters params = currencies[i].getParams();
@@ -190,7 +198,46 @@ public abstract class AtomicSwapController {
             tx.getInput(0).setSequenceNumber(0);
         }
 
+        // if we have both signatures, we can create the scriptsig to spend the bailin multisig output
+        if(swap.getRefundSig(alice, 0) != null && swap.getRefundSig(alice, 1) != null) {
+            List<TransactionSignature> sigs = ImmutableList.of(
+                    swap.getRefundSig(alice, 0),
+                    swap.getRefundSig(alice, 1));
+            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem());
+            tx.getInput(0).setScriptSig(multisigScriptSig);
+        }
+
         return tx;
+    }
+
+    protected void broadcastRefund(boolean alice) {
+        checkState(swap.getTimeUntilRefund(alice) <= 0);
+
+        Transaction refund = createRefund(alice, true);
+        swap.setRefundHash(alice, refund.getHash());
+        log.info("Broadcasting refund");
+        log.info(refund.toString());
+        currencies[alice ? 0 : 1].getWallet().peerGroup().broadcastTransaction(refund);
+        // TODO: make sure refund got accepted
+
+        swap.setStep(AtomicSwap.Step.CANCELED);
+    }
+
+    protected void waitForRefundTimelock(boolean alice) {
+        long secondsLeft = swap.getTimeUntilRefund(alice);
+        log.info("Refund TX will unlock in ~" + (secondsLeft / 60) + " minutes");
+
+        refundScheduler.schedule(new Runnable() {
+            @Override
+            public void run() {
+                broadcastRefund(alice);
+            }
+        }, secondsLeft, TimeUnit.SECONDS);
+    }
+
+    protected void finish() {
+        refundScheduler.shutdownNow();
+        log.info("Swap " + swap.id + " finished.");
     }
 
     public boolean settingUp() {

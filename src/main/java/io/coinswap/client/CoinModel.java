@@ -196,15 +196,16 @@ public class CoinModel extends Model {
                 obj.put("type", "trade");
                 // TODO: support other party's trade transactions too?
                 // (we're assuming the bailin was sent from us, payout is paying to us)
-                if (txid.equals(swap.getBailinHash(swap.isAlice()))) {
+                boolean alice = !swap.trade.buy ^ swap.switched;
+                if (txid.equals(swap.getBailinHash(alice))) {
                     obj.put("which", "bailin");
                     Coin paid = tx.getOutput(0).getValue()
                             .add(tx.getOutput(1).getValue());
                     obj.put("value", paid.negate().toPlainString());
-                } else if (txid.equals(swap.getPayoutHash(swap.isAlice()))) {
+                } else if (txid.equals(swap.getPayoutHash(alice))) {
                     obj.put("which", "payout");
                     obj.put("value", tx.getOutput(0).getValue().toPlainString());
-                } else if(txid.equals(swap.getRefundHash(swap.isAlice()))) {
+                } else if(txid.equals(swap.getRefundHash(alice))) {
                     obj.put("which", "refund");
                     obj.put("value", tx.getOutput(0).getValue().toPlainString());
                 } else {
