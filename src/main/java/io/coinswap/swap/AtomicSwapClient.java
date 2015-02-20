@@ -9,7 +9,6 @@ import org.bitcoinj.script.ScriptBuilder;
 import io.coinswap.net.Connection;
 import net.minidev.json.JSONObject;
 import org.bitcoinj.utils.Threading;
-import org.bitcoinj.wallet.WalletTransaction;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
@@ -199,8 +198,6 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         log.info("Broadcasting bailin");
         Transaction bailin = swap.getBailinTx(alice);
         currencies[a].getWallet().peerGroup().broadcastTransaction(bailin);
-        currencies[a].getWallet().wallet().addWalletTransaction(
-                new WalletTransaction(WalletTransaction.Pool.PENDING, bailin));
 
         waitForRefundTimelock(alice);
     }
@@ -214,8 +211,6 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         payout.verify();
         currencies[b].getWallet().peerGroup().broadcastTransaction(payout);
         // TODO: make sure payout got accepted
-        currencies[b].getWallet().wallet().addWalletTransaction(
-                new WalletTransaction(WalletTransaction.Pool.PENDING, payout));
     }
 
     private TransactionSignature[] createPayoutSignatures() {

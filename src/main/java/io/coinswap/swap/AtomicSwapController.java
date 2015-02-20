@@ -2,13 +2,11 @@ package io.coinswap.swap;
 
 import com.google.common.collect.ImmutableList;
 import io.coinswap.client.Currency;
-import io.coinswap.net.Connection;
 import org.bitcoinj.core.*;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
 import org.bitcoinj.utils.Threading;
-import org.bitcoinj.wallet.WalletTransaction;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -220,8 +218,6 @@ public abstract class AtomicSwapController {
         log.info(refund.toString());
         currencies[alice ^ swap.switched ? 0 : 1].getWallet().peerGroup().broadcastTransaction(refund);
         // TODO: make sure refund got accepted
-        currencies[alice ^ swap.switched ? 0 : 1].getWallet().wallet().addWalletTransaction(
-                new WalletTransaction(WalletTransaction.Pool.PENDING, refund));
 
         swap.setStep(AtomicSwap.Step.CANCELED);
     }
