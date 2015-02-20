@@ -308,7 +308,7 @@
   </script>
   <script type="text/template" id="template-coinview">
     <div>
-      <% if(connected) { %>
+      <% if(connected && !synced) { %>
         <div class="progress progress-striped active">
           <div class="progress-bar" role="progressbar"></div>
         </div>
