@@ -94,9 +94,13 @@ hr {
 
 #left .btn-primary {
   background-color: transparent;
-  color: #ddd;
+  color: #aaa;
   font-weight: normal;
   padding: 8px 15px;
+}
+#left .btn-primary i.fa {
+  color: #fff;
+  margin-right: 12px;
 }
 #left .btn-primary:hover {
   background-color: #292929;
@@ -109,8 +113,8 @@ hr {
 }
 #left .navigation > h4 {
   margin-left: 14px;
-  margin-top: 20px;
-  margin-bottom: 4px;
+  margin-top: 24px;
+  margin-bottom: 8px;
 }
 
 .btn .fa {
@@ -223,6 +227,10 @@ table>thead{
 
 .alert {
   border-radius: 0;
+  color: rgba(255,255,255,0.85);
+}
+.alert strong {
+  color: #fff;
 }
 .alert .close {
   color: rgba(255,255,255,0.4);
