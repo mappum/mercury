@@ -302,36 +302,53 @@ table>thead{
   padding: 14px 20px;
   position: relative;
 }
-
+.coin .content {
+  z-index: 2;
+  position: relative;
+}
 .coin h3 {
   font-weight: normal;
   font-size: 22px;
   display: inline-block;
 }
-
 .coin .balance {
   font-size: 20px;
   margin-bottom: 10px;
 }
-
 .coin .balance .pending .symbol {
   color: #76828e;
 }
-
 .coin .pairs {
   font-size: 16px;
 }
-
 .coin .logo {
   width: 30px;
   margin-right: 6px;
   position: relative;
   top: -2px;
 }
-
 .coin .buttons {
   position: relative;
   top: -55px;
+}
+.coin .progress {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  z-index: 1;
+  border-radius: 0;
+  background: transparent;
+}
+.coin .progress > .progress-bar {
+  background-size: 80px 80px;
+}
+.coin .sync {
+  color: #76828e;
+  font-size: 16px;
+  vertical-align: bottom;
 }
 
 .ticker {
@@ -384,27 +401,6 @@ table>thead{
   } to {
     background-position:0 0
   }
-}
-
-.coin .progress {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 100%;
-  z-index: 0;
-  border-radius: 0;
-  background: transparent;
-}
-.coin .progress > .progress-bar {
-  background-size: 80px 80px;
-}
-
-.coin .sync {
-  color: #76828e;
-  font-size: 16px;
-  vertical-align: bottom;
 }
 
 /* layout */
@@ -583,18 +579,17 @@ table.transactions td {
   text-decoration: none;
   color: #fff;
 }
+.dropdown-toggle .caret {
+  display: inline;
+  position: relative;
+  top: 0.6em;
+}
 
 .dropdown-coin .logo {
   width: 22px;
   margin-right: 2px;
   position: relative;
   top: -2px;
-}
-
-.dropdown-coin .dropdown-toggle .caret {
-  display: inline;
-  position: relative;
-  top: 0.6em;
 }
 .dropdown-coin {
   text-align: center;

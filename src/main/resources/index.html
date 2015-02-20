@@ -154,7 +154,10 @@
     <div class="row col-xs-9 col-xs-push-2">
       <h2>Receive Coins</h2><br>
       <div class="dropdown dropdown-coin pull-left">
-        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="value">BTC</span> <span class="caret"></span></a>
+        <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+          <span class="value">BTC</span>&nbsp;
+          <span class="caret"></span>
+        </a>
         <ul class="dropdown-menu"></ul>
       </div>
 
@@ -305,35 +308,40 @@
   </script>
   <script type="text/template" id="template-coinview">
     <div>
-      <img class="logo" src="images/<%= id.toLowerCase() %>.png">
-
-        <h3><%= name %><span class="alt"> - <%= id %></span></h3>
-
-      <% if(synced) { %>
-        <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span>
-        </div>
-        <div class="buttons pull-right">
-          <div class="btn-group">
-            <a href="#trade/<%= id %>" class="btn btn-primary btn-trade" data-toggle="tooltip" title="Trade <%= id %>"><i class="fa fa-exchange"></i></a>
-            <a href= "#send/<%= id %>" class="btn btn-primary btn-send" data-toggle="tooltip" title="Send <%= id %>"><i class="fa fa-sign-out"></i></a>
-            <a href="#receive/<%= id %>" class="btn btn-primary rbtn-eceive" data-toggle="tooltip" title="Receive <%= id %>"><i class="fa fa-sign-in"></i></a>
-            <button class="btn btn-primary btn-transactions hidden"><i class="fa fa-list"></i></button>
-          </div>
-        </div>
-      <% } else if(connected) { %>
-        <br>
+      <% if(connected) { %>
         <div class="progress progress-striped active">
           <div class="progress-bar" role="progressbar"></div>
         </div>
-        <span><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</span>
-        <% if(typeof syncBlocks !== 'undefined') { %>
-          <span class="sync pull-right">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
-        <% } %>
-
-      <% } else { %>
-        <p><i class="fa fa-clock-o text-warning symbol"></i> Connecting to network...</p>
-
       <% } %>
+
+      <div class="content">
+        <img class="logo" src="images/<%= id.toLowerCase() %>.png">
+
+          <h3><%= name %><span class="alt"> - <%= id %></span></h3>
+
+        <% if(synced) { %>
+          <div class="balance"><strong class="symbol"><%= symbol %></strong><%= balance %> <span class="pending alt <%= pending === '0' ? ' hidden' : '' %>">(<strong class="symbol"><%= symbol %></strong><%= pending %> pending)</span>
+          </div>
+          <div class="buttons pull-right">
+            <div class="btn-group">
+              <a href="#trade/<%= id %>" class="btn btn-primary btn-trade" data-toggle="tooltip" title="Trade <%= id %>"><i class="fa fa-exchange"></i></a>
+              <a href= "#send/<%= id %>" class="btn btn-primary btn-send" data-toggle="tooltip" title="Send <%= id %>"><i class="fa fa-sign-out"></i></a>
+              <a href="#receive/<%= id %>" class="btn btn-primary rbtn-eceive" data-toggle="tooltip" title="Receive <%= id %>"><i class="fa fa-sign-in"></i></a>
+              <button class="btn btn-primary btn-transactions hidden"><i class="fa fa-list"></i></button>
+            </div>
+          </div>
+        <% } else if(connected) { %>
+          <br>
+          <span><i class="fa fa-clock-o text-info symbol"></i> Syncing blockchain...</span>
+          <% if(typeof syncBlocks !== 'undefined') { %>
+            <span class="sync pull-right">Block <span class="sync-blocks">0</span> / <%= syncBlocks %> - <span class="sync-date"></span></span>
+          <% } %>
+
+        <% } else { %>
+          <p><i class="fa fa-clock-o text-warning symbol"></i> Connecting to network...</p>
+
+        <% } %>
+      </div>
     </div>
   </script>
   <script type="text/template" id="template-send">
