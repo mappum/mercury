@@ -9,6 +9,7 @@ coinswap.SendView = Backbone.View.extend({
   },
 
   template: $('#template-send').html(),
+  modalTemplate: _.template($('#template-send-modal').html()),
   className: 'send',
 
   initialize: function(options) {
@@ -66,22 +67,43 @@ coinswap.SendView = Backbone.View.extend({
   },
 
   send: function() {
-    this.validateAddress();
-    this.validateAmount();
+    var t = this;
+    t.validateAddress();
+    t.validateAmount();
 
-    var addressEl = this.$el.find('.address');
-    var amountEl = this.$el.find('.amount');
+    var addressEl = t.$el.find('.address');
+    var amountEl = t.$el.find('.amount');
     if(addressEl.hasClass('has-error') || amountEl.hasClass('has-error')
     || !addressEl.find('.value').val() || !amountEl.find('.value').val())
       return;
 
-    // TODO: show confirm/wallet unlock modal before committing to action
-
     var address = addressEl.find('.value').val().trim();
     var amount = amountEl.find('.value').val().trim();
-    this.model.send(address, +amount);
 
-    // TODO: give feedback that transaction happened
+    var modal = $('#modal');
+    modal.find('.modal-content').html(t.modalTemplate({
+      address: address,
+      amount: amount,
+      currency: t.model.attributes,
+      sent: false
+    }));
+    modal.modal('show');
+
+    modal.find('.confirm').click(function(e) {
+      t.model.send(address, +amount);
+      
+      modal.find('.modal-content').html(t.modalTemplate({
+        address: address,
+        amount: amount,
+        currency: t.model.attributes,
+        sent: true
+      }));
+
+      modal.find('.view-tx').click(function() {
+        modal.modal('hide');
+      })
+    });
+
   },
 
   pasteAddress: function() {

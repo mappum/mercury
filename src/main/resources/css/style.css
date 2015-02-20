@@ -40,6 +40,19 @@ hr {
   background-color: #444;
 }
 
+.modal .modal-dialog {
+  margin-top: 12% !important;
+}
+.modal .modal-content {
+  background-color: #3a3a3a;
+}
+.modal .modal-content strong {
+  color: #fff;
+}
+.modal .modal-footer {
+  border-color: #555;
+}
+
 #left .btn-group-vertical {
   width: 100%;
 }
@@ -364,7 +377,7 @@ table>thead{
   bottom: 0;
   left: 0;
   height: 100%;
-  z-index: -10;
+  z-index: 0;
   border-radius: 0;
   background: transparent;
 }
