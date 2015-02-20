@@ -29,7 +29,7 @@ public class Order {
     }
 
     public Order(boolean bid, long amount, long price, String[] currencies) {
-        new Order(bid, Coin.valueOf(amount), Coin.valueOf(price), currencies);
+        this(bid, Coin.valueOf(amount), Coin.valueOf(price), currencies);
     }
 
     public Order clone() {
