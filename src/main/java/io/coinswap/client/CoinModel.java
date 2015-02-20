@@ -178,7 +178,6 @@ public class CoinModel extends Model {
 
             List<Transaction> txs = wallet.getRecentTransactions(100, true);
             for(Transaction tx : txs) {
-                if(tx.getConfidence().getDepthInBlocks() > 6) break;
                 onTransaction(tx);
             }
         }
