@@ -216,7 +216,7 @@ public abstract class AtomicSwapController {
         swap.setRefundHash(alice, refund.getHash());
         log.info("Broadcasting refund");
         log.info(refund.toString());
-        currencies[alice ^ swap.switched ? 0 : 1].getWallet().peerGroup().broadcastTransaction(refund);
+        currencies[alice ^ swap.switched ? 0 : 1].broadcastTransaction(refund);
         // TODO: make sure refund got accepted
 
         swap.setStep(AtomicSwap.Step.CANCELED);

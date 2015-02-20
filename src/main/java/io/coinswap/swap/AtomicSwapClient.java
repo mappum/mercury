@@ -197,7 +197,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private void broadcastBailin() {
         log.info("Broadcasting bailin");
         Transaction bailin = swap.getBailinTx(alice);
-        currencies[a].getWallet().peerGroup().broadcastTransaction(bailin);
+        currencies[a].broadcastTransaction(bailin);
 
         waitForRefundTimelock(alice);
     }
@@ -209,7 +209,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         log.info("Broadcasting payout");
         log.info(payout.toString());
         payout.verify();
-        currencies[b].getWallet().peerGroup().broadcastTransaction(payout);
+        currencies[b].broadcastTransaction(payout);
         // TODO: make sure payout got accepted
     }
 

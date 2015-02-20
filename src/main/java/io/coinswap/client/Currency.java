@@ -5,11 +5,14 @@ import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import org.bitcoinj.utils.ListenerRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * Contains the settings and state for one currency. Includes an AltcoinJ wallet,
@@ -70,6 +73,11 @@ public class Currency {
         } else {
             log.info("No checkpoints found for " + name);
         }
+    }
+
+    public void broadcastTransaction(Transaction tx) {
+        wallet.peerGroup().broadcastTransaction(tx);
+        wallet.wallet().receivePending(tx, null);
     }
 
     public void start() {
