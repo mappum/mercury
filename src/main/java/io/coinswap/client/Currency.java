@@ -20,6 +20,7 @@ public class Currency {
     private static final File checkpointDir = new File("./checkpoints");
 
     protected NetworkParameters params;
+    protected File directory;
     protected WalletAppKit wallet;
     protected String name, id, symbol;
     protected String[] pairs;
@@ -35,6 +36,7 @@ public class Currency {
                 int index, boolean hashlock, int confirmationDepth) {
 
         this.params = params;
+        this.directory = directory;
         this.name = name;
         this.id = id;
         this.symbol = symbol;
@@ -49,8 +51,11 @@ public class Currency {
         wallet = new WalletAppKit(params, directory, name.toLowerCase()) {
             @Override
             protected void onSetupCompleted() {
+                makeBackup();
+
                 peerGroup().setMaxConnections(8);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
+
                 setup = true;
                 setupFuture.set(null);
             }
@@ -75,6 +80,23 @@ public class Currency {
     public void stop() {
         wallet.stopAsync();
         wallet.awaitTerminated();
+    }
+
+    private void makeBackup() {
+        File backupDir = new File(directory, "backup");
+        if(!backupDir.exists()) {
+            boolean success = backupDir.mkdir();
+            if(!success) throw new RuntimeException();
+        }
+
+        File backup = new File(backupDir, name.toLowerCase()+".wallet");
+        if(!backup.exists()) {
+            try {
+                wallet.wallet().saveToFile(backup);
+            } catch(IOException e) {
+                throw new RuntimeException();
+            }
+        }
     }
 
     public String getId() { return id; }
