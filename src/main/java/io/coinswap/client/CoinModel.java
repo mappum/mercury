@@ -62,6 +62,7 @@ public class CoinModel extends Model {
         return currency.getWallet().wallet().freshReceiveAddress().toString();
     }
 
+    // TODO: accept callback, return error, tx info
     public void send(String addressString, String amountString) {
         try {
             Address address = new Address(currency.params, addressString);

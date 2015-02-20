@@ -33,7 +33,7 @@ public class CoinMathController {
     public String divide(String aString, String bString) {
         BigInteger a = parse(aString),
                    b = parse(bString);
-        return Coin.valueOf(a.divide(b).longValueExact())
+        return Coin.valueOf(a.multiply(COIN).divide(b).longValueExact())
                 .toPlainString();
     }
 
