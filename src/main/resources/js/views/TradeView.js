@@ -64,9 +64,20 @@ coinswap.TradeView = Backbone.View.extend({
     var pair = this.model.getPair();
     var pairs = pair[0].get('pairs');
 
+    this.$el.find('.trade-balances .balance').each(function(i, el) {
+      $(el)
+        .find('.symbol').html(pair[i].get('symbol')).parent()
+        .find('.value').text(this.model.get('balances')[i]).parent()
+        .find('.currency').text(ids[i]);
+    }.bind(this));
+
     var dropdowns = this.$el.find('.dropdown-coin');
     dropdowns.eq(0).find('.dropdown-toggle .value').text(ids[0]);
     dropdowns.eq(1).find('.dropdown-toggle .value').text(ids[1]);
+    dropdowns.eq(0).find('.dropdown-toggle .logo')
+      .attr('src', 'images/'+ids[0].toLowerCase()+'.png');
+    dropdowns.eq(1).find('.dropdown-toggle .logo')
+      .attr('src', 'images/'+ids[1].toLowerCase()+'.png');
 
     var menus = dropdowns.find('.dropdown-menu');
     menus.empty();
@@ -128,10 +139,10 @@ coinswap.TradeView = Backbone.View.extend({
     // TODO: take transaction fees into account
     if((!m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[0]) === 1)
     || (m.get('buy') && coinmath.compare(coinmath.multiply(m.get('total'), m.get('price')), m.get('balances')[1]) === 1)) {
-      this.$el.find('.values input').addClass('error');
+      this.$el.find('.values').addClass('has-error');
       this.$el.find('.accept').addClass('disabled');
     } else {
-      this.$el.find('.values input').removeClass('error');
+      this.$el.find('.values').removeClass('has-error');
       this.$el.find('.accept').removeClass('disabled');
     }
   },

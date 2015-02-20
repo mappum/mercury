@@ -6,7 +6,8 @@ coinswap.Coin = Backbone.Model.extend({
     pending: '0',
     connected: false,
     synced: false,
-    address: ''
+    address: '',
+    pairs: []
   },
 
   initialize: function() {

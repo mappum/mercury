@@ -91,11 +91,9 @@ coinswap.MainView = Backbone.View.extend({
     var page = this.model.get('page');
     console.log('rendering ' + page.id);
 
-    try {
+    catchErrors(function() {
       this[page.id].apply(this, page.args);
-    } catch(e) {
-      console.log('Uncaught exception: ' + e);
-    }
+    }.bind(this));
   },
 
   home: function() {
@@ -208,10 +206,16 @@ function init() {
   });
 }
 
-$(function() {
+function catchErrors(f) {
   try {
-    init();
+    f();
   } catch(e) {
-    console.log('Uncaught exception: ' + e)
+    console.log('Uncaught error: ' + e + '\n' + e.stack);
   }
+}
+
+$(function() {
+  catchErrors(init);
 });
+
+

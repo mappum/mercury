@@ -62,10 +62,9 @@ hr {
 }
 
 .btn, .btn-lg {
-  font-weight: bold;
   position: relative;
   border: none;
-  border-radius: 2;
+  border-radius: 2px !important;
 }
 .btn.disabled {
   opacity: 1;
@@ -79,10 +78,19 @@ hr {
   border-color: #222;
 }
 .btn-success {
-  background-color: #088c9c;
+  background-color: #089C80;
 }
 .btn-success.active, .btn-success:hover {
-  background-color: #04707e;
+  background-color: #228472;
+}
+.btn-default {
+  background-color: #aaa;
+}
+.btn-default:hover {
+  background-color: #bbb;
+}
+.btn-default.active, .btn-default:active, .btn-default:focus {
+  background-color: #888;
 }
 
 .btn-group .btn.btn-primary {
@@ -561,55 +569,87 @@ table.transactions td {
   font-size: 16px;
 }
 
+.dropdown {
+  display: inline;
+}
 .dropdown-toggle {
   width: 100%;
-  padding: 0.4em 0;
-  border-radius: 5px;
-  display: block;
-  background: #333;
+  border-radius: 2px;
+  padding: 6px 8px;
+  color: #ddd;
+}
+.dropdown-toggle:hover, .dropdown-toggle:focus {
+  background-color: #303030;
+  text-decoration: none;
+  color: #fff;
 }
 
+.dropdown-coin .logo {
+  width: 22px;
+  margin-right: 2px;
+  position: relative;
+  top: -2px;
+}
+
+.dropdown-coin .dropdown-toggle .caret {
+  display: inline;
+  position: relative;
+  top: 0.6em;
+}
 .dropdown-coin {
-  width: 132px;
-  line-height: 50px;
   text-align: center;
 }
 .dropdown-coin .dropdown-toggle {
-  background-color: #333;
-  font-size: 30px;
-  font-weight: bold;
+  font-size: 20px;
 }
 .dropdown-coin a {
   cursor: pointer;
 }
 .dropdown-menu {
   background-color: #444;
+  border-radius: 2px;
 }
 
-.trade-pair .separator {
-  font-size: 40px;
+.trade {
+  padding: 16px;
+}
+.trade .trade-pair {
+  text-align: center;
+}
+.trade .trade-pair .separator {
+  font-size: 20px;
   font-weight: bold;
   text-align: center;
-  margin-top: 10px;
+  line-height: 36px;
+  display: inline;
+  margin: 0 10px;
 }
 
-.trade .type {
+.trade .values label {
+  font-size: 13px;
+  text-transform: uppercase;
+  font-weight: normal;
+  color: #aaa;
+}
+.trade .values .balance {
+  color: #ddd;
+}
+.trade .values .balance strong {
+  color: #aaa;
+}
+
+.trade .btn {
+  text-transform: uppercase;
+}
+.trade .buysell .btn {
+  padding: 12px 0;
+  width: 50%;
+}
+.trade .btn.accept {
+  width: 100%;
   font-weight: bold;
 }
-.trade .type.buy {
-  color: green;
-}
-.trade .type.sell {
-  color: red;
-}
-.trade .cancel {
-  position: absolute;
-  bottom: 0;
-}
-.trade .values input.error {
-  border: 1px solid #e74c3c;
-}
-.trade .accept.disabled {
+.trade .btn.accept.disabled {
   background-color: rgb(77, 119, 124);
 }
 
