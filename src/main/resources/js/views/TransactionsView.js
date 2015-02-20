@@ -39,11 +39,21 @@ coinswap.TransactionsView = Backbone.View.extend({
           return tx.off('change', updateRow);
       }
       row.html(t.rowTemplate(tx.attributes));
+
+      row.find('[data-toggle="tooltip"]').tooltip({
+        animation: false,
+        container: row
+      });
     }
 
     updateRow();
     this.$el.find('tbody').prepend(row);
     tx.on('change', updateRow);
+
+    row.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: row
+    });
   }
 });
 

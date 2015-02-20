@@ -21,6 +21,21 @@ hr {
   border-bottom: 5px solid #444;
   top: -5px;
 }
+.tooltip.right > .tooltip-arrow {
+  border: 5px solid transparent;
+  border-right: 5px solid #444;
+  left: -5px;
+}
+.tooltip.left > .tooltip-arrow {
+  border: 5px solid transparent;
+  border-left: 5px solid #444;
+  right: -5px;
+}
+.tooltip.top > .tooltip-arrow {
+  border: 5px solid transparent;
+  border-top: 5px solid #444;
+  bottom: -5px;
+}
 .tooltip > .tooltip-inner {
   background-color: #444;
 }
