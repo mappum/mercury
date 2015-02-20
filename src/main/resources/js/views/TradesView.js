@@ -21,6 +21,12 @@ coinswap.TradesView = Backbone.View.extend({
       var el = $(t.rowTemplate(trade));
       tbody.prepend(el);
     });
+
+    this.$el.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el,
+      placement: 'bottom'
+    });
   }
 });
 

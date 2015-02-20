@@ -158,9 +158,9 @@
     <br>
     <div class="row col-xs-9 col-xs-push-2">
       <div class="input-group col-xs-12 address">
-        <span class="btn btn-primary generate input-group-addon"><i class="fa fa-refresh"></i></span>
+        <span class="btn btn-primary generate input-group-addon" data-toggle="tooltip" title="Generate new address"><i class="fa fa-refresh"></i></span>
         <input type="text" class="form-control value" onClick="this.setSelectionRange(0, this.value.length)" readonly>
-        <span class="btn btn-default input-group-addon copy"><i class="fa fa-copy"></i></span>
+        <span class="btn btn-default input-group-addon copy" data-toggle="tooltip" title="Copy to clipboard"><i class="fa fa-copy"></i></span>
       </div>
     </div>
   </script>
@@ -296,9 +296,9 @@
         </div>
         <div class="buttons pull-right">
           <div class="btn-group">
-            <a href="#trade/<%= id %>" class="btn btn-primary trade"><i class="fa fa-exchange"></i></a>
-            <a href= "#send/<%= id %>" class="btn btn-primary send"><i class="fa fa-sign-out"></i></a>
-            <a href="#receive/<%= id %>" class="btn btn-primary receive"><i class="fa fa-sign-in"></i></a>
+            <a href="#trade/<%= id %>" class="btn btn-primary trade" data-toggle="tooltip" title="Trade <%= id %>"><i class="fa fa-exchange"></i></a>
+            <a href= "#send/<%= id %>" class="btn btn-primary send" data-toggle="tooltip" title="Send <%= id %>"><i class="fa fa-sign-out"></i></a>
+            <a href="#receive/<%= id %>" class="btn btn-primary receive" data-toggle="tooltip" title="Receive <%= id %>"><i class="fa fa-sign-in"></i></a>
             <button class="btn btn-primary transactions hidden"><i class="fa fa-list"></i></button>
           </div>
         </div>
@@ -331,7 +331,7 @@
           <div class="text-danger error small">The provided address is invalid.</div>
           <div class="input-group">
             <input type="text" class="form-control value" placeholder="Enter an address to send to">
-            <span class="btn btn-default input-group-addon paste"><i class="fa fa-paste"></i></span>
+            <span class="btn btn-default input-group-addon paste" data-toggle="tooltip" title="Paste"><i class="fa fa-paste"></i></span>
           </div>
         </div>
       </div>
@@ -399,7 +399,7 @@
       <td class="small"><%= trade.quantities[0] %> <span class="alt"><%= trade.coins[0].toUpperCase() %></span></td>
       <td class="small"><%= trade.price %> <span class="alt"><%= trade.coins[1].toUpperCase() %></span></td>
       <td class="small alt">
-        <span class="text-<%= step === 'CANCELED' ? 'warning' : step === 'COMPLETE' ? 'success' : 'info' %>">
+        <span class="text-<%= step === 'CANCELED' ? 'warning' : step === 'COMPLETE' ? 'success' : 'info' %>" <%= step === 'CANCELED' ? 'data-toggle="tooltip" title="Something went wrong, your funds were returned to you."' : '' %>>
         <%= step === 'CANCELED' ? '<i class="fa fa-warning"></i> ' : '' %> <%= stepMessages[step] %>
         </span>
       </td>

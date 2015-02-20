@@ -53,6 +53,12 @@ coinswap.ReceiveView = Backbone.View.extend({
       correctLevel : QRCode.CorrectLevel.M
     });
 
+    this.$el.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el,
+      placement: 'bottom'
+    });
+
     this.delegateEvents();
   },
 

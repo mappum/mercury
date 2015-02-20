@@ -32,6 +32,12 @@ coinswap.CoinView = Backbone.View.extend({
 
     if(!this.model.get('synced')) this.$el.addClass('syncing');
     else this.$el.removeClass('syncing');
+
+    this.$el.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el,
+      placement: 'bottom'
+    });
   },
 
   syncProgress: function(o) {

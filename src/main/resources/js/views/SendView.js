@@ -23,6 +23,11 @@ coinswap.SendView = Backbone.View.extend({
 
   render: function() {
     this.$el.html(this.template);
+    this.$el.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el,
+      placement: 'bottom'
+    });
     this.delegateEvents();
   },
 
