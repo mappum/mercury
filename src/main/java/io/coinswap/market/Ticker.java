@@ -47,13 +47,24 @@ public class Ticker {
     public static Ticker fromJson(Map data) {
         checkNotNull(data);
 
-        List<List> historyJson = (List<List>) checkNotNull(data.get("history"));
-        List<TickerHistory> history = new ArrayList<TickerHistory>(historyJson.size());
-        for(List period : historyJson)
-            history.add(TickerHistory.fromJson(period));
+        Coin last = Coin.parseCoin((String) checkNotNull(data.get("last")));
+
+        // history is an optional field
+        List<TickerHistory> history = null;
+        if(data.get("history") != null) {
+            List<List> historyJson = (List<List>) data.get("history");
+            history = new ArrayList<TickerHistory>(historyJson.size());
+            for (List period : historyJson)
+                history.add(TickerHistory.fromJson(period));
+        } else {
+            history = new ArrayList<TickerHistory>(1);
+            TickerHistory period = new TickerHistory();
+            period.start = period.end = last;
+            history.add(period);
+        }
 
         return new Ticker(
-                Coin.parseCoin((String) checkNotNull(data.get("last"))),
+                last,
                 Coin.parseCoin((String) checkNotNull(data.get("bestBid"))),
                 Coin.parseCoin((String) checkNotNull(data.get("bestAsk"))),
                 history

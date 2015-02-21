@@ -339,6 +339,18 @@ public class TradeClient extends Thread {
     private void onTicker(Map message) {
         String pair = (String) checkNotNull(message.get("pair"));
         Ticker ticker = Ticker.fromJson((Map) checkNotNull(message.get("data")));
+        Ticker previousTicker = tickers.get(pair);
+        if(previousTicker != null && ticker.history == null) {
+            // if server didn't send history data, get it from the previous ticker
+            // (we sometimes don't send it as an optimization since it takes up a lot of bandwidth)
+            ticker.history = previousTicker.history;
+            // update last period based on current data
+            TickerHistory lastPeriod = ticker.history.get(ticker.history.size()-1);
+            if(lastPeriod != null) {
+                lastPeriod.end = ticker.last;
+                // TODO: fill trade count and volume
+            }
+        }
         tickers.put(pair, ticker);
         emitter.emit("ticker", pair);
         emitter.emit("ticker:" + pair, pair);
