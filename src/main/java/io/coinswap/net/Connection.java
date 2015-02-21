@@ -50,6 +50,23 @@ public class Connection extends Thread {
         }
     }
 
+    public Map waitForMessage(String channel) {
+        SettableFuture<Map> future = SettableFuture.create();
+        onMessage(channel, new ReceiveListener() {
+            @Override
+            public void onReceive(Map data) {
+                future.set(data);
+                removeMessageListener(channel, this);
+            }
+        });
+        try {
+            return future.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public void onMessage(String channel, ReceiveListener listener) {
         List<ReceiveListener> list;
 

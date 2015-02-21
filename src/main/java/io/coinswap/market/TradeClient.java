@@ -1,5 +1,6 @@
 package io.coinswap.market;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.coinswap.client.EventEmitter;
@@ -25,6 +26,8 @@ import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -55,6 +58,9 @@ public class TradeClient extends Thread {
     private Map<Integer, Order> orders;
     private Queue<Order> cancelRequests;
 
+    private ReentrantLock lock = Threading.lock(getClass().getCanonicalName());
+    private Semaphore requestSignal;
+
     private SwapCollection swapCollection;
 
     private EventEmitter emitter;
@@ -69,6 +75,7 @@ public class TradeClient extends Thread {
         tickers = new ConcurrentHashMap<String, Ticker>();
 
         tradeRequests = new ConcurrentLinkedQueue<>();
+        requestSignal = new Semaphore(0, true);
         requestFutures = new HashMap<>();
         orders = new HashMap<Integer, Order>();
         cancelRequests = new ConcurrentLinkedQueue<>();
@@ -89,18 +96,23 @@ public class TradeClient extends Thread {
         resumeSwaps();
 
         while(true) {
-            // TODO: should we change to submit trade requests without waiting for responses?
-            while (!tradeRequests.isEmpty()) {
-                submitTrade(tradeRequests.remove());
-            }
-            while (!cancelRequests.isEmpty()) {
-                submitCancel(cancelRequests.remove());
-            }
-
-            // TODO: use better signaling instead of polling
             try {
-                Thread.sleep(250);
-            } catch(Exception e) {}
+                requestSignal.acquire();
+                lock.lock();
+                try {
+                    // TODO: should we change to submit trade requests without waiting for responses?
+                    while (isConnected() && !tradeRequests.isEmpty()) {
+                        submitTrade(tradeRequests.remove());
+                    }
+                    while (isConnected() && !cancelRequests.isEmpty()) {
+                        submitCancel(cancelRequests.remove());
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -119,20 +131,31 @@ public class TradeClient extends Thread {
 
             SSLSocketFactory factory = context.getSocketFactory();
 
-            try {
-                log.info("Connecting to trade server ("+HOST+":"+PORT+")");
+            while(true) try {
+                log.info("Connecting to trade server (" + HOST + ":" + PORT + ")");
                 SSLSocket socket = (SSLSocket) factory.createSocket(HOST, PORT);
 
                 connection = new Connection(socket);
                 initListeners();
-                connection.start();
 
-                emitter.emit("connect", null);
+                // wait until we get a message on the trade channel before we try to send stuff
+                connection.onMessage("trade", new Connection.ReceiveListener() {
+                    @Override
+                    public void onReceive(Map data) {
+                        connection.removeMessageListener("trade", this);
+                        requestSignal.release();
+                        emitter.emit("connect", null);
+                    }
+                });
+
+                connection.start();
+                log.info("Connection started");
+
+                break;
 
             } catch (Exception e) {
                 log.info("Could not connect to trade server");
                 Thread.sleep(5000);
-                connect();
             }
 
         } catch(Exception e) {
@@ -174,6 +197,17 @@ public class TradeClient extends Thread {
             public void run() {
                 connection = null;
                 log.info("Disconnected from trade server");
+
+                // remove orders since server removes them on disconnect, then reinsert trades into queue
+                for(Map.Entry<Integer, Order> entry : orders.entrySet()) {
+                    orders.remove(entry.getKey());
+                    Order order = entry.getValue();
+                    Coin[] quantities = Order.getTotals(ImmutableList.of(order));
+                    AtomicSwapTrade trade =
+                            new AtomicSwapTrade(order.bid, order.currencies, quantities, FEE);
+                    queueTrade(trade);
+                }
+
                 emitter.emit("disconnect", null);
                 connect();
             }
@@ -189,17 +223,33 @@ public class TradeClient extends Thread {
         }
     }
 
-    public SettableFuture trade(AtomicSwapTrade trade) {
-        tradeRequests.add(trade);
+    private SettableFuture queueTrade(AtomicSwapTrade trade) {
+        lock.lock();
+        try {
+            tradeRequests.add(trade);
+            SettableFuture<Map> future = SettableFuture.create();
+            requestFutures.put(trade, future);
+            return future;
+        } finally {
+            lock.unlock();
+        }
+    }
 
-        SettableFuture<Map> future = SettableFuture.create();
-        requestFutures.put(trade, future);
+    public SettableFuture trade(AtomicSwapTrade trade) {
+        SettableFuture future = queueTrade(trade);
+        requestSignal.release();
         return future;
     }
 
     public void cancel(int id) {
-        Order order = orders.remove(id);
-        if(order != null) cancelRequests.add(order);
+        lock.lock();
+        try {
+            Order order = orders.remove(id);
+            if (order != null) cancelRequests.add(order);
+            requestSignal.release();
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void submitTrade(AtomicSwapTrade trade) {
@@ -389,5 +439,9 @@ public class TradeClient extends Thread {
 
     public Connection getConnection() {
         return connection;
+    }
+
+    public boolean isConnected() {
+        return connection != null && connection.isConnected();
     }
 }
