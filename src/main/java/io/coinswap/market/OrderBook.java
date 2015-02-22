@@ -22,6 +22,7 @@ public class OrderBook {
             if(cursor.price.equals(order.price)) {
                 cursor.amount = cursor.amount.add(order.amount);
             } else {
+                i.previous();
                 i.add(order);
             }
         }
@@ -59,7 +60,7 @@ public class OrderBook {
         // TODO: do a binary search instead of iterating all the way through
 
         List<Order> orders = bid ? bids : asks;
-        int comparator = bid ? -1 : 1;
+        int comparator = bid ? 1 : -1;
         ListIterator<Order> i = orders.listIterator();
         while(i.hasNext()) {
             Order order = i.next();
