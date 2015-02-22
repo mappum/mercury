@@ -1,6 +1,13 @@
+
+![](http://i.imgur.com/FtFOvKJ.png)
 mercury
 ========
 
 A multi-coin wallet that supports trustless cross-chain trading.
 
-**Note:** This repo isn't really set up yet to make it easy to build the client. Feel free to browse through the code, but stay tuned for some cleanup before trying to use it.
+## Usage
+
+Requires [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
+
+Download Mercury here: https://github.com/mappum/mercury/releases/download/0.0.1-alpha/mercury.zip (Start by running `Mercury Wallet.jar`).
+
