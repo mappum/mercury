@@ -316,7 +316,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         log.info("Received other party's bailin via coin network: " + tx.toString());
         AtomicSwapClient parent = this;
-        int confirmDepth = currencies[b].getConfirmationDepth();
+        int confirmDepth = 0;//currencies[b].getConfirmationDepth();
+        // NOTE: we currently aren't waiting for confirms, which is dangerous
         // TODO: use deeper confirmations for high-value swaps
 
         if(tx.getConfidence().getDepthInBlocks() >= confirmDepth) {
