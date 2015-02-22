@@ -8,6 +8,7 @@ import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
 import netscape.javascript.JSObject;
 import org.bitcoinj.core.Coin;
 
@@ -79,7 +80,7 @@ public class TradeController {
         List<Order> orders = client.getOrders();
         JSObject ordersJs = controller.eval("[]");
         for(int i = 0; i < orders.size(); i++) {
-            Map<String, Object> orderJson = orders.get(i).toJson();
+            Map<String, Object> orderJson = (Map<String, Object>) orders.get(i).toJson();
             orderJson.put("currencies", new String[]{
                     currencies.get(orders.get(i).currencies[0]).getId(),
                     currencies.get(orders.get(i).currencies[1]).getId(),
@@ -105,6 +106,12 @@ public class TradeController {
             swapsJson.add(swap.toJson(false));
         }
         return controller.eval(swapsJson.toJSONString());
+    }
+
+    public JSObject depth(String currency1, String currency2, int n) {
+        String[] pair = getPair(currency1, currency2);
+        JSONObject depth = (JSONObject) client.getDepth(pair[0]+"/"+pair[1], n);
+        return controller.eval("new Object("+depth.toJSONString()+")");
     }
 
     public void cancel(int id) {

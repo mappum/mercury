@@ -58,6 +58,8 @@ public class TradeClient extends Thread {
     private Map<Integer, Order> orders;
     private Queue<Order> cancelRequests;
 
+    private Map<String, OrderBook> depth;
+
     private ReentrantLock lock = Threading.lock(getClass().getCanonicalName());
     private Semaphore requestSignal;
 
@@ -70,6 +72,17 @@ public class TradeClient extends Thread {
         this.currencies = new HashMap<String, Currency>();
         for(Currency c : currencies) {
             this.currencies.put(c.getId().toLowerCase(), c);
+        }
+
+        depth = new HashMap<String, OrderBook>();
+        for(Currency a : currencies) {
+            for(String id : a.getPairs()) {
+                Currency b = this.currencies.get(id.toLowerCase());
+                if(a.getIndex() > b.getIndex()) {
+                    String pairId = a.getId().toLowerCase() + "/" + b.getId().toLowerCase();
+                    depth.put(pairId, new OrderBook());
+                }
+            }
         }
 
         tickers = new ConcurrentHashMap<String, Ticker>();
@@ -189,6 +202,22 @@ public class TradeClient extends Thread {
             public void onReceive(Map message) {
                 int version = (int) message.get("version");
                 emitter.emit("version", version);
+            }
+        });
+
+        connection.onMessage("depth", new Connection.ReceiveListener() {
+            @Override
+            public void onReceive(Map message) {
+                boolean add = ((String) checkNotNull(message.get("type"))).equals("add");
+                String pairId = (String) checkNotNull(message.get("pair"));
+                List<List<Object>> ordersJson = (List<List<Object>>) checkNotNull(message.get("orders"));
+                for(List<Object> obj : ordersJson) {
+                    Order order = Order.fromJson(obj);
+                    if(add) depth.get(pairId).add(order);
+                    else depth.get(pairId).remove(order);
+                }
+                emitter.emit("depth", pairId);
+                emitter.emit("depth:"+pairId, null);
             }
         });
 
@@ -435,6 +464,10 @@ public class TradeClient extends Thread {
 
     public List<Order> getOrders() {
         return new ArrayList<>(orders.values());
+    }
+
+    public Map<String, Object> getDepth(String pairId, int n) {
+        return depth.get(pairId).toJson(n);
     }
 
     public Connection getConnection() {

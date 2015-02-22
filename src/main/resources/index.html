@@ -175,7 +175,7 @@
   </script>
   <script type="text/template" id="template-trade">
     <div class="row-fluid">
-      <div class="trade-form col-xs-5 well">
+      <div class="trade-form col-xs-6 well">
         <div class="trade-pair">
           <div class="dropdown dropdown-coin">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
@@ -248,7 +248,19 @@
         </div>
       </div>
 
-      <div class="trade-orderbook col-xs-7"></div>
+      <div class="trade-orderbook col-xs-6">
+        <h4>Order Book</h4>
+        <table class="table table-bordered table-hover col-xs-12">
+          <thead>
+            <tr class="small"><td>Quantity (<strong>LTC</strong>)</td><td>Price (<strong>BTC</strong>)</td></tr>
+          </thead>
+          <tbody class="asks"></tbody>
+          <tbody class="spread">
+            <tr><td><strong class="pull-right hidden">Spread:</strong></td><td class="spread"></td></tr>
+          </tbody>
+          <tbody class="bids"></tbody>
+        </table>
+      </div>
     </div>
   </script>
   <script type="text/template" id="template-trade-list">

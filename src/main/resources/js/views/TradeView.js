@@ -23,9 +23,11 @@ coinswap.TradeView = Backbone.View.extend({
     this.listenTo(this.model, 'change:total', this.updateValues);
     this.listenTo(this.model, 'change:bestBid', this.updateBest);
     this.listenTo(this.model, 'change:bestAsk', this.updateBest);
+    coinswap.trade.on('depth', this.updateOrderbook.bind(this));
     this.render();
     this.updatePair();
     this.updateValues();
+    this.updateOrderbook();
 
     this.model.set('price', this.model.get('bestBid'));
   },
@@ -103,6 +105,8 @@ coinswap.TradeView = Backbone.View.extend({
         .text(this.model.get('buy') ? 'buy' : 'sell');
     overview.find('.alt:eq(0)').html(pair[0].id);
     overview.find('.alt:eq(1)').html(pair[1].id);
+
+    this.updateOrderbook();
   },
 
   updateBuysell: function(e) {
@@ -137,8 +141,8 @@ coinswap.TradeView = Backbone.View.extend({
     this.$el.find('.overview .total').text(m.get('total'));
 
     // TODO: take transaction fees into account
-    if((!m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[0]) === 1)
-    || (m.get('buy') && coinmath.compare(coinmath.multiply(m.get('total'), m.get('price')), m.get('balances')[1]) === 1)) {
+    if((!m.get('buy') && coinmath.compare(m.get('quantity'), m.get('balances')[0]) === 1)
+    || (m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[1]) === 1)) {
       this.$el.find('.values').addClass('has-error');
       this.$el.find('.accept').addClass('disabled');
     } else {
@@ -151,6 +155,29 @@ coinswap.TradeView = Backbone.View.extend({
     var m = this.model;
     var bestPrice = m.get(m.get('buy') ? 'bestBid' : 'bestAsk');
     if(bestPrice) m.set('price', bestPrice);
+  },
+
+  updateOrderbook: function(pair) {
+    if(pair && pair !== this.model.get('pair').join('/').toLowerCase()) return;
+
+    var ids = this.model.get('pair');
+    var depth = coinswap.trade.depth(ids[0], ids[1], 14);
+
+    var bidsEl = this.$el.find('.bids').empty();
+    _.each(depth.bids, function(bid) {
+      var row = $('<tr>')
+        .append($('<td class="quantity"></td>').text(bid[1]))
+        .append($('<td class="price"></td>').text(bid[2]));
+      bidsEl.append(row);
+    });
+
+    var asksEl = this.$el.find('.asks').empty();
+    _.each(depth.asks, function(ask) {
+      var row = $('<tr>')
+        .append($('<td class="quantity"></td>').text(ask[1]))
+        .append($('<td class="price"></td>').text(ask[2]));
+      asksEl.prepend(row);
+    });
   },
 
   submit: function() {

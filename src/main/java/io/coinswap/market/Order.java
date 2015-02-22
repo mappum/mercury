@@ -4,10 +4,7 @@ import io.coinswap.client.Currency;
 import org.bitcoinj.core.Coin;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -19,6 +16,8 @@ public class Order {
     public Coin amount, price;
     public boolean bid;
     public String[] currencies;
+
+    private static String[] emptyCurrencyArray = new String[]{"",""};
 
     public Order(boolean bid, Coin amount, Coin price, String[] currencies) {
         this.bid = bid;
@@ -38,14 +37,27 @@ public class Order {
         return output;
     }
 
-    public Map<String, Object> toJson() {
-        Map<String, Object> data = new HashMap<String, Object>(3);
-        data.put("id", id);
-        data.put("bid", bid);
-        data.put("amount", amount.toPlainString());
-        data.put("price", price.toPlainString());
-        data.put("currencies", currencies);
-        return data;
+    public Object toJson() {
+        return toJson(false);
+    }
+
+    public Object toJson(boolean compact) {
+        if(compact) {
+            List<Object> data = new ArrayList<Object>(3);
+            data.add(bid);
+            data.add(amount.toPlainString());
+            data.add(price.toPlainString());
+            return data;
+
+        } else {
+            Map<String, Object> data = new HashMap<String, Object>(5);
+            data.put("id", id);
+            data.put("bid", bid);
+            data.put("amount", amount.toPlainString());
+            data.put("price", price.toPlainString());
+            data.put("currencies", currencies);
+            return data;
+        }
     }
 
     public static Order fromJson(Map<String, Object> data) {
@@ -60,6 +72,17 @@ public class Order {
         return output;
     }
 
+    public static Order fromJson(List<Object> data) {
+        checkNotNull(data);
+        Order output = new Order(
+                (boolean) checkNotNull(data.get(0)),
+                Coin.parseCoin((String) checkNotNull(data.get(1))),
+                Coin.parseCoin((String) checkNotNull(data.get(2))),
+                emptyCurrencyArray
+        );
+        return output;
+    }
+
     public static Coin[] getTotals(List<? extends Order> orders) {
         Coin[] totals = new Coin[]{ Coin.ZERO, Coin.ZERO };
         for(Order order : orders) {
@@ -71,5 +94,19 @@ public class Order {
                             .longValueExact()));
         }
         return totals;
+    }
+
+    public static List<Order> reduce(List<? extends Order> orders) {
+        List<Order> output = new ArrayList<Order>(orders.size());
+        Order last = null;
+        for(Order order : orders) {
+            if(!output.isEmpty() && last.price.equals(order.price)) {
+                last.amount = last.amount.add(order.amount);
+            } else {
+                last = order.clone();
+                output.add(last);
+            }
+        }
+        return output;
     }
 }

@@ -608,6 +608,12 @@ table.transactions td {
 .trade {
   padding: 16px;
 }
+.trade .row-fluid {
+  display: flex;
+  min-width: 540px;
+  max-width: 720px;
+}
+
 .trade .trade-pair {
   text-align: center;
 }
@@ -646,6 +652,20 @@ table.transactions td {
 }
 .trade .btn.accept.disabled {
   background-color: rgb(77, 119, 124);
+}
+
+.trade .trade-orderbook tbody {
+  border-top: none;
+}
+.trade .trade-orderbook tbody td {
+  font-size: 12px;
+  padding: 1px 8px;
+}
+.trade .trade-orderbook tbody.asks td.price {
+  color: #e74c3c;
+}
+.trade .trade-orderbook tbody.bids td.price {
+  color: #18bc9c;
 }
 
 .receive .qr {
