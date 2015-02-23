@@ -74,16 +74,7 @@ public class TradeClient extends Thread {
             this.currencies.put(c.getId().toLowerCase(), c);
         }
 
-        depth = new HashMap<String, OrderBook>();
-        for(Currency a : currencies) {
-            for(String id : a.getPairs()) {
-                Currency b = this.currencies.get(id.toLowerCase());
-                if(a.getIndex() > b.getIndex()) {
-                    String pairId = a.getId().toLowerCase() + "/" + b.getId().toLowerCase();
-                    depth.put(pairId, new OrderBook());
-                }
-            }
-        }
+        initDepth();
 
         tickers = new ConcurrentHashMap<String, Ticker>();
 
@@ -101,6 +92,19 @@ public class TradeClient extends Thread {
                 emitter.emit("swap", swap);
             }
         }, Threading.SAME_THREAD);
+    }
+
+    private void initDepth() {
+        depth = new HashMap<String, OrderBook>();
+        for(Currency a : this.currencies.values()) {
+            for(String id : a.getPairs()) {
+                Currency b = this.currencies.get(id.toLowerCase());
+                if(a.getIndex() > b.getIndex()) {
+                    String pairId = a.getId().toLowerCase() + "/" + b.getId().toLowerCase();
+                    depth.put(pairId, new OrderBook());
+                }
+            }
+        }
     }
 
     @Override
@@ -236,6 +240,9 @@ public class TradeClient extends Thread {
                             new AtomicSwapTrade(order.bid, order.currencies, quantities, FEE);
                     queueTrade(trade);
                 }
+
+                // clear orderbooks
+                initDepth();
 
                 emitter.emit("disconnect", null);
                 connect();
