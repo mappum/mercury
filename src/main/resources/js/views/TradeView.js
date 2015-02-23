@@ -73,6 +73,10 @@ coinswap.TradeView = Backbone.View.extend({
         .find('.currency').text(ids[i]);
     }.bind(this));
 
+    this.$el.find('.trade-orderbook thead .currency').each(function(i, el) {
+      $(el).text(ids[i]);
+    });
+
     var dropdowns = this.$el.find('.dropdown-coin');
     dropdowns.eq(0).find('.dropdown-toggle .value').text(ids[0]);
     dropdowns.eq(1).find('.dropdown-toggle .value').text(ids[1]);
