@@ -168,20 +168,34 @@ coinswap.TradeView = Backbone.View.extend({
     var depth = coinswap.trade.depth(ids[0], ids[1], 14);
 
     var bidsEl = this.$el.find('.bids').empty();
-    _.each(depth.bids, function(bid) {
+    if(depth.bids.length) {
+      _.each(depth.bids, function(bid) {
+        var row = $('<tr>')
+          .append($('<td class="quantity"></td>').text(bid[1]))
+          .append($('<td class="price"></td>').text(bid[2]));
+        bidsEl.append(row);
+      });
+    } else {
       var row = $('<tr>')
-        .append($('<td class="quantity"></td>').text(bid[1]))
-        .append($('<td class="price"></td>').text(bid[2]));
+        .append($('<td>').text('There are no bid orders for this pair.'))
+        .append($('<td>'));
       bidsEl.append(row);
-    });
+    }
 
     var asksEl = this.$el.find('.asks').empty();
-    _.each(depth.asks, function(ask) {
+    if(depth.asks.length) {
+      _.each(depth.asks, function(ask) {
+        var row = $('<tr>')
+          .append($('<td class="quantity"></td>').text(ask[1]))
+          .append($('<td class="price"></td>').text(ask[2]));
+        asksEl.prepend(row);
+      });
+    } else {
       var row = $('<tr>')
-        .append($('<td class="quantity"></td>').text(ask[1]))
-        .append($('<td class="price"></td>').text(ask[2]));
-      asksEl.prepend(row);
-    });
+        .append($('<td>').text('There are no ask orders for this pair.'))
+        .append($('<td>'));
+      asksEl.append(row);
+    }
   },
 
   submit: function() {
