@@ -37,6 +37,8 @@ coinswap.Trade = Backbone.Model.extend({
 
     var ticker = coinswap.trade.ticker(pair[0].id, pair[1].id);
 
+    this.set('pair', [pair[0].get('id'), pair[1].get('id')], { silent: true });
+
     this.set({
       symbols: [ pair[0].get('symbol'), pair[1].get('symbol') ],
       balances: [ pair[0].get('balance'), pair[1].get('balance') ],
