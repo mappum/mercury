@@ -10,9 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Contains the settings and state for one currency. Includes an AltcoinJ wallet,
@@ -30,6 +34,7 @@ public class Currency {
     protected int index;
     protected boolean hashlock; // whether or not this coin can be used on the Alice-side of a swap
     protected int confirmationDepth;
+    protected List<InetSocketAddress> connectPeers;
 
     private boolean setup;
     private SettableFuture<Object> setupFuture;
@@ -47,6 +52,7 @@ public class Currency {
         this.index = index;
         this.hashlock = hashlock;
         this.confirmationDepth = confirmationDepth;
+        this.connectPeers = new ArrayList<InetSocketAddress>(0);
 
         setupFuture = SettableFuture.create();
 
@@ -58,6 +64,10 @@ public class Currency {
 
                 peerGroup().setMaxConnections(8);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
+
+                for(InetSocketAddress peer : connectPeers) {
+                    peerGroup().connectTo(peer);
+                }
 
                 setup = true;
                 setupFuture.set(null);
@@ -88,6 +98,11 @@ public class Currency {
     public void stop() {
         wallet.stopAsync();
         wallet.awaitTerminated();
+    }
+
+    public void addConnectPeers(List<InetSocketAddress> peers) {
+        checkNotNull(peers);
+        this.connectPeers.addAll(peers);
     }
 
     private void makeBackup() {

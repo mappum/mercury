@@ -94,12 +94,7 @@ public class Main extends Application {
                     }, controller.e);
 
                     List<InetSocketAddress> peers = connectPeers.get(c.getId().toLowerCase());
-                    if(peers != null) {
-                        for(InetSocketAddress peer : peers) {
-                            c.getWallet().peerGroup().connectTo(peer);
-                        }
-                    }
-
+                    if(peers != null) currency.addConnectPeers(peers);
                     currency.start();
                 }
 
