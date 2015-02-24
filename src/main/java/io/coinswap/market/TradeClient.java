@@ -4,24 +4,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.coinswap.client.EventEmitter;
-import io.coinswap.client.Main;
 import io.coinswap.client.SwapCollection;
 import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONObject;
-import org.bitcoinj.core.Coin;
-import org.bitcoinj.utils.Threading;
+import io.mappum.altcoinj.core.Coin;
+import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
-import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.ConnectException;
 import java.security.KeyStore;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +42,7 @@ public class TradeClient extends Thread {
 
     public static final String HOST = "trade.mercuryex.com";
     public static final int PORT = Connection.PORT;
-    public static final org.bitcoinj.core.Coin FEE = Coin.ZERO;
+    public static final io.mappum.altcoinj.core.Coin FEE = Coin.ZERO;
 
     public static final long TIME_EPSILON = 60;
 

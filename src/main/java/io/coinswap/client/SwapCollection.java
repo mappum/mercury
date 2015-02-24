@@ -1,8 +1,8 @@
 package io.coinswap.client;
 
 import io.coinswap.swap.AtomicSwap;
-import org.bitcoinj.core.Sha256Hash;
-import org.bitcoinj.utils.Threading;
+import io.mappum.altcoinj.core.Sha256Hash;
+import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

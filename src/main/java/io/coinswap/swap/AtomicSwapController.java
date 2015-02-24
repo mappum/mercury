@@ -2,11 +2,11 @@ package io.coinswap.swap;
 
 import com.google.common.collect.ImmutableList;
 import io.coinswap.client.Currency;
-import org.bitcoinj.core.*;
-import org.bitcoinj.crypto.TransactionSignature;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptBuilder;
-import org.bitcoinj.utils.Threading;
+import io.mappum.altcoinj.core.*;
+import io.mappum.altcoinj.crypto.TransactionSignature;
+import io.mappum.altcoinj.script.Script;
+import io.mappum.altcoinj.script.ScriptBuilder;
+import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static org.bitcoinj.script.ScriptOpCodes.OP_NOP;
+import static io.mappum.altcoinj.script.ScriptOpCodes.OP_NOP;
 
 public abstract class AtomicSwapController {
     public static final int VERSION = 0;

@@ -1,10 +1,9 @@
 package io.coinswap.market;
 
-import org.bitcoinj.core.Coin;
+import io.mappum.altcoinj.core.Coin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class TickerHistory {
     public Coin start, end;

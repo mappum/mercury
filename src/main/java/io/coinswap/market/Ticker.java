@@ -1,6 +1,6 @@
 package io.coinswap.market;
 
-import org.bitcoinj.core.Coin;
+import io.mappum.altcoinj.core.Coin;
 
 import java.math.BigInteger;
 import java.util.*;

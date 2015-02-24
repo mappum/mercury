@@ -1,20 +1,16 @@
 package io.coinswap.client;
 
-import com.google.common.collect.ImmutableList;
-import org.bitcoinj.kits.WalletAppKit;
-import org.bitcoinj.core.*;
+import io.mappum.altcoinj.kits.WalletAppKit;
+import io.mappum.altcoinj.core.*;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import org.bitcoinj.utils.ListenerRegistration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

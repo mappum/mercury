@@ -1,7 +1,7 @@
 package io.coinswap.swap;
 
 import net.minidev.json.JSONObject;
-import org.bitcoinj.core.Coin;
+import io.mappum.altcoinj.core.Coin;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -14,6 +14,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class AtomicSwapTrade implements Serializable {
+    private static final long serialVersionUID = 0;
+
     public static final Coin FEE = Coin.ZERO;
 
     // exchange fee, in satoshis per 10 microcoins

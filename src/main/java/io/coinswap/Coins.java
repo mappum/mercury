@@ -1,7 +1,7 @@
 package io.coinswap;
 
 import io.coinswap.client.Currency;
-import org.bitcoinj.params.*;
+import io.mappum.altcoinj.params.*;
 
 import java.io.File;
 import java.util.ArrayList;

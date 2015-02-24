@@ -8,11 +8,9 @@ import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapTrade;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
-import net.minidev.json.JSONStyle;
 import netscape.javascript.JSObject;
-import org.bitcoinj.core.Coin;
+import io.mappum.altcoinj.core.Coin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 

@@ -1,10 +1,9 @@
 package io.coinswap.client;
 
 
-import com.google.common.collect.ImmutableList;
 import io.coinswap.swap.AtomicSwap;
-import org.bitcoinj.core.*;
-import org.bitcoinj.store.BlockStoreException;
+import io.mappum.altcoinj.core.*;
+import io.mappum.altcoinj.store.BlockStoreException;
 import com.google.common.base.Joiner;
 import net.minidev.json.JSONObject;
 import net.minidev.json.JSONStyle;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public class CoinModel extends Model {
     private static final Logger log = LoggerFactory.getLogger(CoinModel.class);
@@ -66,7 +64,7 @@ public class CoinModel extends Model {
     public void send(String addressString, String amountString) {
         try {
             Address address = new Address(currency.params, addressString);
-            org.bitcoinj.core.Coin amount = org.bitcoinj.core.Coin.parseCoin(amountString);
+            io.mappum.altcoinj.core.Coin amount = io.mappum.altcoinj.core.Coin.parseCoin(amountString);
             Wallet.SendRequest req = Wallet.SendRequest.to(address, amount);
             currency.wallet.wallet().sendCoins(currency.wallet.peerGroup(), req);
         } catch(Exception ex) {
@@ -163,12 +161,12 @@ public class CoinModel extends Model {
 
     class UITransactionListener extends AbstractWalletEventListener {
         @Override
-        public void onCoinsReceived(Wallet wallet, Transaction tx, org.bitcoinj.core.Coin prevBalance, org.bitcoinj.core.Coin newBalance) {
+        public void onCoinsReceived(Wallet wallet, Transaction tx, io.mappum.altcoinj.core.Coin prevBalance, io.mappum.altcoinj.core.Coin newBalance) {
             onTransaction(tx);
         }
 
         @Override
-        public void onCoinsSent(Wallet wallet, Transaction tx, org.bitcoinj.core.Coin prevBalance, org.bitcoinj.core.Coin newBalance) {
+        public void onCoinsSent(Wallet wallet, Transaction tx, io.mappum.altcoinj.core.Coin prevBalance, io.mappum.altcoinj.core.Coin newBalance) {
             onTransaction(tx);
         }
 
@@ -221,7 +219,7 @@ public class CoinModel extends Model {
             obj.put("dead", tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.DEAD);
 
             String address = null;
-            boolean received = tx.getValue(w).compareTo(org.bitcoinj.core.Coin.ZERO) == 1;
+            boolean received = tx.getValue(w).compareTo(io.mappum.altcoinj.core.Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
                 try {
                     if (received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {
@@ -232,7 +230,7 @@ public class CoinModel extends Model {
             }
 
             if(address != null) {
-                org.bitcoinj.core.Coin sent = org.bitcoinj.core.Coin.ZERO;
+                io.mappum.altcoinj.core.Coin sent = io.mappum.altcoinj.core.Coin.ZERO;
                 for(TransactionOutput out : tx.getOutputs()) {
                     try {
                         if (!w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash()))

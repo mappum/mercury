@@ -1,16 +1,12 @@
 package io.coinswap.client;
 
-import com.sun.javafx.scene.control.skin.VirtualFlow;
-import netscape.javascript.JSObject;
-import org.bitcoinj.utils.Threading;
+import io.mappum.altcoinj.utils.Threading;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class EventEmitter {
     protected Map<String, List<Callback>> listeners;

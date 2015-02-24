@@ -1,12 +1,12 @@
 package io.coinswap.swap;
 
 import net.minidev.json.JSONObject;
-import org.bitcoinj.core.*;
-import org.bitcoinj.crypto.TransactionSignature;
-import org.bitcoinj.script.Script;
-import org.bitcoinj.script.ScriptBuilder;
-import org.bitcoinj.script.ScriptOpCodes;
-import org.bitcoinj.utils.Threading;
+import io.mappum.altcoinj.core.*;
+import io.mappum.altcoinj.crypto.TransactionSignature;
+import io.mappum.altcoinj.script.Script;
+import io.mappum.altcoinj.script.ScriptBuilder;
+import io.mappum.altcoinj.script.ScriptOpCodes;
+import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
