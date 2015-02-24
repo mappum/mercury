@@ -8,7 +8,8 @@ coinswap.TradeView = Backbone.View.extend({
     'keypress .values input': 'updateInputs',
     'keydown .values input': 'updateInputs',
     'keyup .values input': 'updateInputs',
-    'click .accept': 'submit'
+    'click .accept': 'submit',
+    'click .advanced': 'toggleAdvanced'
   },
 
   template: _.template($('#template-trade').html()),
@@ -48,6 +49,13 @@ coinswap.TradeView = Backbone.View.extend({
   render: function() {
     this.$el.html(this.template(this.model.attributes));
     this.delegateEvents();
+    this.$el.find('.collapse').collapse({
+      toggle: false
+    });
+    this.$el.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el
+    });
   },
 
   updateDropdowns: function() {
@@ -216,6 +224,14 @@ coinswap.TradeView = Backbone.View.extend({
       m.get('quantity'), m.get('total'), function(err, res) {
         if(err) return;
       });
+  },
+
+  toggleAdvanced: function() {
+    if(this.$el.find('.collapse').hasClass('in')) {
+      this.$el.find('.advanced i').removeClass('fa-angle-up').addClass('fa-angle-down');
+    } else {
+      this.$el.find('.advanced i').removeClass('fa-angle-down').addClass('fa-angle-up');
+    }
   }
 });
 
