@@ -119,6 +119,9 @@ hr {
   -webkit-box-shadow: none;
   color: #fff;
 }
+#left .navigation li a {
+  text-align: left;
+}
 #left .navigation > h4 {
   margin-left: 14px;
   margin-top: 24px;
@@ -626,7 +629,7 @@ table.transactions td {
   margin: 0 10px;
 }
 
-.trade .values label {
+.trade label {
   font-size: 13px;
   text-transform: uppercase;
   font-weight: normal;
@@ -666,6 +669,10 @@ table.transactions td {
 }
 .trade .trade-orderbook tbody.bids td.price {
   color: #18bc9c;
+}
+.trade .advanced {
+  color: #aaa;
+  margin-bottom: 10px;
 }
 
 .receive .qr {

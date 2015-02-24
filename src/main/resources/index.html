@@ -80,18 +80,18 @@
     </div>
     <hr class="no-margin">
     <div class="lower">
-      <div class="btn-group-vertical navigation" data-toggle="buttons-radio">
-        <a href="#" class="home btn btn-primary <%= page.id === 'home' ? 'active' : '' %>"><i class="fa fa-home"></i> Home</a>
+      <ul class="btn-group-vertical navigation nav" role="navigation">
+        <li><a href="#" class="home btn btn-primary <%= page.id === 'home' ? 'active' : '' %>"><i class="fa fa-home"></i> Home</a></li>
 
         <h4>Wallet</h4>
-        <a href="#send" class="send btn btn-primary <%= page.id === 'send' ? 'active' : '' %>"><i class="fa fa-sign-out"></i> Send</a>
-        <a href="#receive" class="receive btn btn-primary <%= page.id === 'receive' ? 'active' : '' %>"><i class="fa fa-sign-in"></i> Receive</a>
-        <a href="#transactions" class="transactions btn btn-primary <%= page.id === 'transactions' ? 'active' : '' %>"><i class="fa fa-list"></i> Transaction Log</a>
+        <li><a href="#send" class="send btn btn-primary <%= page.id === 'send' ? 'active' : '' %>"><i class="fa fa-sign-out"></i> Send</a></li>
+        <li><a href="#receive" class="receive btn btn-primary <%= page.id === 'receive' ? 'active' : '' %>"><i class="fa fa-sign-in"></i> Receive</a></li>
+        <li><a href="#transactions" class="transactions btn btn-primary <%= page.id === 'transactions' ? 'active' : '' %>"><i class="fa fa-list"></i> Transaction Log</a></li>
 
         <h4>Exchange</h4>
-        <a href="#trade" class="trade btn btn-primary <%= page.id === 'trade' ? 'active' : '' %>"><i class="fa fa-exchange"></i> Trade</a>
-        <a href="#trades" class="trades btn btn-primary <%= page.id === 'trades' ? 'active' : '' %>"><i class="fa fa-list"></i> Trade Log</a>
-      </div>
+        <li><a href="#trade" class="trade btn btn-primary <%= page.id === 'trade' ? 'active' : '' %>"><i class="fa fa-exchange"></i> Trade</a></li>
+        <li><a href="#trades" class="trades btn btn-primary <%= page.id === 'trades' ? 'active' : '' %>"><i class="fa fa-list"></i> Trade Log</a></li>
+      </ul>
     </div>
   </script>
   <script type="text/template" id="template-transactions">
@@ -224,6 +224,12 @@
                 <input class="form-control" type="text" placeholder="0.00">
               </div>
             </div>
+          </div>
+          <br>
+          <a class="btn btn-primary btn-sm btn-toggle advanced hidden" data-toggle="collapse" href="#trade-options" aria-expanded="false" aria-controls="trade-options">Advanced Options <i class="fa fa-angle-down"></i></a>
+          <div class="collapse" id="trade-options">
+            <label data-toggle="tooltip" data-placement="bottom" title="This is how many blocks the client will wait to consider a transaction confirmed. Higher values will take longer, but are more secure against double-spends.">Confirmations</label>
+            <input class="form-control confirms" type="text" value="1">
           </div>
           <br>
           <div class="row">
@@ -462,7 +468,7 @@
     </tr>
   </script>
 
-  <script src="js/jquery-2.0.2.min.js"></script>
+  <script src="js/jquery-2.1.3.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
   <script src="js/underscore-min.js"></script>
   <script src="js/backbone-min.js"></script>
