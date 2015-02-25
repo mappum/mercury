@@ -648,6 +648,7 @@ table.transactions td {
 .trade .buysell .btn {
   padding: 12px 0;
   width: 50%;
+  color: #ddd;
 }
 .trade .btn.accept {
   width: 100%;
