@@ -42,6 +42,7 @@ hr {
 
 .modal .modal-dialog {
   margin-top: 12% !important;
+  z-index: 10000;
 }
 .modal .modal-content {
   background-color: #3a3a3a;
