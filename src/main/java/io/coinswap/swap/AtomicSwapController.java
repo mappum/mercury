@@ -235,7 +235,7 @@ public abstract class AtomicSwapController {
     protected void listenForPayout(boolean alice) {
         Currency c = currencies[swap.switched ? 1 : 0];
         Wallet w = c.getWallet().wallet();
-        w.addWatchedScripts(ImmutableList.of(swap.getPayoutOutput(c.getParams(), false)));
+        w.addWatchedScripts(ImmutableList.of(swap.getPayoutOutput(c.getParams(), alice)));
         w.addEventListener(new AbstractWalletEventListener() {
             @Override
             public void onCoinsReceived(Wallet w, Transaction payout, Coin prevBalance, Coin newBalance) {

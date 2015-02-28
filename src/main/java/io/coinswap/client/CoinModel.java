@@ -219,7 +219,7 @@ public class CoinModel extends Model {
             obj.put("dead", tx.getConfidence().getConfidenceType() == TransactionConfidence.ConfidenceType.DEAD);
 
             String address = null;
-            boolean received = tx.getValue(w).compareTo(io.mappum.altcoinj.core.Coin.ZERO) == 1;
+            boolean received = tx.getValue(w).compareTo(Coin.ZERO) == 1;
             for(TransactionOutput out : tx.getOutputs()) {
                 try {
                     if (received == w.isPubKeyHashMine(out.getScriptPubKey().getPubKeyHash())) {

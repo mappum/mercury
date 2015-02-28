@@ -74,10 +74,11 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
             // TODO: make sure it's not possible to miss the transactions (syncing through the block that contained
             // it before we register this listener)
-            if (swap.getStep() == AtomicSwap.Step.WAITING_FOR_BAILIN) {
+            if (swap.getBailinHash(!alice) != null) {
                 listenForBailin();
+            }
 
-            } else if (swap.getStep() == AtomicSwap.Step.WAITING_FOR_PAYOUT) {
+            if (swap.getXHash() != null) {
                 listenForPayout(false);
             }
 
@@ -249,6 +250,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
             } else if (method.equals(AtomicSwapMethod.KEYS_REQUEST)) {
                 swap.setStep(AtomicSwap.Step.EXCHANGING_BAILIN_HASHES);
+                if(alice) listenForPayout(false);
                 sendBailinHash();
 
             } else if (method.equals(AtomicSwapMethod.BAILIN_HASH_REQUEST)) {
@@ -343,10 +345,9 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private void onBailinConfirm(Transaction tx) {
         tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_PLEDGE);
 
-        if(alice) {
+        if (alice) {
             swap.setStep(AtomicSwap.Step.WAITING_FOR_PAYOUT);
             log.info("Other party's bailin confirmed. Now broadcasting our bailin.");
-            listenForPayout(false);
             broadcastBailin();
 
         } else {
