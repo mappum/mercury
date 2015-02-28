@@ -9,10 +9,7 @@ import io.mappum.altcoinj.script.ScriptBuilder;
 import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -233,6 +230,32 @@ public abstract class AtomicSwapController {
             }
         }, secondsLeft, TimeUnit.SECONDS);
     }
+
+
+    protected void listenForPayout(boolean alice) {
+        Currency c = currencies[swap.switched ? 1 : 0];
+        Wallet w = c.getWallet().wallet();
+        w.addWatchedScripts(ImmutableList.of(swap.getPayoutOutput(c.getParams(), false)));
+        w.addEventListener(new AbstractWalletEventListener() {
+            @Override
+            public void onCoinsReceived(Wallet w, Transaction payout, Coin prevBalance, Coin newBalance) {
+                if(payout.getInputs().size() != 2) return;
+                Script xScript = payout.getInput(1).getScriptSig();
+                byte[] x = xScript.getChunks().get(1).data;
+                if(!Arrays.equals(Utils.Hash160(x), swap.getXHash())) return;
+
+                swap.setPayoutHash(alice, payout.getHash());
+
+                if(alice) onAlicePayout(payout, x);
+                else onBobPayout(payout, x);
+
+                w.removeEventListener(this);
+            }
+        });
+    }
+
+    protected void onAlicePayout(Transaction alicePayout, byte[] x) {}
+    protected void onBobPayout(Transaction bobPayout, byte[] x) {}
 
     protected void finish() {
         refundScheduler.shutdownNow();

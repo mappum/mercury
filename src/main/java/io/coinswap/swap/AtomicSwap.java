@@ -506,6 +506,12 @@ public class AtomicSwap implements Serializable {
 
             listeners = new HashMap<StateListener, Executor>();
 
+            // hack to ensure deserialized transactions are properly initialized
+            if(bailinTxs[0] != null) bailinTxs[0] = new Transaction(bailinTxs[0].getParams(),
+                    bailinTxs[0].bitcoinSerialize());
+            if(bailinTxs[1] != null) bailinTxs[1] = new Transaction(bailinTxs[1].getParams(),
+                    bailinTxs[1].bitcoinSerialize());
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

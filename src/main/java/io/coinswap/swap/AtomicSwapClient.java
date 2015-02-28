@@ -55,7 +55,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         }
     }
 
-    // Resumes a swap (starts up the client from a saved AtomicSwap (e.g. if the
+    // Resumes a swap (starts up the client from a saved AtomicSwap)
     public void resume() {
         checkState(swap.isStarted());
 
@@ -76,8 +76,9 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             // it before we register this listener)
             if (swap.getStep() == AtomicSwap.Step.WAITING_FOR_BAILIN) {
                 listenForBailin();
+
             } else if (swap.getStep() == AtomicSwap.Step.WAITING_FOR_PAYOUT) {
-                listenForPayout();
+                listenForPayout(false);
             }
 
             // if we are resuming a swap that wasn't done setting up, just cancel it
@@ -288,14 +289,20 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             return;
         }
 
+        Script expectedMultisig = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem()),
+                expectedHashlock;
+        if(alice) expectedHashlock = ScriptBuilder.createP2SHOutputScript(swap.getHashlockScript(false));
+        else expectedHashlock = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
+
         // listen for the other party's bailin by adding a script listener for the multisig redeem script
         Wallet w = currencies[b].getWallet().wallet();
-        List<Script> scripts = new ArrayList<>(1);
-        scripts.add(ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem()));
+        List<Script> scripts = ImmutableList.of(ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem()));
         w.addWatchedScripts(scripts);
         WalletEventListener listener = new AbstractWalletEventListener() {
             @Override
             public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
+                if(!tx.getOutput(0).getScriptPubKey().equals(expectedMultisig)
+                || !tx.getOutput(1).getScriptPubKey().equals(expectedHashlock)) return;
                 onBailin(tx);
                 w.removeEventListener(this);
             }
@@ -339,7 +346,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         if(alice) {
             swap.setStep(AtomicSwap.Step.WAITING_FOR_PAYOUT);
             log.info("Other party's bailin confirmed. Now broadcasting our bailin.");
-            listenForPayout();
+            listenForPayout(false);
             broadcastBailin();
 
         } else {
@@ -350,37 +357,9 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         }
     }
 
-    private void listenForPayout() {
-        checkState(alice);
-
-        // check to see if we have already received the payout TX
-        Transaction tx = currencies[a].getWallet().wallet().getTransaction(swap.getPayoutHash(!alice));
-        if(tx != null) {
-            onPayout(tx);
-            return;
-        }
-
-        Wallet w = new Wallet(currencies[a].getParams());
-        w.addWatchedScripts(ImmutableList.of(swap.getPayoutOutput(currencies[a].getParams(), !alice)));
-        w.addEventListener(new AbstractWalletEventListener() {
-            @Override
-            public void onCoinsReceived(Wallet wallet, Transaction tx, Coin prevBalance, Coin newBalance) {
-                Script xScript = tx.getInput(1).getScriptSig();
-                byte[] x = xScript.getChunks().get(1).data;
-                if (!Arrays.equals(Utils.Hash160(x), swap.getXHash())) return;
-
-                onPayout(tx);
-                currencies[a].getWallet().peerGroup().removeWallet(w);
-            }
-        });
-        currencies[a].getWallet().peerGroup().addWallet(w);
-    }
-
-    private void onPayout(Transaction tx) {
+    protected void onBobPayout(Transaction tx, byte[] x) {
         log.info("Received other party's payout via coin network: " + tx.toString());
         tx.setPurpose(Transaction.Purpose.ASSURANCE_CONTRACT_CLAIM);
-
-        swap.setPayoutHash(!alice, tx.getHash());
 
         Script xScript = tx.getInput(1).getScriptSig();
         swap.setX(xScript.getChunks().get(1).data);
