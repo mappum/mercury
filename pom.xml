@@ -6,7 +6,7 @@
 
     <groupId>io.coinswap</groupId>
     <artifactId>mercury</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>Mercury Wallet</name>
 
     <properties>
@@ -114,7 +114,7 @@
                 <configuration>
                     <executable>build/app.sh</executable>
                     <arguments>
-                        <argument>${build.filename}.jar</argument>
+                        <argument>${build.filename}</argument>
                     </arguments>
                 </configuration>
             </plugin>
