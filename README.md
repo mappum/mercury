@@ -5,11 +5,13 @@ mercury
 
 A multi-coin wallet that supports trustless cross-chain trading.
 
-## Usage
+## Download
 
-Requires [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html)
+We recommend having [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) installed.
 
-Download Mercury here: https://github.com/mappum/mercury/releases/download/0.0.1-alpha/mercury.zip (Start by running `Mercury Wallet.jar`).
+* [Windows (.exe)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.exe)
+* [OSX (.dmg)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.dmg)
+* [Linux (.jar)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.jar)
 
 ## License (MIT)
 
