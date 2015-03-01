@@ -7,9 +7,11 @@
     <groupId>io.coinswap</groupId>
     <artifactId>mercury</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <name>Mercury Wallet</name>
 
     <properties>
         <build.filename>MercuryWallet-${project.version}</build.filename>
+        <project.mainclass>io.coinswap.client.Main</project.mainclass>
     </properties>
 
     <build>
@@ -24,7 +26,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -33,7 +34,7 @@
                     <minimizeJar>false</minimizeJar>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>io.coinswap.client.Main</mainClass>
+                            <mainClass>${project.mainclass}</mainClass>
                         </transformer>
                     </transformers>
                     <filters>
@@ -75,7 +76,7 @@
                             <jar>target/${build.filename}.jar</jar>
                             <errTitle>Mercury Wallet</errTitle>
                             <classPath>
-                                <mainClass>io.coinswap.client.Main</mainClass>
+                                <mainClass>${project.mainclass}</mainClass>
                                 <addDependencies>false</addDependencies>
                             </classPath>
                             <jre>
@@ -96,6 +97,26 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.1.1</version>
+                <executions>
+                    <execution>
+                        <id>OSX .app</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>build/app.sh</executable>
+                    <arguments>
+                        <argument>${build.filename}.jar</argument>
+                    </arguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>
