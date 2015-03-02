@@ -32,7 +32,9 @@ public class CoinModel extends Model {
                 "index: " + currency.index + ", " +
                 "symbol: '" + currency.symbol + "'," +
                 "pairs: ['" + Joiner.on("','").join(currency.pairs) + "']," +
-                "address: \"" + currency.getWallet().wallet().currentReceiveAddress().toString() + "\"" +
+                "address: \"" + currency.getWallet().wallet().currentReceiveAddress().toString() + "\"," +
+                "fee: '" + currency.getParams().getMinFee().toPlainString() + "'," +
+                "confirms: " + currency.getConfirmationDepth() +
             "})"));
 
         this.controller = controller;

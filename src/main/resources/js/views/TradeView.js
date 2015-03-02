@@ -134,7 +134,6 @@ coinswap.TradeView = Backbone.View.extend({
     for(var i = 0; i < keys.length; i++) {
       if(container.hasClass(keys[i])) {
         var val = $(e.target).val();
-        if(!val || !+val) return;
 
         try {
           var val = coinmath.truncate(val);
@@ -146,20 +145,39 @@ coinswap.TradeView = Backbone.View.extend({
 
   updateValues: function() {
     var m = this.model;
-    this.$el.find('.values .price input').val(m.get('price'));
-    this.$el.find('.values .quantity input').val(m.get('quantity'));
-    this.$el.find('.values .total input').val(m.get('total'));
-    this.$el.find('.overview .quantity').text(m.get('quantity'));
-    this.$el.find('.overview .total').text(m.get('total'));
+    var t = this;
+    var pair = m.getPair();
+
+    t.$el.find('.values .price input').val(m.get('price'));
+    t.$el.find('.values .quantity input').val(m.get('quantity'));
+    t.$el.find('.values .total input').val(m.get('total'));
+    t.$el.find('.overview .quantity').text(m.get('quantity'));
+    t.$el.find('.overview .total').text(m.get('total'));
+
+    var setError = function(message) {
+      t.$el.find('.values').addClass('has-error').find('.error').html(message);
+      t.$el.find('.accept').addClass('disabled');
+    }
+
+    var empty = coinmath.compare(m.get('quantity'), '0') === 0
+      || coinmath.compare(m.get('total'), '0') === 0;
 
     // TODO: take transaction fees into account
-    if((!m.get('buy') && coinmath.compare(m.get('quantity'), m.get('balances')[0]) === 1)
-    || (m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[1]) === 1)) {
-      this.$el.find('.values').addClass('has-error');
-      this.$el.find('.accept').addClass('disabled');
+    if(!m.get('buy') && coinmath.compare(m.get('quantity'), m.get('balances')[0]) === 1) {
+      setError('Not enough '+m.get('pair')[0]+' in wallet');
+
+    } else if(m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[1]) === 1) {
+      setError('Not enough '+m.get('pair')[1]+' in wallet');
+
+    } else if(!empty && coinmath.compare(m.get('quantity'), pair[0].get('fee')) === -1) {
+      setError('Order must be at least <strong>'+pair[0].get('fee')+' <span class="alt">'+m.get('pair')[0]+'</span></strong>');
+
+    } else if(!empty && coinmath.compare(m.get('total'), pair[1].get('fee')) === -1) {
+      setError('Order must be at least <strong>'+pair[1].get('fee')+' <span class="alt">'+m.get('pair')[1]+'</span></strong>');
+
     } else {
-      this.$el.find('.values').removeClass('has-error');
-      this.$el.find('.accept').removeClass('disabled');
+      t.$el.find('.values').removeClass('has-error').find('.error').text('');
+      t.$el.find('.accept').removeClass('disabled');
     }
   },
 
