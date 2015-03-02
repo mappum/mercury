@@ -13,6 +13,23 @@ We recommend having [Java 8](http://www.oracle.com/technetwork/java/javase/downl
 * [OSX (.dmg)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.dmg)
 * [Linux (.jar)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.jar)
 
+## Build
+
+You might want to build Mercury if you don't want to trust a pre-built binary, or you are making changes to the code.
+
+Required:
+
+* [JDK 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* [Maven 3](http://maven.apache.org/download.cgi)
+
+Clone the project and build it:
+```
+$ git clone https://github.com/mappum/mercury
+$ cd mercury
+$ mvn clean install
+```
+This will create the files you want to run in a directory called `target`. There will be a `.jar`, `.exe`, and on OSX a `.app` and `.dmg`.
+
 ## License (MIT)
 
 Copyright 2015 Mercury
