@@ -27,6 +27,7 @@ public class Controller {
         context = (JSObject) window.getMember("coinswap");
         app = new Model((JSObject) context.getMember("app"));
         context.setMember("version", Main.CLIENT_VERSION);
+        context.setMember("appVersion", Main.APP_VERSION);
 
         e = new Executor() {
             @Override

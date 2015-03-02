@@ -190,6 +190,12 @@ function init() {
   });
 
   app.on('initialized', function() {
+    $('.mercury-logo img').attr('title', 'Mercury Wallet ' + coinswap.appVersion);
+    $('body').find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: 'body'
+    });
+
     new coinswap.OrderListView({
       el: $('#right .orders'),
       model: coinswap.app

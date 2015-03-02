@@ -705,6 +705,12 @@ table.transactions td {
 .mercury-logo, .mercury-logo img {
   width: 32px;
 }
+.mercury-logo .tooltip {
+  font-size: 12px;
+}
+body > .tooltip .tooltip-inner {
+  max-width: 1000px !important;
+}
 
 div.orders, div.trades {
   background: #222;
