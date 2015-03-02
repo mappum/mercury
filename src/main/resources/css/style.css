@@ -678,9 +678,10 @@ table.transactions td {
 }
 
 .receive .qr {
-  width: 90px;
-  height: 90px;
+  min-width: 90px;
+  min-height: 90px;
   margin-bottom: 10px;
+  border: 3px solid white;
 }
 
 .address .btn:active {
