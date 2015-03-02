@@ -14,6 +14,11 @@ coinswap.NavbarView = Backbone.View.extend({
   render: function() {
     console.log('rendering navbar')
     this.$el.html(this.template(this.model.attributes));
+
+    this.$el.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el
+    });
   }
 });
 
