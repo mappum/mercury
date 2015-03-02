@@ -63,13 +63,7 @@ public class TradeController {
         if(ticker == null) return null;
 
         Map<String, Object> tickerJson = (Map<String, Object>) ticker.toJson();
-        JSObject output = toJSObject(tickerJson);
-        JSObject history = controller.eval("[]");
-        int i = 0;
-        for(List point : (List<List>) tickerJson.get("history")) {
-            history.setSlot(i++, toJSArray(point));
-        }
-        output.setMember("history", history);
+        JSObject output = controller.eval("new Object("+JSONObject.toJSONString(tickerJson)+")");
         output.setMember("change", ticker.change().toPlainString());
         return output;
     }

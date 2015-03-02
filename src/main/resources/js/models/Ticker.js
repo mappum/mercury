@@ -21,7 +21,7 @@ coinswap.Ticker = Backbone.Model.extend({
     console.log('updating ticker: ' + this.pairId());
     var pair = this.get('pair');
     var data = coinswap.trade.ticker(pair[0], pair[1]);
-    this.set(data);
+    if(data) this.set(data);
   },
 
   pairId: function() {

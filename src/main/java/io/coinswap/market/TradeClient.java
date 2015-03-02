@@ -423,7 +423,7 @@ public class TradeClient extends Thread {
         String pair = (String) checkNotNull(message.get("pair"));
         Ticker ticker = Ticker.fromJson((Map) checkNotNull(message.get("data")));
         Ticker previousTicker = tickers.get(pair);
-        if(previousTicker != null && ticker.history == null) {
+        if(previousTicker != null && message.get("history") == null) {
             // if server didn't send history data, get it from the previous ticker
             // (we sometimes don't send it as an optimization since it takes up a lot of bandwidth)
             ticker.history = previousTicker.history;
