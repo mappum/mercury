@@ -11,7 +11,7 @@
   <header>
     <div class="controls pull-left"></div>
     <div class="mercury-logo center-block">
-      <img src="images/icon64.png">
+      <img src="images/icon64.png" data-toggle="tooltip" data-placement="bottom">
     </div>
 
     <div class="right pull-right" style="display: none">
@@ -372,7 +372,7 @@
       <div class="row">
         <div class="address col-xs-12">
           <label>Address</label>
-          <div class="text-danger error small">The provided address is invalid.</div>
+          <div class="text-danger error small"></div>
           <div class="input-group">
             <input type="text" class="form-control value" placeholder="Enter an address to send to">
             <span class="btn btn-default input-group-addon paste" data-toggle="tooltip" title="Paste"><i class="fa fa-paste"></i></span>
@@ -382,8 +382,8 @@
       <br>
       <div class="row">
         <div class="amount col-xs-7">
-          <label>Amount<span class="alt hidden"> - (<span class="currency"></span>)</span></label>
-          <div class="text-danger error small">The provided amount is invalid.</div>
+          <label>Amount<span class="alt balance hidden"> - Balance: <span class="symbol"></span><span class="balance-value"></span> </span></label>
+          <div class="text-danger error small"></div>
           <div class="input-group">
             <span class="input-group-addon symbol"><i class="fa fa-btc"></i></span>
             <input type="text" class="form-control value" placeholder="0.00">

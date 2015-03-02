@@ -2,8 +2,8 @@
 
 coinswap.SendView = Backbone.View.extend({
   events: {
-    'blur .address .value': 'validateAddress',
-    'blur .amount .value': 'validateAmount',
+    'keyup .address .value': 'validateAddress',
+    'keyup .amount .value': 'validateAmount',
     'click .send': 'send',
     'click .address .paste': 'pasteAddress'
   },
@@ -34,9 +34,22 @@ coinswap.SendView = Backbone.View.extend({
 
   setCurrency: function(id) {
     this.$el.find('.currency').text(id);
-    var altEl = this.$el.find('.amount .alt');
-    if(id) altEl.removeClass('hidden');
-    else altEl.addClass('hidden');
+
+    if(id) {
+      var coin = this.collection.get(id);
+      this.$el.find('.balance .balance-value').text(coin.get('balance'));
+      this.$el.find('.symbol').html(coin.get('symbol'));
+
+      this.$el.find('.balance').removeClass('hidden');
+
+    } else {
+      this.$el.find('.balance').addClass('hidden');
+    }
+  },
+
+  getCoinModel: function() {
+    var id = this.$el.find('.currency').text();
+    return this.collection.get(id);
   },
 
   validateAddress: function(e) {
@@ -56,13 +69,23 @@ coinswap.SendView = Backbone.View.extend({
     }
     this.setCurrency(currency);
 
-    addressEl[currency || !address ? 'removeClass' : 'addClass']('has-error');
+    if(currency || !address) addressEl.removeClass('has-error');
+    else addressEl.addClass('has-error').find('.error').text('Invalid address');
   },
 
   validateAmount: function(e) {
+    console.log('event triggered')
+
     var amountEl = this.$el.find('.amount');
     var amount = amountEl.find('.value').val().trim();
-    if(!+amount || +amount < 0) amountEl.addClass('has-error');
+    var coin = this.getCoinModel();
+    var balance = coin ? coin.get('balance') : '0';
+
+    console.log(amount +' '+ +amount)
+
+    if(+amount < 0) amountEl.addClass('has-error').find('.error').text('Invalid amount');
+    // TODO: incorporate fee into balance check
+    else if(coinmath.compare(amount, balance) === 1) amountEl.addClass('has-error').find('.error').text('Not enough money in wallet');
     else amountEl.removeClass('has-error');
   },
 
