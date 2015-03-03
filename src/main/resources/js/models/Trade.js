@@ -5,7 +5,6 @@ coinswap.Trade = Backbone.Model.extend({
     buy: true,
     pair: ['LTC', 'BTC'],
     symbols: ['', ''],
-    balances: [0, 0],
     price: 0,
     quantity: 0,
     total: 0
@@ -41,7 +40,6 @@ coinswap.Trade = Backbone.Model.extend({
 
     this.set({
       symbols: [ pair[0].get('symbol'), pair[1].get('symbol') ],
-      balances: [ pair[0].get('balance'), pair[1].get('balance') ],
       bestBid: ticker.bestBid,
       bestAsk: ticker.bestAsk
     });

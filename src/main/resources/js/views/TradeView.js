@@ -24,6 +24,7 @@ coinswap.TradeView = Backbone.View.extend({
     this.listenTo(this.model, 'change:total', this.updateValues);
     this.listenTo(this.model, 'change:bestBid', this.updateBest);
     this.listenTo(this.model, 'change:bestAsk', this.updateBest);
+    this.listenTo(coinswap.app, 'change:balance', this.updatePair);
     coinswap.trade.on('depth', this.updateOrderbook.bind(this));
     this.render();
     this.updatePair();
@@ -77,7 +78,7 @@ coinswap.TradeView = Backbone.View.extend({
     this.$el.find('.trade-balances .balance').each(function(i, el) {
       $(el)
         .find('.symbol').html(pair[i].get('symbol')).parent()
-        .find('.value').text(this.model.get('balances')[i]).parent()
+        .find('.value').text(pair[i].get('balance')).parent()
         .find('.currency').text(ids[i]);
     }.bind(this));
 
@@ -145,39 +146,46 @@ coinswap.TradeView = Backbone.View.extend({
 
   updateValues: function() {
     var m = this.model;
-    var t = this;
+
+    this.clearError();
+    this.$el.find('.values .price input').val(m.get('price'));
+    this.$el.find('.values .quantity input').val(m.get('quantity'));
+    this.$el.find('.values .total input').val(m.get('total'));
+    this.$el.find('.overview .quantity').text(m.get('quantity'));
+    this.$el.find('.overview .total').text(m.get('total'));
+  },
+
+  setError: function(message) {
+    this.$el.find('.values').addClass('has-error').find('.error').html(message);
+    this.$el.find('.accept').addClass('disabled');
+  },
+
+  clearError: function() {
+    this.$el.find('.values').removeClass('has-error').find('.error').text('');
+    this.$el.find('.accept').removeClass('disabled');
+  },
+
+  validateValues: function() {
+    var m = this.model;
     var pair = m.getPair();
-
-    t.$el.find('.values .price input').val(m.get('price'));
-    t.$el.find('.values .quantity input').val(m.get('quantity'));
-    t.$el.find('.values .total input').val(m.get('total'));
-    t.$el.find('.overview .quantity').text(m.get('quantity'));
-    t.$el.find('.overview .total').text(m.get('total'));
-
-    var setError = function(message) {
-      t.$el.find('.values').addClass('has-error').find('.error').html(message);
-      t.$el.find('.accept').addClass('disabled');
-    }
 
     var empty = coinmath.compare(m.get('quantity'), '0') === 0
       || coinmath.compare(m.get('total'), '0') === 0;
 
-    // TODO: take transaction fees into account
-    if(!m.get('buy') && coinmath.compare(m.get('quantity'), m.get('balances')[0]) === 1) {
-      setError('Not enough '+m.get('pair')[0]+' in wallet');
+    if(!m.get('buy') && coinmath.compare(m.get('quantity'), pair[0].get('balance')) === 1) {
+      this.setError('Not enough '+m.get('pair')[0]+' in wallet');
 
-    } else if(m.get('buy') && coinmath.compare(m.get('total'), m.get('balances')[1]) === 1) {
-      setError('Not enough '+m.get('pair')[1]+' in wallet');
+    } else if(m.get('buy') && coinmath.compare(m.get('total'), pair[1].get('balance')) === 1) {
+      this.setError('Not enough '+m.get('pair')[1]+' in wallet');
 
     } else if(!empty && coinmath.compare(m.get('quantity'), pair[0].get('fee')) === -1) {
-      setError('Order must be at least <strong>'+pair[0].get('fee')+' <span class="alt">'+m.get('pair')[0]+'</span></strong>');
+      this.setError('Order must be at least <strong>'+pair[0].get('fee')+' <span class="alt">'+m.get('pair')[0]+'</span></strong>');
 
     } else if(!empty && coinmath.compare(m.get('total'), pair[1].get('fee')) === -1) {
-      setError('Order must be at least <strong>'+pair[1].get('fee')+' <span class="alt">'+m.get('pair')[1]+'</span></strong>');
+      this.setError('Order must be at least <strong>'+pair[1].get('fee')+' <span class="alt">'+m.get('pair')[1]+'</span></strong>');
 
     } else {
-      t.$el.find('.values').removeClass('has-error').find('.error').text('');
-      t.$el.find('.accept').removeClass('disabled');
+      this.clearError();
     }
   },
 
@@ -225,6 +233,9 @@ coinswap.TradeView = Backbone.View.extend({
   },
 
   submit: function() {
+    this.validateValues();
+    if(this.$el.find('.values').hasClass('has-error')) return;
+
     var t = this;
     this.$el.find('.accept')
       .addClass('disabled')
