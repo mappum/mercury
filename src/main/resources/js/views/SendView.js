@@ -42,8 +42,12 @@ coinswap.SendView = Backbone.View.extend({
 
       this.$el.find('.balance').removeClass('hidden');
 
+      this.$el.find('.fee').removeClass('hidden')
+        .find('.fee-value').text(coin.get('fee'));
+
     } else {
       this.$el.find('.balance').addClass('hidden');
+      this.$el.find('.fee').addClass('hidden');
     }
   },
 
@@ -74,18 +78,14 @@ coinswap.SendView = Backbone.View.extend({
   },
 
   validateAmount: function(e) {
-    console.log('event triggered')
-
     var amountEl = this.$el.find('.amount');
     var amount = amountEl.find('.value').val().trim();
     var coin = this.getCoinModel();
     var balance = coin ? coin.get('balance') : '0';
-
-    console.log(amount +' '+ +amount)
+    var fee = coin.get('fee');
 
     if(+amount < 0) amountEl.addClass('has-error').find('.error').text('Invalid amount');
-    // TODO: incorporate fee into balance check
-    else if(coinmath.compare(amount, balance) === 1) amountEl.addClass('has-error').find('.error').text('Not enough money in wallet');
+    else if(coinmath.compare(coinmath.add(amount, fee), balance) === 1) amountEl.addClass('has-error').find('.error').text('Not enough money in wallet');
     else amountEl.removeClass('has-error');
   },
 
