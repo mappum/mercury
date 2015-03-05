@@ -30,6 +30,14 @@ $ mvn clean install
 ```
 This will create the files you want to run in a directory called `target`. There will be a `.jar`, `.exe`, and on OSX a `.app` and `.dmg`.
 
+## Contributing
+
+Mercury is is need of testing and code contributions. Please feel free to file issues if you find any bugs. 
+
+If any critical exploits are found in the cross-chain atomic swap implementation, we will gladly pay bounties if they are disclosed responsibly (there is bound to be some low-hanging fruit to find). [There will be a Crowdcurity link here shortly].
+
+Join the Mercury development community in the IRC channel, #hg on Freenode.
+
 ## License (MIT)
 
 Copyright 2015 Mercury
