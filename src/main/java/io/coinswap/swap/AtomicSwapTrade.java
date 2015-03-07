@@ -70,7 +70,7 @@ public class AtomicSwapTrade implements Serializable {
         BigInteger bigValue = BigInteger.valueOf(quantities[1].getValue())
             .multiply(BigInteger.valueOf(Coin.COIN.longValue()))
             .divide(BigInteger.valueOf(quantities[0].getValue()));
-        return Coin.valueOf(bigValue.longValueExact());
+        return Coin.valueOf(bigValue.longValue());
     }
 
     public Map toJson() {
@@ -116,6 +116,6 @@ public class AtomicSwapTrade implements Serializable {
         BigInteger bigValue = BigInteger.valueOf(amount.getValue())
                 .multiply(BigInteger.valueOf(price.getValue()))
                 .divide(BigInteger.valueOf(Coin.COIN.longValue()));
-        return Coin.valueOf(bigValue.longValueExact());
+        return Coin.valueOf(bigValue.longValue());
     }
 }

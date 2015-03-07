@@ -27,7 +27,7 @@ public class Ticker {
         return Coin.valueOf(end.subtract(start)
                 .multiply(BigInteger.valueOf(Coin.COIN.value))
                 .multiply(BigInteger.valueOf(100))
-                .divide(start).longValueExact());
+                .divide(start).longValue());
     }
 
     public Object toJson() {

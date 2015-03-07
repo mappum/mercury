@@ -166,11 +166,11 @@ public class SwapCollection implements AtomicSwap.StateListener {
         return null;
     }
 
-    public void onStepChange(AtomicSwap.Step step, AtomicSwap swap) {
+    public void onStepChange(AtomicSwap.Step step, final AtomicSwap swap) {
         addToMap(swap);
         save();
 
-        for(StateListener listener : listeners.keySet()) {
+        for(final StateListener listener : listeners.keySet()) {
             listeners.get(listener).execute(new Runnable() {
                 @Override
                 public void run() {

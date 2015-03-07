@@ -59,7 +59,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage mainWindow) {
-        File dataDirectory = getDataDirectory();
+        final File dataDirectory = getDataDirectory();
         String logPath = new File(dataDirectory, "logs/debug.log").getAbsolutePath();
         System.setProperty("logs.file", logPath);
         log = LoggerFactory.getLogger(Main.class);

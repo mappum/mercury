@@ -10,6 +10,7 @@ import io.coinswap.net.Connection;
 import net.minidev.json.JSONObject;
 import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.util.encoders.Base64;
 
 import java.util.*;
 
@@ -101,14 +102,14 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         swap.setKeys(alice, myKeys);
         List<String> keyStrings = new ArrayList<String>(3);
         for(ECKey key : myKeys)
-            keyStrings.add(Base64.getEncoder().encodeToString(key.getPubKey()));
+            keyStrings.add(Base64.toBase64String(key.getPubKey()));
         message.put("keys", keyStrings);
 
         if (!alice) {
             ECKey xKey = currencies[b].getWallet().wallet().freshReceiveKey();
             myKeys.add(xKey);
             swap.setXKey(xKey);
-            message.put("x", Base64.getEncoder().encodeToString(swap.getXHash()));
+            message.put("x", Base64.toBase64String(swap.getXHash()));
         }
 
         connection.write(message);
@@ -149,7 +150,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         swap.setBailinTx(alice, tx);
 
-        message.put("hash", Base64.getEncoder().encodeToString(tx.getHash().getBytes()));
+        message.put("hash", Base64.toBase64String(tx.getHash().getBytes()));
         connection.write(message);
     }
 
@@ -176,12 +177,12 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         JSONObject message = new JSONObject();
         message.put("channel", swap.getChannelId(!swap.trade.buy));
         message.put("method", AtomicSwapMethod.EXCHANGE_SIGNATURES);
-        message.put("payout", Base64.getEncoder().encodeToString(sigPayout.encodeToDER()));
-        message.put("refund", Base64.getEncoder().encodeToString(sigRefund.encodeToDER()));
+        message.put("payout", Base64.toBase64String(sigPayout.encodeToDER()));
+        message.put("refund", Base64.toBase64String(sigRefund.encodeToDER()));
         message.put("myPayout", ImmutableList.of(
-                Base64.getEncoder().encodeToString(myPayout[0].encodeToDER()),
-                Base64.getEncoder().encodeToString(myPayout[1].encodeToDER())));
-        message.put("myRefund", Base64.getEncoder().encodeToString(myRefund.encodeToDER()));
+                Base64.toBase64String(myPayout[0].encodeToDER()),
+                Base64.toBase64String(myPayout[1].encodeToDER())));
+        message.put("myRefund", Base64.toBase64String(myRefund.encodeToDER()));
         connection.write(message);
     }
 
@@ -291,13 +292,13 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             return;
         }
 
-        Script expectedMultisig = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem()),
-                expectedHashlock;
+        final Script expectedMultisig = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem());
+        final Script expectedHashlock;
         if(alice) expectedHashlock = ScriptBuilder.createP2SHOutputScript(swap.getHashlockScript(false));
         else expectedHashlock = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
 
         // listen for the other party's bailin by adding a script listener for the multisig redeem script
-        Wallet w = currencies[b].getWallet().wallet();
+        final Wallet w = currencies[b].getWallet().wallet();
         List<Script> scripts = ImmutableList.of(ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem()));
         w.addWatchedScripts(scripts);
         WalletEventListener listener = new AbstractWalletEventListener() {
@@ -312,7 +313,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         w.addEventListener(listener);
     }
 
-    private void onBailin(Transaction tx) {
+    private void onBailin(final Transaction tx) {
         if(!tx.getHash().equals(swap.getBailinHash(!alice))) {
             log.error("Received bailin with different hash, someone mutated the transaction! :(\n" +
                     "Expected: " + swap.getBailinHash(!alice).toString() + "\n" +
@@ -322,7 +323,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         }
 
         log.info("Received other party's bailin via coin network: " + tx.toString());
-        AtomicSwapClient parent = this;
+        final AtomicSwapClient parent = this;
         int confirmDepth = 0;//currencies[b].getConfirmationDepth();
         // NOTE: we currently aren't waiting for confirms, which is dangerous
         // TODO: use deeper confirmations for high-value swaps

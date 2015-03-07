@@ -90,7 +90,7 @@ public class Order {
                     BigInteger.valueOf(order.amount.value)
                             .multiply(BigInteger.valueOf(order.price.value))
                             .divide(BigInteger.valueOf(Coin.COIN.value))
-                            .longValueExact()));
+                            .longValue()));
         }
         return totals;
     }

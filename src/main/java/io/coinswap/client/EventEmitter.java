@@ -22,11 +22,11 @@ public class EventEmitter {
         l.add(cb);
     }
 
-    public void emit(String event, Object arg) {
+    public void emit(String event, final Object arg) {
         List<Callback> l = listeners.get(event);
         if (l == null) return;
 
-        for (Callback cb : l) {
+        for (final Callback cb : l) {
             cb.executor.execute(new Runnable() {
                 @Override
                 public void run() {

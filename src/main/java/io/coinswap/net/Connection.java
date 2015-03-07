@@ -48,8 +48,8 @@ public class Connection extends Thread {
         }
     }
 
-    public Map waitForMessage(String channel) {
-        SettableFuture<Map> future = SettableFuture.create();
+    public Map waitForMessage(final String channel) {
+        final SettableFuture<Map> future = SettableFuture.create();
         onMessage(channel, new ReceiveListener() {
             @Override
             public void onReceive(Map data) {
@@ -128,9 +128,9 @@ public class Connection extends Thread {
     }
 
     public Map request(Map req) {
-        SettableFuture<Map> responseFuture = SettableFuture.create();
+        final SettableFuture<Map> responseFuture = SettableFuture.create();
         String channel = (String) checkNotNull(req.get("channel"));
-        String requestId = id++ + "";
+        final String requestId = id++ + "";
         req.put("request", requestId);
 
         ReceiveListener onRes = new ReceiveListener() {

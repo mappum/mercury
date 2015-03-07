@@ -26,14 +26,14 @@ public class CoinMathController {
     public String multiply(String aString, String bString) {
         BigInteger a = parse(aString),
                    b = parse(bString);
-        return Coin.valueOf(a.multiply(b).divide(COIN).longValueExact())
+        return Coin.valueOf(a.multiply(b).divide(COIN).longValue())
                 .toPlainString();
     }
 
     public String divide(String aString, String bString) {
         BigInteger a = parse(aString),
                    b = parse(bString);
-        return Coin.valueOf(a.multiply(COIN).divide(b).longValueExact())
+        return Coin.valueOf(a.multiply(COIN).divide(b).longValue())
                 .toPlainString();
     }
 

@@ -112,7 +112,7 @@ public class AtomicSwap implements Serializable {
         }
     }
 
-    public void setStep(Step step) {
+    public void setStep(final Step step) {
         Step previous;
 
         lock.lock();
@@ -126,7 +126,7 @@ public class AtomicSwap implements Serializable {
         // trigger event
         if(step != previous) {
             final AtomicSwap parent = this;
-            for(StateListener listener : listeners.keySet()) {
+            for(final StateListener listener : listeners.keySet()) {
                 listeners.get(listener).execute(new Runnable() {
                     @Override
                     public void run() {

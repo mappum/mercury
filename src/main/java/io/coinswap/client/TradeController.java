@@ -39,7 +39,7 @@ public class TradeController {
         return pair;
     }
 
-    public void submit(boolean buy, String currency1, String currency2, String quantity, String total, JSObject cb) {
+    public void submit(boolean buy, String currency1, String currency2, String quantity, String total, final JSObject cb) {
         String[] pair = getPair(currency1, currency2);
         Coin[] quantities = new Coin[]{
                 Coin.parseCoin(quantity),
@@ -114,7 +114,7 @@ public class TradeController {
         return client.getConnection() != null && client.getConnection().isConnected();
     }
 
-    public void on(String event, JSObject listener) {
+    public void on(String event, final JSObject listener) {
         client.on(event, new EventEmitter.Callback(controller.e) {
             @Override
             public void f(Object data) {

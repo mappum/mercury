@@ -8,6 +8,7 @@ import io.mappum.altcoinj.script.Script;
 import io.mappum.altcoinj.script.ScriptBuilder;
 import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.util.encoders.Base64;
 
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -65,11 +66,11 @@ public abstract class AtomicSwapController {
 
                 List<ECKey> keys = new ArrayList<ECKey>(3);
                 for(String s : keyStrings)
-                    keys.add(ECKey.fromPublicOnly(Base64.getDecoder().decode(checkNotNull(s))));
+                    keys.add(ECKey.fromPublicOnly(Base64.decode(checkNotNull(s))));
                 swap.setKeys(fromAlice, keys);
 
                 if (!fromAlice) {
-                    byte[] xHash = Base64.getDecoder().decode((String) checkNotNull(data.get("x")));
+                    byte[] xHash = Base64.decode((String) checkNotNull(data.get("x")));
                     swap.setXHash(xHash);
                 }
 
@@ -77,7 +78,7 @@ public abstract class AtomicSwapController {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_BAILIN_HASHES);
                 checkState(swap.getBailinHash(fromAlice) == null);
 
-                byte[] hashBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("hash")));
+                byte[] hashBytes = Base64.decode((String) checkNotNull(data.get("hash")));
                 Sha256Hash hash = new Sha256Hash(hashBytes);
                 swap.setBailinHash(fromAlice, hash);
 
@@ -87,12 +88,12 @@ public abstract class AtomicSwapController {
                 // deserialize signatures in message
                 List<String> ownPayoutSigStrings = (List<String>) checkNotNull(data.get("myPayout"));
                 byte[]
-                    payoutSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("payout"))),
-                    refundSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("refund"))),
+                    payoutSigBytes = Base64.decode((String) checkNotNull(data.get("payout"))),
+                    refundSigBytes = Base64.decode((String) checkNotNull(data.get("refund"))),
                     ownPayoutSigBytes[] = new byte[][] {
-                            Base64.getDecoder().decode(checkNotNull(ownPayoutSigStrings.get(0))),
-                            Base64.getDecoder().decode(checkNotNull(ownPayoutSigStrings.get(1)))},
-                    ownRefundSigBytes = Base64.getDecoder().decode((String) checkNotNull(data.get("myRefund")));
+                            Base64.decode(checkNotNull(ownPayoutSigStrings.get(0))),
+                            Base64.decode(checkNotNull(ownPayoutSigStrings.get(1)))},
+                    ownRefundSigBytes = Base64.decode((String) checkNotNull(data.get("myRefund")));
                 ECKey.ECDSASignature
                     payoutSig = ECKey.ECDSASignature.decodeFromDER(payoutSigBytes),
                     refundSig = ECKey.ECDSASignature.decodeFromDER(refundSigBytes),
@@ -219,7 +220,7 @@ public abstract class AtomicSwapController {
         swap.setStep(AtomicSwap.Step.CANCELED);
     }
 
-    protected void waitForRefundTimelock(boolean alice) {
+    protected void waitForRefundTimelock(final boolean alice) {
         long secondsLeft = swap.getTimeUntilRefund(alice);
         log.info("Refund TX will unlock in ~" + (secondsLeft / 60) + " minutes");
 
@@ -232,7 +233,7 @@ public abstract class AtomicSwapController {
     }
 
 
-    protected void listenForPayout(boolean alice) {
+    protected void listenForPayout(final boolean alice) {
         Currency c = currencies[swap.switched ? 1 : 0];
         Wallet w = c.getWallet().wallet();
         w.addWatchedScripts(ImmutableList.of(swap.getPayoutOutput(c.getParams(), alice)));
