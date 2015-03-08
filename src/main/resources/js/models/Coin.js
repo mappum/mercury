@@ -66,7 +66,6 @@ coinswap.Coin = Backbone.Model.extend({
         locked = coinmath.add(locked, coinmath.multiply(order.amount, order.price));
       }
     });
-    console.log('getLockedBalance(): ' + locked + ' ' + this.get('id'))
     return locked;
   },
 

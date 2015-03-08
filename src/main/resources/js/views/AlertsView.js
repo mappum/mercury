@@ -5,6 +5,7 @@ coinswap.AlertsView = Backbone.View.extend({
 
   initialize: function() {
     this.listenTo(this.model, 'change:update', this.addUpdateAlert);
+    this.listenTo(this.model, 'change:updateJava', this.addJavaAlert);
 
     this.addAlert({
       level: 'warning',
@@ -21,6 +22,13 @@ coinswap.AlertsView = Backbone.View.extend({
     this.addAlert({
       level: 'info',
       content: 'A new version of Mercury is available. You can download it <a href="#" onclick="desktop.browse(\'http://mercuryex.com/download\')">here</a>.'
+    });
+  },
+
+  addJavaAlert: function() {
+    this.addAlert({
+      level: 'warning',
+      content: '<strong><i class="fa fa-warning"></i></strong> You are using an old version of Java. Upgrade to Java 8 by clicking <a href="#" onclick="desktop.browse(\'http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html\')">here</a>.'
     });
   }
 });
