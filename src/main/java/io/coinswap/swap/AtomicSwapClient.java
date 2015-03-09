@@ -324,11 +324,19 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         log.info("Received other party's bailin via coin network: " + tx.toString());
         final AtomicSwapClient parent = this;
-        int confirmDepth = 0;//currencies[b].getConfirmationDepth();
-        // NOTE: we currently aren't waiting for confirms, which is dangerous
-        // TODO: use deeper confirmations for high-value swaps
+
+        // TODO: calculate approx BTC value for pairs that don't have BTC, so we can pick a sensible confirmation depth
+        int confirmDepth;
+        if(swap.trade.coins[1].toLowerCase().equals("btc")) {
+            Coin btcValue = swap.trade.quantities[1];
+            confirmDepth = confirmDepthForValue(btcValue) * currencies[b].getConfirmationDepth();
+        } else {
+            confirmDepth = currencies[b].getConfirmationDepth();
+        }
 
         if(tx.getConfidence().getDepthInBlocks() >= confirmDepth) {
+            // TODO: if this is an unconfirmed TX, make sure a sufficient number of peers have broadcast the TX to us,
+            // to ensure it's being accepted by the network
             onBailinConfirm(tx);
         } else {
             tx.getConfidence().getDepthFuture(confirmDepth).addListener(
@@ -341,6 +349,16 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                     }, Threading.SAME_THREAD
             );
         }
+    }
+
+    private int confirmDepthForValue(Coin approxBtcValue) {
+        // TODO: tweak these values to ensure they are configured safely
+        // TODO: user settings to override these values
+        if(approxBtcValue.isLessThan(Coin.parseCoin("0.5"))) return 0; // instant/unconfirmed for small trades
+        if(approxBtcValue.isLessThan(Coin.parseCoin("2.5"))) return 1;
+        if(approxBtcValue.isLessThan(Coin.parseCoin("5"))) return 2;
+        if(approxBtcValue.isLessThan(Coin.parseCoin("10"))) return 3;
+        return 4;
     }
 
     private void onBailinConfirm(Transaction tx) {
