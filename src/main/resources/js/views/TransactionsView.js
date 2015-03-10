@@ -31,6 +31,9 @@ coinswap.TransactionsView = Backbone.View.extend({
     var t = this;
     var row = $('<tr>');
 
+    var currency = t.collection.get(tx.get('coin'));
+    tx.set('currency', currency.attributes);
+
     function updateRow() {
       if(t.initialized) {
         if(!t.removed && !$.contains(document.documentElement, t.el))

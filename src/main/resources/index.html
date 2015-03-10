@@ -111,7 +111,7 @@
     ltct: 'https://chain.so/tx/LTCTEST/'
   }[coin.toLowerCase()] + id %>
     <td class="text-center">
-      <i class="fa <%= !depth ? 'fa-asterisk text-warning' : depth < 6 ? 'fa-clock-o text-info' : 'fa-check text-success' %>" data-toggle="tooltip" data-placement="right" title="<%= !depth ? 'Unconfirmed' : depth+' confirmation'+(depth>1?'s':'') %>"></i>
+      <i class="fa <%= !depth ? 'fa-asterisk text-warning' : depth < (currency.confirms * 4) ? 'fa-clock-o text-info' : 'fa-check text-success' %>" data-toggle="tooltip" data-placement="right" title="<%= !depth ? 'Unconfirmed' : depth+' confirmation'+(depth>1?'s':'') %>"></i>
     </td>
     <td class="small"><%= coin %></td>
     <td class="small text-<%= value > 0 ? 'success' : 'danger' %>"><%= (value > 0 ? '+' : '') + value %></td>
