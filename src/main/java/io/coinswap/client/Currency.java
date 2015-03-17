@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -21,6 +22,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Currency {
     private static final Logger log = LoggerFactory.getLogger(Currency.class);
     private static final File checkpointDir = new File("./checkpoints");
+
+    private static final int MIN_BROADCAST_CONNECTIONS = 5;
+    private static final int CONNECTIONS = 8;
 
     protected NetworkParameters params;
     protected File directory;
@@ -58,7 +62,8 @@ public class Currency {
             protected void onSetupCompleted() {
                 makeBackup();
 
-                peerGroup().setMaxConnections(8);
+                peerGroup().setMaxConnections(CONNECTIONS);
+                peerGroup().setMinBroadcastConnections(MIN_BROADCAST_CONNECTIONS);
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
 
                 for(InetSocketAddress peer : connectPeers) {
@@ -81,7 +86,7 @@ public class Currency {
         }
     }
 
-    public void broadcastTransaction(Transaction tx) {
+    public void broadcastTransaction(final Transaction tx) {
         wallet.peerGroup().broadcastTransaction(tx);
         wallet.wallet().receivePending(tx, null);
     }
