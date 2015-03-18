@@ -188,8 +188,8 @@ function init() {
     model: new coinswap.History
   });
 
-  new coinswap.TickerListView({
-    el: $('#right .tickers'),
+  new coinswap.SidebarView({
+    el: $('#right'),
     model: coinswap.app
   });
 

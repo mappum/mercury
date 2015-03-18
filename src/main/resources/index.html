@@ -28,11 +28,7 @@
       <div id="alerts"></div>
       <div id="main"></div>
     </div>
-    <div id="right">
-      <div class="tickers"></div>
-      <div class="orders"></div>
-      <div class="trades"></div>
-    </div>
+    <div id="right"></div>
   </section>
 
   <footer><span>Connected</span></footer>
@@ -50,6 +46,32 @@
       </button>
       <p><%= content %></p>
     </div>
+  </script>
+  <script type="text/template" id="template-feed">
+    <ul class="list"></ul>
+  </script>
+  <script type="text/template" id="template-feed-row">
+    <li class="item">
+      <img class="logo" src="images/<%= currencies[0].toLowerCase() %>.png">
+      <span>/</span>
+      <img class="logo" src="images/<%= currencies[1].toLowerCase() %>.png">
+      <span class="alt"> - </span>
+      <span class="amount"><span class="symbol"><%= symbols[0] %></span><%= amount %></span>
+      <span class="alt">@</span>
+      <span class="price"><span class="symbol"><%= symbols[1] %></span><%= price %></span>
+      <span class="alt"> - <%= moment(time).fromNow() %></span>
+    </li>
+  </script>
+  <script type="text/template" id="template-sidebar">
+    <div class="top">
+      <div class="buttons">
+        <button class="btn btn-tiny btn-default feed-button">Feed</button><button class="btn btn-tiny btn-default tickers-button active">Tickers</button>
+      </div>
+      <div class="feed hidden inner"></div>
+      <div class="tickers inner"></div>
+    </div>
+    <div class="orders"></div>
+    <div class="trades"></div>
   </script>
   <script type="text/template" id="template-footer">
     <span>
@@ -500,5 +522,7 @@
   <script src="js/views/TradeListView.js"></script>
   <script src="js/views/FooterView.js"></script>
   <script src="js/views/AlertsView.js"></script>
+  <script src="js/views/SidebarView.js"></script>
+  <script src="js/views/FeedView.js"></script>
 </body>
 </html>

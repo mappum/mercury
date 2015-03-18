@@ -67,6 +67,12 @@ hr {
   border: none;
   border-radius: 2px !important;
 }
+.btn-tiny {
+  line-height: 7px;
+  font-size: 12px;
+  padding: 6px 8px;
+  margin-left: 4px;
+}
 .btn.disabled {
   opacity: 1;
   color: #ccc;
@@ -522,10 +528,23 @@ header .right .avatar-clear {
   bottom: 0;
   right: 0;
   width: 240px;
+  overflow: hidden;
 }
 
-#right > .tickers {
+#right > div.top {
   height: 48%;
+  position: relative;
+}
+#right > div.top .buttons {
+  padding: 1px 2px;
+}
+#right > div.top .inner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 28px;
+  overflow-y: auto;
 }
 
 #right > .orders {
@@ -732,6 +751,18 @@ div.orders, div.trades {
   border-radius: 0;
   border-bottom: 1px solid #444;
   padding: 2px;
+}
+
+.feed>ul.list {
+  padding: 4px 8px;
+  list-style: none;
+}
+.feed>ul.list>.item {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.feed>ul.list>.item .logo {
+  width: 20px;
 }
 
 header .controls {
