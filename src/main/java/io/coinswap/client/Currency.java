@@ -63,8 +63,13 @@ public class Currency {
                 makeBackup();
 
                 peerGroup().setMaxConnections(CONNECTIONS);
-                peerGroup().setMinBroadcastConnections(MIN_BROADCAST_CONNECTIONS);
+                peerGroup().setMinBroadcastConnections(1); // only require 1 peer in case we are connected to local peer
                 peerGroup().setFastCatchupTimeSecs(wallet.wallet().getEarliestKeyCreationTime());
+
+                // remove the re-add the wallet to the peergroup, so we will broadcast waiting transactions with the
+                // peergroup settings set correctly
+                peerGroup().removeWallet(wallet());
+                peerGroup().addWallet(wallet());
 
                 for(InetSocketAddress peer : connectPeers) {
                     peerGroup().connectTo(peer);
@@ -87,8 +92,12 @@ public class Currency {
     }
 
     public void broadcastTransaction(final Transaction tx) {
-        wallet.peerGroup().broadcastTransaction(tx);
         wallet.wallet().receivePending(tx, null);
+
+        // broadcast even if we only have 1 peer (in case we are connected to localhost peer)
+        wallet.peerGroup().broadcastTransaction(tx, 1);
+        // also wait until we have MIN_BROADCAST_CONNECTIONS, then rebroadcast
+        wallet.peerGroup().broadcastTransaction(tx, MIN_BROADCAST_CONNECTIONS);
     }
 
     public void start() {
