@@ -14,6 +14,8 @@ coinswap.FeedView = Backbone.View.extend({
     var t = this;
 
     coinswap.trade.on('feed', function(data) {
+      data.orders.sort(function(a, b) { return a.time - b.time; });
+
       _.each(data.orders, function(order) {
         var pair = [ coins.get(order.currencies[0].toUpperCase()), coins.get(order.currencies[1].toUpperCase()) ];
         order.symbols = [ pair[0].get('symbol'), pair[1].get('symbol') ];

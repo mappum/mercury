@@ -428,8 +428,6 @@ public class TradeClient extends Thread {
 
     private void onFeed(Map message) {
         emitter.emit("feed", message);
-        String pair = (String) message.get("pair");
-        emitter.emit("feed:" + pair.toLowerCase(), message);
     }
 
     private void onTicker(Map message) {
