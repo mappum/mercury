@@ -7,12 +7,19 @@ coinswap.FeedView = Backbone.View.extend({
   rowTemplate: _.template($('#template-feed-row').html()),
 
   initialize: function() {
+    _.bindAll(this, 'addRow');
     this.render();
-    this.listenTo(this.model, 'initialize', this.onAppInitialize);
-  },
 
-  onAppInitialize: function() {
-    //coinswap.trade.on('feed', this.addRow.bind(this));
+    var coins = this.model.get('coins');
+    var t = this;
+
+    coinswap.trade.on('feed', function(data) {
+      _.each(data.orders, function(order) {
+        var pair = [ coins.get(order.currencies[0].toUpperCase()), coins.get(order.currencies[1].toUpperCase()) ];
+        order.symbols = [ pair[0].get('symbol'), pair[1].get('symbol') ];
+        t.addRow(order);
+      });
+    });
   },
 
   render: function() {
@@ -21,7 +28,8 @@ coinswap.FeedView = Backbone.View.extend({
   },
 
   addRow: function(data) {
-    this.$el.find('.list').prepend(this.rowTemplate(data));
+    var row = $(this.rowTemplate(data));
+    this.$el.find('.list').prepend(row);
     while(this.$el.find('.list li').length > LIST_MAX_ITEMS) {
       var children = this.$el.find('.list').children();
       children.eq(-1).remove();

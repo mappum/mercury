@@ -52,6 +52,8 @@
   </script>
   <script type="text/template" id="template-feed-row">
     <li class="item">
+      <span class="alt time"><%= moment(time).format('hh:mm:ss') %></span>
+      <br>
       <img class="logo" src="images/<%= currencies[0].toLowerCase() %>.png">
       <span>/</span>
       <img class="logo" src="images/<%= currencies[1].toLowerCase() %>.png">
@@ -59,16 +61,15 @@
       <span class="amount"><span class="symbol"><%= symbols[0] %></span><%= amount %></span>
       <span class="alt">@</span>
       <span class="price"><span class="symbol"><%= symbols[1] %></span><%= price %></span>
-      <span class="alt"> - <%= moment(time).fromNow() %></span>
     </li>
   </script>
   <script type="text/template" id="template-sidebar">
     <div class="top">
       <div class="buttons">
-        <button class="btn btn-tiny btn-default feed-button">Feed</button><button class="btn btn-tiny btn-default tickers-button active">Tickers</button>
+        <button class="btn btn-tiny btn-default feed-button active">Feed</button><button class="btn btn-tiny btn-default tickers-button">Tickers</button>
       </div>
-      <div class="feed hidden inner"></div>
-      <div class="tickers inner"></div>
+      <div class="feed inner"></div>
+      <div class="tickers hidden inner"></div>
     </div>
     <div class="orders"></div>
     <div class="trades"></div>

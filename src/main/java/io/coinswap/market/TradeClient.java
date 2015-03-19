@@ -198,6 +198,13 @@ public class TradeClient extends Thread {
             }
         });
 
+        connection.onMessage("feed", new Connection.ReceiveListener() {
+            @Override
+            public void onReceive(Map message) {
+                parent.onFeed(message);
+            }
+        });
+
         connection.onMessage("info", new Connection.ReceiveListener() {
             @Override
             public void onReceive(Map message) {
@@ -417,6 +424,12 @@ public class TradeClient extends Thread {
         AtomicSwapClient client =
                 new AtomicSwapClient(swap, connection, pair);
         client.start();
+    }
+
+    private void onFeed(Map message) {
+        emitter.emit("feed", message);
+        String pair = (String) message.get("pair");
+        emitter.emit("feed:" + pair.toLowerCase(), message);
     }
 
     private void onTicker(Map message) {

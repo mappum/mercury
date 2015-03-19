@@ -114,21 +114,26 @@ public class TradeController {
         return client.getConnection() != null && client.getConnection().isConnected();
     }
 
-    public void on(String event, final JSObject listener) {
+    public void on(final String event, final JSObject listener) {
         client.on(event, new EventEmitter.Callback(controller.e) {
             @Override
             public void f(Object data) {
-                controller.callFunction(listener, new Object[]{data});
+                if(data == null) {
+                    controller.callFunction(listener, new Object[0]);
+                }
+                try {
+                    Map<String, ? extends Object> map = (Map<String, ? extends Object>) data;
+                    controller.callFunction(listener, new Object[]{toJSObject(map)});
+                } catch (ClassCastException e) {
+                    controller.callFunction(listener, new Object[]{data});
+                }
             }
         });
     }
 
-    private JSObject toJSObject(Map<String, Object> obj) {
-        JSObject output = controller.eval("new Object()");
-        for(String key : obj.keySet()) {
-            output.setMember(key, obj.get(key));
-        }
-        return output;
+    private JSObject toJSObject(Map<String, ? extends Object> obj) {
+        if(obj == null) return controller.eval("null");
+        return controller.eval("new Object("+JSONObject.toJSONString(obj)+")");
     }
 
     private JSObject toJSArray(List<Object> list) {

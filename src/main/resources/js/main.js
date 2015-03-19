@@ -22,6 +22,7 @@ coinswap.App = Backbone.Model.extend({
 
     this.on('initialized', function() {
       console.log('app initialized');
+
       t.set('initialized', true);
       coinswap.trade.on('ticker', t.updateBalance);
 
@@ -198,16 +199,6 @@ function init() {
     $('body').find('[data-toggle="tooltip"]').tooltip({
       animation: false,
       container: 'body'
-    });
-
-    new coinswap.OrderListView({
-      el: $('#right .orders'),
-      model: coinswap.app
-    });
-
-    new coinswap.TradeListView({
-      el: $('#right .trades'),
-      model: coinswap.app
     });
 
     new coinswap.FooterView({

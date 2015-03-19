@@ -7,24 +7,23 @@ coinswap.SidebarView = Backbone.View.extend({
   },
 
   template: $('#template-sidebar').html(),
-  className: 'sidebar',
 
   initialize: function() {
     this.render();
-    this.listenTo(this.model, 'initialize', this.onAppInitialize);
+    this.listenTo(this.model, 'initialized', this.onAppInitialize);
 
     new coinswap.TickerListView({
       el: this.$el.find('.tickers'),
       model: this.model
     });
+  },
 
+  onAppInitialize: function() {
     new coinswap.FeedView({
       el: this.$el.find('.feed'),
       model: this.model
     });
-  },
 
-  onAppInitialize: function() {
     new coinswap.OrderListView({
       el: this.$el.find('.orders'),
       model: this.model
