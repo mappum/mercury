@@ -19,6 +19,10 @@ public class Coins {
                 "Litecoin", "LTC", "&#321;",
                 new String[]{"BTC"}, currencies.size(), false, 5));
 
+        currencies.add(new Currency(DarkcoinMainNetParams.get(), dataDir,
+                "Darkcoin", "DRK", "D",
+                new String[] {"BTC"}, currencies.size(), false, 5));
+
         currencies.add(new Currency(DogecoinMainNetParams.get(), dataDir,
                 "Dogecoin", "DOGE", "&#272;",
                 new String[] {"BTC"}, currencies.size(), false, 5));
