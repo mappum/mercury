@@ -363,6 +363,7 @@ table>thead{
 
 .ticker {
   width: 100%;
+  min-width: 240px;
   height: 106px;
   border-bottom: 1px solid #333;
   padding: 6px 10px;
