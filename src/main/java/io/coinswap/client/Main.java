@@ -27,6 +27,7 @@ import javafx.stage.Stage;
 import javafx.scene.image.Image;
 import javafx.stage.WindowEvent;
 import netscape.javascript.JSObject;
+import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,9 @@ public class Main extends Application {
         String logPath = new File(dataDirectory, "logs/debug.log").getAbsolutePath();
         System.setProperty("logs.file", logPath);
         log = LoggerFactory.getLogger(Main.class);
+
+        org.apache.log4j.Logger.getLogger(io.mappum.altcoinj.core.BitcoinSerializer.class).setLevel(Level.ERROR);
+        org.apache.log4j.Logger.getLogger(io.mappum.altcoinj.core.Peer.class).setLevel(Level.ERROR);
 
         ui = new ClientUI();
         ui.engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
