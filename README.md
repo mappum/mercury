@@ -9,9 +9,9 @@ A multi-coin wallet that supports trustless cross-chain trading.
 
 We recommend having [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) installed.
 
-* [Windows (.exe)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.exe)
-* [OSX (.dmg)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.dmg)
-* [Linux (.jar)](https://github.com/mappum/mercury/releases/download/0.0.1-alpha/MercuryWallet-0.0.1-SNAPSHOT.jar)
+* [Windows (.exe)](https://github.com/mappum/mercury/releases/download/0.0.2-alpha/MercuryWallet-0.0.2.exe)
+* [OSX (.dmg)](https://github.com/mappum/mercury/releases/download/0.0.2-alpha/MercuryWallet-0.0.2.dmg)
+* [Linux (.jar)](https://github.com/mappum/mercury/releases/download/0.0.2-alpha/MercuryWallet-0.0.2.jar)
 
 ## Build
 
@@ -34,7 +34,7 @@ This will create the files you want to run in a directory called `target`. There
 
 Mercury is is need of testing and code contributions. Please feel free to file issues if you find any bugs. 
 
-If any critical exploits are found in the cross-chain atomic swap implementation, we will gladly pay bounties if they are disclosed responsibly (there is bound to be some low-hanging fruit to find). [There will be a Crowdcurity link here shortly].
+If any critical exploits are found in the cross-chain atomic swap implementation, we will gladly pay bounties if they are disclosed responsibly (there is bound to be some low-hanging fruit to find): https://www.crowdcurity.com/mercury
 
 Join the Mercury development community in the IRC channel, #hg on Freenode.
 
