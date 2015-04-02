@@ -162,6 +162,8 @@ public class CoinModel extends Model {
     }
 
     class UITransactionListener extends AbstractWalletEventListener {
+        private boolean initialized = false;
+
         @Override
         public void onCoinsReceived(Wallet wallet, Transaction tx, io.mappum.altcoinj.core.Coin prevBalance, io.mappum.altcoinj.core.Coin newBalance) {
             onTransaction(tx);
@@ -176,9 +178,12 @@ public class CoinModel extends Model {
         public void onWalletChanged(Wallet wallet) {
             trigger("changed");
 
-            List<Transaction> txs = wallet.getRecentTransactions(100, true);
-            for(Transaction tx : txs) {
-                onTransaction(tx);
+            if(!initialized) {
+                List<Transaction> txs = wallet.getRecentTransactions(100, true);
+                for (Transaction tx : txs) {
+                    onTransaction(tx);
+                }
+                initialized = true;
             }
         }
 

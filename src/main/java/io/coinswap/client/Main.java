@@ -72,6 +72,7 @@ public class Main extends Application {
         ui.engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
             @Override
             public void changed(ObservableValue<? extends Worker.State> observableValue, Worker.State state, Worker.State state2) {
+                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
                 controller = new Controller(ui.engine);
                 currencies = Coins.get(dataDirectory);
