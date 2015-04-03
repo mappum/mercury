@@ -43,7 +43,7 @@ public class Main extends Application {
     private static Logger log;
 
     public static final String APP_NAME = "Mercury Wallet";
-    public static final String APP_VERSION = "0.0.2";
+    public static final String APP_VERSION = "0.0.3-SNAPSHOT";
 
     public static final int CLIENT_VERSION = 0;
 
