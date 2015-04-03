@@ -61,12 +61,7 @@ public class Main extends Application {
     @Override
     public void start(Stage mainWindow) {
         final File dataDirectory = getDataDirectory();
-        String logPath = new File(dataDirectory, "logs/debug.log").getAbsolutePath();
-        System.setProperty("logs.file", logPath);
-        log = LoggerFactory.getLogger(Main.class);
-
-        org.apache.log4j.Logger.getLogger(io.mappum.altcoinj.core.BitcoinSerializer.class).setLevel(Level.ERROR);
-        org.apache.log4j.Logger.getLogger(io.mappum.altcoinj.core.Peer.class).setLevel(Level.ERROR);
+        initLogging(dataDirectory);
 
         ui = new ClientUI();
         ui.engine.getLoadWorker().stateProperty().addListener(new ChangeListener<Worker.State>() {
@@ -183,6 +178,18 @@ public class Main extends Application {
             output.get(currency).add(new InetSocketAddress(host, port));
         }
         return output;
+    }
+
+    private void initLogging(File dataDirectory) {
+        String logPath = new File(dataDirectory, "logs/debug.log").getAbsolutePath();
+        System.setProperty("logs.file", logPath);
+        log = LoggerFactory.getLogger(Main.class);
+
+        org.apache.log4j.Logger.getLogger(io.mappum.altcoinj.core.BitcoinSerializer.class).setLevel(Level.ERROR);
+        org.apache.log4j.Logger.getLogger(io.mappum.altcoinj.core.Peer.class).setLevel(Level.ERROR);
+
+        log.info("********************************************************************************");
+        log.info("Starting up. version: " + APP_VERSION);
     }
 }
 
