@@ -13,7 +13,7 @@ public class Coins {
 
         currencies.add(new Currency(MainNetParams.get(), dataDir,
                 "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>",
-                new String[]{"LTC","DOGE"}, currencies.size(), true, 1));
+                new String[]{"LTC","DOGE","DRK"}, currencies.size(), true, 1));
 
         currencies.add(new Currency(LitecoinMainNetParams.get(), dataDir,
                 "Litecoin", "LTC", "&#321;",
