@@ -249,8 +249,14 @@
                 <input class="form-control" type="text" placeholder="0.00">
               </div>
             </div>
+            <span class="fee">
+              <span class="small" data-toggle="tooltip" data-placement="right" title="Paid to miners for including the trade in a block">
+                <label>Network Fee:&nbsp;&nbsp;</label>
+                <span class="symbol"></span>
+                <span class="value"></span>
+              </span>
+            </span>
           </div>
-          <br>
           <a class="btn btn-primary btn-sm btn-toggle advanced hidden" data-toggle="collapse" href="#trade-options" aria-expanded="false" aria-controls="trade-options">Advanced Options <i class="fa fa-angle-down"></i></a>
           <div class="collapse" id="trade-options">
             <label data-toggle="tooltip" data-placement="bottom" title="This is how many blocks the client will wait to consider a transaction confirmed. Higher values will take longer, but are more secure against double-spends.">Confirmations</label>

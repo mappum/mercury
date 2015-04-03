@@ -119,6 +119,7 @@ coinswap.TradeView = Backbone.View.extend({
     overview.find('.alt:eq(0)').html(pair[0].id);
     overview.find('.alt:eq(1)').html(pair[1].id);
 
+    this.updateFee();
     this.updateOrderbook();
   },
 
@@ -126,7 +127,25 @@ coinswap.TradeView = Backbone.View.extend({
     var selection = $(e.currentTarget);
     var buy = selection.hasClass('buy');
     this.model.set('buy', buy);
+    this.updateFee();
     this.updateBest();
+  },
+
+  updateFee: function() {
+    var pair = this.model.getPair();
+    var buy = this.model.get('buy');
+
+    var fee = this.$el.find('.fee');
+    fee.find('.symbol').html(pair[+buy].get('symbol'));
+    fee.find('.value').text(this.getFee());
+  },
+
+  getFee: function() {
+    // TODO: measure actual transaction size instead of assuming <1kb
+    var pair = this.model.getPair();
+    var buy = this.model.get('buy');
+    var baseFee = pair[+buy].get('fee');
+    return coinmath.multiply(baseFee, '2');
   },
 
   updateInputs: function(e) {
@@ -168,20 +187,22 @@ coinswap.TradeView = Backbone.View.extend({
   validateValues: function() {
     var m = this.model;
     var pair = m.getPair();
+    var cm = coinmath;
+    var fee = this.getFee();
 
-    var empty = coinmath.compare(m.get('quantity'), '0') === 0
-      || coinmath.compare(m.get('total'), '0') === 0;
+    var empty = cm.compare(m.get('quantity'), '0') === 0
+      || cm.compare(m.get('total'), '0') === 0;
 
-    if(!m.get('buy') && coinmath.compare(m.get('quantity'), pair[0].get('balance')) === 1) {
+    if(!m.get('buy') && cm.compare(cm.add(m.get('quantity'), fee), pair[0].get('balance')) === 1) {
       this.setError('Not enough '+m.get('pair')[0]+' in wallet');
 
-    } else if(m.get('buy') && coinmath.compare(m.get('total'), pair[1].get('balance')) === 1) {
+    } else if(m.get('buy') && cm.compare(cm.add(m.get('total'), fee), pair[1].get('balance')) === 1) {
       this.setError('Not enough '+m.get('pair')[1]+' in wallet');
 
-    } else if(!empty && coinmath.compare(m.get('quantity'), pair[0].get('fee')) === -1) {
+    } else if(!empty && cm.compare(m.get('quantity'), pair[0].get('fee')) === -1) {
       this.setError('Order must be at least <strong>'+pair[0].get('fee')+' <span class="alt">'+m.get('pair')[0]+'</span></strong>');
 
-    } else if(!empty && coinmath.compare(m.get('total'), pair[1].get('fee')) === -1) {
+    } else if(!empty && cm.compare(m.get('total'), pair[1].get('fee')) === -1) {
       this.setError('Order must be at least <strong>'+pair[1].get('fee')+' <span class="alt">'+m.get('pair')[1]+'</span></strong>');
 
     } else {
