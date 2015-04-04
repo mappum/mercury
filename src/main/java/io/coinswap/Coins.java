@@ -13,19 +13,19 @@ public class Coins {
 
         currencies.add(new Currency(MainNetParams.get(), dataDir,
                 "Bitcoin", "BTC", "<i class=\"fa fa-bitcoin\"></i>",
-                new String[]{"LTC","DOGE","DRK"}, currencies.size(), true, 1));
+                new String[]{"LTC","DOGE","DASH"}, currencies.size(), true, 1));
 
         currencies.add(new Currency(LitecoinMainNetParams.get(), dataDir,
                 "Litecoin", "LTC", "&#321;",
-                new String[]{"BTC"}, currencies.size(), false, 5));
+                new String[]{"BTC"}, currencies.size(), false, 4));
 
-        currencies.add(new Currency(DarkcoinMainNetParams.get(), dataDir,
-                "Darkcoin", "DRK", "D",
-                new String[] {"BTC"}, currencies.size(), false, 5));
+        currencies.add(new Currency(DashMainNetParams.get(), dataDir,
+                "Dash", "DASH", "D",
+                new String[] {"BTC"}, currencies.size(), false, 4));
 
         currencies.add(new Currency(DogecoinMainNetParams.get(), dataDir,
                 "Dogecoin", "DOGE", "&#272;",
-                new String[] {"BTC"}, currencies.size(), false, 5));
+                new String[] {"BTC"}, currencies.size(), false, 10));
 
         /*currencies.add(new Currency(TestNet3Params.get(), dataDir,
                 "Bitcoin Testnet", "BTCt", "<i class=\"fa fa-bitcoin\"></i>",
