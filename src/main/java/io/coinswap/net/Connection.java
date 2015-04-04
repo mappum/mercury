@@ -9,10 +9,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLSocket;
 import java.io.*;
+import java.net.SocketException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -22,11 +25,16 @@ public class Connection extends Thread {
 
     public static final int PORT = 16800;
 
+    public static final int SO_TIMEOUT = 10 * 1000; // 10 seconds
+    public static final int KEEPALIVE_INTERVAL = SO_TIMEOUT / 2;
+
     private SSLSocket socket;
     private Map<String, List<ReceiveListener>> listeners;
     private BufferedWriter out;
     private BufferedReader in;
+    private boolean keepalive;
 
+    private ScheduledThreadPoolExecutor executor;
     private SettableFuture disconnectFuture;
 
     private int id = 0;
@@ -35,10 +43,17 @@ public class Connection extends Thread {
 
     // TODO: add asynchronous writing (push messages into a queue)
 
-    public Connection(SSLSocket socket) {
+    public Connection(SSLSocket socket, boolean keepalive) {
         this.socket = socket;
         this.listeners = new HashMap<String, List<ReceiveListener>>();
         this.disconnectFuture = SettableFuture.create();
+        this.keepalive = keepalive;
+
+        try {
+            socket.setSoTimeout(SO_TIMEOUT);
+        } catch (SocketException ex) {
+            log.error(ex.getMessage());
+        }
 
         try {
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -46,6 +61,10 @@ public class Connection extends Thread {
         } catch(IOException ex) {
             log.error(ex.getMessage());
         }
+    }
+
+    public Connection(SSLSocket socket) {
+        this(socket, true);
     }
 
     public Map waitForMessage(final String channel) {
@@ -157,9 +176,13 @@ public class Connection extends Thread {
     }
 
     public void run() {
+        if(keepalive) startKeepalive();
+
         try {
             String data;
             while (socket.isConnected() && (data = in.readLine()) != null) {
+                if(data.length() == 0) continue;
+
                 log.info("<< " + data);
                 JSONObject obj = (JSONObject) JSONValue.parse(data);
 
@@ -181,17 +204,41 @@ public class Connection extends Thread {
         } catch (Exception ex) {
             log.error(ex.getClass().getName() + ": " + ex.getMessage() + "\n" + ex.getStackTrace().toString());
         } finally {
-            try {
-                socket.close();
-                in.close();
-                out.close();
-            } catch(IOException ex) {
-                log.error(ex.getMessage());
-            } finally {
-                // TODO: maybe indicate how the connection closed?
-                disconnectFuture.set(null);
-            }
+            close();
         }
+    }
+
+    public void close() {
+        if(keepalive) executor.shutdownNow();
+
+        try {
+            socket.close();
+            in.close();
+            out.close();
+        } catch(IOException ex) {
+            log.error(ex.getMessage());
+        } finally {
+            // TODO: maybe indicate how the connection closed?
+            disconnectFuture.set(null);
+        }
+    }
+
+    private void startKeepalive() {
+        executor = new ScheduledThreadPoolExecutor(1);
+        executor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                lock.lock();
+                try {
+                    out.write("\r\n");
+                    out.flush();
+                } catch (IOException ex) {
+                    log.error(ex.getMessage());
+                } finally {
+                    lock.unlock();
+                }
+            }
+        }, KEEPALIVE_INTERVAL, KEEPALIVE_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     public boolean isConnected() {

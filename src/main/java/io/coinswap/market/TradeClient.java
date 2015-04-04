@@ -148,8 +148,6 @@ public class TradeClient extends Thread {
             while(true) try {
                 log.info("Connecting to trade server (" + HOST + ":" + PORT + ")");
                 SSLSocket socket = (SSLSocket) factory.createSocket(HOST, PORT);
-                socket.setKeepAlive(true);
-
                 connection = new Connection(socket);
                 initListeners();
 
