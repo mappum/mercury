@@ -2,7 +2,9 @@ var coinswap = window.coinswap = {};
 
 coinswap.App = Backbone.Model.extend({
   defaults: {
-    balance: 0
+    balance: '0',
+    pending: '0',
+    hasPending: false
   },
 
   initialize: function(options) {
@@ -69,7 +71,8 @@ coinswap.App = Backbone.Model.extend({
     // TODO: add a field for balance converted to chosen fiat
     this.set({
       balance: coinmath.format(totalBalance),
-      pending: coinmath.format(totalPending)
+      pending: coinmath.format(totalPending),
+      hasPending: coinmath.compare(totalPending, '0') !== 0
     });
   }
 });
