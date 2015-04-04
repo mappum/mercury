@@ -192,7 +192,7 @@ public class CoinModel extends Model {
             JSONObject obj = new JSONObject();
             Sha256Hash txid = tx.getHash();
 
-            AtomicSwap swap = swaps.get(txid);
+            AtomicSwap swap = swaps.get(tx);
             if(swap == null) {
                 obj.put("type", "payment");
                 obj.put("value", tx.getValue(w).toPlainString());

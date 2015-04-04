@@ -1,7 +1,9 @@
 package io.coinswap.client;
 
+import fr.cryptohash.SHA256;
 import io.coinswap.swap.AtomicSwap;
 import io.mappum.altcoinj.core.Sha256Hash;
+import io.mappum.altcoinj.core.Transaction;
 import io.mappum.altcoinj.utils.Threading;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +62,21 @@ public class SwapCollection implements AtomicSwap.StateListener {
             lock.unlock();
         }
         return null;
+    }
+
+    public AtomicSwap get(Transaction tx) {
+        lock.lock();
+        try {
+            AtomicSwap output = map.get(tx.getHash());
+            if (output != null) return output;
+
+            // if hash isn't found, look up hash of parent transaction (only works for payouts/refunds)
+            if((tx.getInputs().size() != 1 && tx.getInputs().size() != 2) || tx.getOutputs().size() != 1) return null;
+            Sha256Hash parentTxid = tx.getInput(0).getOutpoint().getHash();
+            return get(parentTxid);
+        } finally {
+            lock.unlock();
+        }
     }
 
     public List<AtomicSwap> getPending() {
