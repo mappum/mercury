@@ -54,9 +54,11 @@
     <li class="item">
       <span class="alt time"><%= moment(time).format('hh:mm:ss') %></span>
       <br>
-      <img class="logo" src="images/<%= currencies[0].toLowerCase() %>.png">
-      <span>/</span>
-      <img class="logo" src="images/<%= currencies[1].toLowerCase() %>.png">
+      <span class="pair" data-toggle="tooltip" data-placement="top" title="<%= currencies.join('/').toUpperCase() %>">
+        <img class="logo" src="images/<%= currencies[0].toLowerCase() %>.png">
+        <span>/</span>
+        <img class="logo" src="images/<%= currencies[1].toLowerCase() %>.png">
+      </span>
       <span class="alt"> - </span>
       <span class="amount"><span class="symbol"><%= symbols[0] %></span><%= amount %></span>
       <span class="alt">@</span>

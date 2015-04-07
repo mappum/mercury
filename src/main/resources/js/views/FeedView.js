@@ -36,6 +36,11 @@ coinswap.FeedView = Backbone.View.extend({
       var children = this.$el.find('.list').children();
       children.eq(-1).remove();
     }
+
+    row.find('[data-toggle="tooltip"]').tooltip({
+      animation: false,
+      container: this.$el
+    });
   }
 });
 
