@@ -44,7 +44,7 @@ public class TradeClient extends Thread {
     public static final int PORT = Connection.PORT;
     public static final io.mappum.altcoinj.core.Coin FEE = Coin.ZERO;
 
-    public static final long TIME_EPSILON = 60;
+    public static final long TIME_EPSILON = 60 * 60 * 4; // 4 hours
 
     private Map<String, Currency> currencies;
     private Map<String, Ticker> tickers;
@@ -369,7 +369,9 @@ public class TradeClient extends Thread {
         AtomicSwap swap = AtomicSwap.fromJson((Map) message.get("swap"));
 
         // make sure time value is correct (otherwise server could get us to use unreasonable locktimes)
-        checkState(Math.abs(System.currentTimeMillis() / 1000 - swap.getTime()) < TIME_EPSILON);
+        // (we use blockchain timestamp instead of system time, in case system time is set weirdly)
+        long time = currencies.get("btc").getWallet().chain().getChainHead().getHeader().getTime().getTime();
+        checkState(Math.abs(time / 1000 - swap.getTime()) < TIME_EPSILON);
 
         Coin totalVolume = Coin.ZERO,
              totalPrice = Coin.ZERO,
