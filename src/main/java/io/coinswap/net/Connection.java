@@ -202,7 +202,7 @@ public class Connection extends Thread {
                 }
             }
         } catch (Exception ex) {
-            log.error(ex.getClass().getName() + ": " + ex.getMessage() + "\n" + ex.getStackTrace().toString());
+            log.error(ex.getClass().getName() + ": " + ex.getMessage(), ex);
         } finally {
             close();
         }
