@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Base64;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -28,6 +29,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private final boolean alice;
     private final int a, b;
     private final Connection connection;
+
+    private static final int SETUP_TIMEOUT = 10 * 1000; // 10 seconds
 
     public AtomicSwapClient(AtomicSwap swap, Connection connection, Currency[] currencies) {
         super(swap, currencies);
@@ -46,6 +49,17 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
     public void start() {
         if(!swap.isStarted()) {
+            // timeout if the other party doesn't set up swap in time
+            scheduler.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    if(swap.isSettingUp()) {
+                        log.warn("Swap setup timed out, cancelling...");
+                        cancel();
+                    }
+                }
+            }, SETUP_TIMEOUT, TimeUnit.MILLISECONDS);
+
             JSONObject message = new JSONObject();
             message.put("channel", swap.getChannelId(!swap.trade.buy));
             message.put("method", AtomicSwapMethod.VERSION);

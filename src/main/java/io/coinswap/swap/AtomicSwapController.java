@@ -25,7 +25,7 @@ public abstract class AtomicSwapController {
     protected final AtomicSwap swap;
     protected Currency[] currencies;
 
-    protected ScheduledThreadPoolExecutor refundScheduler;
+    protected ScheduledThreadPoolExecutor scheduler;
 
     private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
 
@@ -45,7 +45,7 @@ public abstract class AtomicSwapController {
 
         this.swap.switched = !currencies[1].supportsHashlock();
 
-        refundScheduler = new ScheduledThreadPoolExecutor(1);
+        scheduler = new ScheduledThreadPoolExecutor(1);
     }
 
     public void onMessage(boolean fromAlice, Map data) throws Exception {
@@ -224,7 +224,7 @@ public abstract class AtomicSwapController {
         long secondsLeft = swap.getTimeUntilRefund(alice);
         log.info("Refund TX will unlock in ~" + (secondsLeft / 60) + " minutes");
 
-        refundScheduler.schedule(new Runnable() {
+        scheduler.schedule(new Runnable() {
             @Override
             public void run() {
                 broadcastRefund(alice);
@@ -259,7 +259,7 @@ public abstract class AtomicSwapController {
     protected void onBobPayout(Transaction bobPayout, byte[] x) {}
 
     protected void finish() {
-        refundScheduler.shutdownNow();
+        scheduler.shutdownNow();
         log.info("Swap " + swap.id + " finished.");
     }
 
