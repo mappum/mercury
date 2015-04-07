@@ -31,7 +31,7 @@
     <div id="right"></div>
   </section>
 
-  <footer><span>Connected</span></footer>
+  <footer></footer>
 
   <div class="modal" id="modal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog">
@@ -79,6 +79,9 @@
       <i class="signal signal-<%= connected ? '4' : '0' %>"></i>&nbsp;&nbsp;
       <%= connected ? 'Connected to' : 'Diconnected from' %> orderbook server
     </span>
+    <a class="pull-right" onClick="desktop.browse('https://tawk.to/mercury')" href="#">
+      <i class="fa fa-support"></i> Live Support
+    </a>
   </script>
   <script type="text/template" id="template-controls">
     <button class="back btn btn-link <%= hasBack ? '' : 'disabled' %>">
