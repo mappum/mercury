@@ -1,6 +1,8 @@
 package io.coinswap.swap;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.mappum.altcoinj.core.*;
 import io.mappum.altcoinj.crypto.TransactionSignature;
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Base64;
 
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -24,7 +27,7 @@ public abstract class AtomicSwapController {
 
     protected final AtomicSwap swap;
     protected Currency[] currencies;
-
+    protected SettableFuture<AtomicSwap> future;
     protected ScheduledThreadPoolExecutor scheduler;
 
     private static final Script OP_NOP_SCRIPT = new ScriptBuilder().op(OP_NOP).build();
@@ -45,6 +48,7 @@ public abstract class AtomicSwapController {
 
         this.swap.switched = !currencies[1].supportsHashlock();
 
+        future = SettableFuture.create();
         scheduler = new ScheduledThreadPoolExecutor(1);
     }
 
@@ -218,6 +222,7 @@ public abstract class AtomicSwapController {
         // TODO: make sure refund got accepted
 
         swap.setStep(AtomicSwap.Step.CANCELED);
+        fail(new SwapTimeoutException());
     }
 
     protected void waitForRefundTimelock(final boolean alice) {
@@ -259,8 +264,19 @@ public abstract class AtomicSwapController {
     protected void onBobPayout(Transaction bobPayout, byte[] x) {}
 
     protected void finish() {
-        scheduler.shutdownNow();
         log.info("Swap " + swap.id + " finished.");
+        scheduler.shutdownNow();
+        if(swap.getStep() == AtomicSwap.Step.COMPLETE) future.set(swap);
+    }
+
+    protected void fail(Throwable throwable) {
+        log.info("Swap " + swap.id + " failed with exception: " + throwable.getMessage());
+        future.setException(throwable);
+        finish();
+    }
+
+    public SettableFuture<AtomicSwap> future() {
+        return future;
     }
 
     public boolean settingUp() {

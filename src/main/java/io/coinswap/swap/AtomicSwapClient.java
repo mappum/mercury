@@ -55,7 +55,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
                 public void run() {
                     if(swap.isSettingUp()) {
                         log.warn("Swap setup timed out, cancelling...");
-                        cancel();
+                        cancel(new SwapTimeoutException());
                     }
                 }
             }, SETUP_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -99,7 +99,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
             // if we are resuming a swap that wasn't done setting up, just cancel it
             if (swap.isSettingUp()) {
-                cancel();
+                cancel(new SwapTimeoutException());
             }
         }
     }
@@ -282,7 +282,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             } else if (method.equals(AtomicSwapMethod.CANCEL_TRANSACTION)) {
                 // If the other party wants to cancel, we will honor it if we aren't yet able to commit
                 if(settingUp()) {
-                    cancel();
+                    cancel(null);
                 }
             }
         } catch(Exception ex) {
@@ -292,7 +292,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             // If an exception happens and we aren't able to commit yet, cancel the swap.
             // Otherwise, we will just ignore it and keep going.
             if(settingUp()) {
-                cancel();
+                cancel(ex);
             }
         }
     }
@@ -403,7 +403,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         finish();
     }
 
-    private void cancel() {
+    private void cancel(Throwable throwable) {
         log.info("Cancelling swap");
         checkState(!swap.isDone());
 
@@ -414,7 +414,8 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         if(swap.isSettingUp()) {
             log.info("Still in setup stage, no refund necessary");
             swap.setStep(AtomicSwap.Step.CANCELED);
-            finish();
+
+            fail(throwable);
 
         } else {
             log.info("Our bailin has been broadcasted, now waiting for refund");
