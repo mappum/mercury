@@ -270,6 +270,7 @@ public abstract class AtomicSwapController {
     }
 
     protected void fail(Throwable throwable) {
+        if(throwable == null) throwable = new Exception();
         log.info("Swap " + swap.id + " failed with exception: " + throwable.getMessage());
         future.setException(throwable);
         finish();

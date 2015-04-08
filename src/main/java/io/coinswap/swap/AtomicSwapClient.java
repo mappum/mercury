@@ -48,25 +48,29 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     }
 
     public void start() {
-        if(!swap.isStarted()) {
-            // timeout if the other party doesn't set up swap in time
-            scheduler.schedule(new Runnable() {
-                @Override
-                public void run() {
-                    if(swap.isSettingUp()) {
-                        log.warn("Swap setup timed out, cancelling...");
-                        cancel(new SwapTimeoutException());
+        try {
+            if (!swap.isStarted()) {
+                // timeout if the other party doesn't set up swap in time
+                scheduler.schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (swap.isSettingUp()) {
+                            log.warn("Swap setup timed out, cancelling...");
+                            cancel(new SwapTimeoutException());
+                        }
                     }
-                }
-            }, SETUP_TIMEOUT, TimeUnit.MILLISECONDS);
+                }, SETUP_TIMEOUT, TimeUnit.MILLISECONDS);
 
-            JSONObject message = new JSONObject();
-            message.put("channel", swap.getChannelId(!swap.trade.buy));
-            message.put("method", AtomicSwapMethod.VERSION);
-            message.put("version", VERSION);
-            connection.write(message);
-        } else {
-            resume();
+                JSONObject message = new JSONObject();
+                message.put("channel", swap.getChannelId(!swap.trade.buy));
+                message.put("method", AtomicSwapMethod.VERSION);
+                message.put("version", VERSION);
+                connection.write(message);
+            } else {
+                resume();
+            }
+        } catch (Throwable throwable) {
+            fail(throwable);
         }
     }
 
