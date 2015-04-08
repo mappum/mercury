@@ -1,6 +1,8 @@
 package io.coinswap.market;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.SettableFuture;
 import io.coinswap.client.Currency;
 import io.coinswap.client.EventEmitter;
@@ -9,6 +11,7 @@ import io.coinswap.net.Connection;
 import io.coinswap.swap.AtomicSwap;
 import io.coinswap.swap.AtomicSwapClient;
 import io.coinswap.swap.AtomicSwapTrade;
+import io.mappum.altcoinj.core.InsufficientMoneyException;
 import net.minidev.json.JSONObject;
 import io.mappum.altcoinj.core.Coin;
 import io.mappum.altcoinj.utils.Threading;
@@ -45,6 +48,7 @@ public class TradeClient extends Thread {
     public static final io.mappum.altcoinj.core.Coin FEE = Coin.ZERO;
 
     public static final long TIME_EPSILON = 60 * 60 * 4; // 4 hours
+    private static final long RESUBMIT_PERIOD = 30 * 1000; // 30 seconds
 
     private Map<String, Currency> currencies;
     private Map<String, Ticker> tickers;
@@ -421,9 +425,28 @@ public class TradeClient extends Thread {
         swapCollection.add(swap);
     }
 
-    private void startSwap(AtomicSwap swap, Currency[] pair) {
+    private void startSwap(final AtomicSwap swap, Currency[] pair) {
         AtomicSwapClient client =
                 new AtomicSwapClient(swap, connection, pair);
+
+        final long start = System.currentTimeMillis();
+        SettableFuture<AtomicSwap> future = client.future();
+        Futures.addCallback(future, new FutureCallback<AtomicSwap>() {
+            @Override
+            public void onSuccess(AtomicSwap atomicSwap) {}
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                if(throwable instanceof InsufficientMoneyException) return;
+
+                long now = System.currentTimeMillis();
+                if(now - start < RESUBMIT_PERIOD) {
+                    log.info("Swap " + swap.id + " failed early, resubmitting order");
+                    trade(swap.trade);
+                }
+            }
+        });
+
         client.start();
     }
 
