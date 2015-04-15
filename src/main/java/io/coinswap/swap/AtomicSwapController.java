@@ -65,13 +65,21 @@ public abstract class AtomicSwapController {
                 checkState(swap.getStep() == AtomicSwap.Step.EXCHANGING_KEYS);
                 checkState(swap.getKeys(fromAlice) == null);
 
-                List<String> keyStrings = (ArrayList<String>) data.get("keys");
-                checkState(keyStrings.size() >= 3);
+                List<String> keyStrings = (List<String>) checkNotNull(data.get("keys"));
+                checkState(keyStrings.size() == 3);
+
+                List<String> serverKeyStrings = (List<String>) checkNotNull(data.get("serverKeys"));
+                checkState(serverKeyStrings.size() == 2);
 
                 List<ECKey> keys = new ArrayList<ECKey>(3);
                 for(String s : keyStrings)
                     keys.add(ECKey.fromPublicOnly(Base64.decode(checkNotNull(s))));
                 swap.setKeys(fromAlice, keys);
+
+                List<ECKey> serverKeys = new ArrayList<ECKey>(2);
+                for(String s : serverKeyStrings)
+                    serverKeys.add(ECKey.fromPublicOnly(Base64.decode(checkNotNull(s))));
+                swap.setKeys(AtomicSwap.Party.SERVER, serverKeys);
 
                 if (!fromAlice) {
                     byte[] xHash = Base64.decode((String) checkNotNull(data.get("x")));
@@ -106,18 +114,21 @@ public abstract class AtomicSwapController {
                             ECKey.ECDSASignature.decodeFromDER(ownPayoutSigBytes[1])},
                     ownRefundSig = ECKey.ECDSASignature.decodeFromDER(ownRefundSigBytes);
 
-                // verify signature for counterparty's payout
-                Script redeem = swap.getMultisigRedeem();
+                Script redeem = swap.getMultisigRedeem(!fromAlice);
                 Transaction payoutTx = createPayout(!fromAlice);
-                Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
-                checkState(swap.getKeys(fromAlice).get(0).verify(payoutSigHash, payoutSig));
-                log.info("Verified payout signature");
-
-                // verify signature for counterparty's refund
                 Transaction refundTx = createRefund(!fromAlice, true);
+                Sha256Hash payoutSigHash = payoutTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
                 Sha256Hash refundSigHash = refundTx.hashForSignature(0, redeem, Transaction.SigHash.ALL, false);
+
+                String fromName = fromAlice ? "Alice" : "Bob";
+
+                // verify counterparty's signature for payout
+                checkState(swap.getKeys(fromAlice).get(0).verify(payoutSigHash, payoutSig));
+                log.info("Verified " + fromName + "'s payout signature");
+
+                // verify counterparty's signature for refund
                 checkState(swap.getKeys(fromAlice).get(0).verify(refundSigHash, refundSig));
-                log.info("Verified refund signature");
+                log.info("Verified " + fromName + "'s refund signature");
 
                 // save signatures in AtomicSwap state
                 swap.setPayoutSig(fromAlice, fromAlice ? 0 : 1, ownPayoutSigs[0]);
@@ -150,8 +161,9 @@ public abstract class AtomicSwapController {
         if(swap.getPayoutSig(alice, 0) != null && swap.getPayoutSig(alice, 1) != null) {
             List<TransactionSignature> sigs = ImmutableList.of(
                     swap.getPayoutSig(alice, 0),
-                    swap.getPayoutSig(alice, 1));
-            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem());
+                    swap.getPayoutSig(alice, 1),
+                    swap.getPayoutSig(alice, 2));
+            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem(alice));
             tx.getInput(0).setScriptSig(multisigScriptSig);
         }
 
@@ -203,8 +215,9 @@ public abstract class AtomicSwapController {
         if(swap.getRefundSig(alice, 0) != null && swap.getRefundSig(alice, 1) != null) {
             List<TransactionSignature> sigs = ImmutableList.of(
                     swap.getRefundSig(alice, 0),
-                    swap.getRefundSig(alice, 1));
-            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem());
+                    swap.getRefundSig(alice, 1),
+                    swap.getRefundSig(alice, 2));
+            Script multisigScriptSig = ScriptBuilder.createP2SHMultiSigInputScript(sigs, swap.getMultisigRedeem(alice));
             tx.getInput(0).setScriptSig(multisigScriptSig);
         }
 

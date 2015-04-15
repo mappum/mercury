@@ -64,18 +64,24 @@ public class AtomicSwap implements Serializable {
     }
     private Step step = Step.STARTING;
 
+    public enum Party {
+        ALICE,
+        BOB,
+        SERVER
+    }
+
     // the state machine for a swap
     public AtomicSwap(String id, AtomicSwapTrade trade, long time) {
         this.id = checkNotNull(id);
         this.trade = checkNotNull(trade);
         this.time = time;
-        keys = new ArrayList[2];
+        keys = new ArrayList[3];
         bailinHashes = new Sha256Hash[2];
         payoutHashes = new Sha256Hash[2];
         refundHashes = new Sha256Hash[2];
         bailinTxs = new Transaction[2];
-        payoutSigs = new byte[2][3][];
-        refundSigs = new byte[2][2][];
+        payoutSigs = new byte[2][4][];
+        refundSigs = new byte[2][3][];
         listeners = new HashMap<StateListener, Executor>();
     }
 
@@ -147,24 +153,37 @@ public class AtomicSwap implements Serializable {
     }
 
     public List<ECKey> getKeys(boolean alice) {
+        return getKeys(alice ? Party.ALICE : Party.BOB);
+    }
+
+    public List<ECKey> getKeys(Party party) {
         lock.lock();
         try {
-            return keys[alice ? 0 : 1];
+            return keys[party.ordinal()];
         } finally {
             lock.unlock();
         }
     }
 
     public void setKeys(boolean alice, List<ECKey> keys) {
-        checkState(keys.size() >= 3);
-        checkNotNull(keys.get(0));
-        checkNotNull(keys.get(1));
-        checkNotNull(keys.get(2));
-        int a = alice ? 0 : 1;
+        setKeys(alice ? Party.ALICE : Party.BOB, keys);
+    }
+
+    public void setKeys(Party party, List<ECKey> keys) {
+        if(party == Party.ALICE || party == Party.BOB) {
+            checkState(keys.size() == 3);
+            checkNotNull(keys.get(0));
+            checkNotNull(keys.get(1));
+            checkNotNull(keys.get(2));
+        } else if(party == Party.SERVER) {
+            checkState(keys.size() == 2);
+            checkNotNull(keys.get(0));
+            checkNotNull(keys.get(1));
+        }
 
         lock.lock();
         try {
-            this.keys[a] = keys;
+            this.keys[party.ordinal()] = keys;
         } finally {
             lock.unlock();
         }
@@ -368,12 +387,13 @@ public class AtomicSwap implements Serializable {
         return secondsLeft;
     }
 
-    public Script getMultisigRedeem() {
+    public Script getMultisigRedeem(boolean alice) {
         lock.lock();
         try {
             List<ECKey> multiSigKeys = new ArrayList<ECKey>(2);
             multiSigKeys.add(keys[0].get(0));
             multiSigKeys.add(keys[1].get(0));
+            multiSigKeys.add(keys[2].get(alice ? 0 : 1));
             return ScriptBuilder.createMultiSigOutputScript(2, multiSigKeys);
         } finally {
             lock.unlock();

@@ -143,7 +143,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
 
         // first output is p2sh 2-of-2 multisig, with keys A1 and B1
         // amount is how much we are trading to other party
-        Script p2sh = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem());
+        Script p2sh = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem(alice));
         tx.addOutput(swap.trade.quantities[a], p2sh);
 
         // second output for Alice's bailin is p2sh pay-to-pubkey with key B1
@@ -176,7 +176,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         // create our signatures for counterparty's payout and refund
         Transaction payout = createPayout(!alice),
                     refund = createRefund(!alice, true);
-        Script multisigRedeem = swap.getMultisigRedeem();
+        Script multisigRedeem = swap.getMultisigRedeem(!alice);
         ECKey key = swap.getKeys(alice).get(0);
         Sha256Hash sigHashPayout = payout.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false),
                    sigHashRefund = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
@@ -207,7 +207,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private ECKey.ECDSASignature getCourtesyRefundSignature() {
         Transaction refund = createRefund(!alice, false);
 
-        Script multisigRedeem = swap.getMultisigRedeem();
+        Script multisigRedeem = swap.getMultisigRedeem(!alice);
         ECKey key = swap.getKeys(alice).get(0);
         Sha256Hash sigHash = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
         return key.sign(sigHash);
@@ -238,7 +238,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
         List<ECKey> myKeys = swap.getKeys(alice);
 
         // sign the first output of the bailin (2-of-2 multisig, also requires a signature from counterparty)
-        Script multisigRedeem = swap.getMultisigRedeem();
+        Script multisigRedeem = swap.getMultisigRedeem(alice);
         Sha256Hash multisigSighash = payout.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
         signatures[0] = new TransactionSignature(myKeys.get(0).sign(multisigSighash).toCanonicalised(),
                 Transaction.SigHash.ALL, false);
@@ -310,14 +310,14 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
             return;
         }
 
-        final Script expectedMultisig = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem());
+        final Script expectedMultisig = ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem(!alice));
         final Script expectedHashlock;
         if(alice) expectedHashlock = ScriptBuilder.createP2SHOutputScript(swap.getHashlockScript(false));
         else expectedHashlock = ScriptBuilder.createP2SHOutputScript(swap.getXHash());
 
         // listen for the other party's bailin by adding a script listener for the multisig redeem script
         final Wallet w = currencies[b].getWallet().wallet();
-        List<Script> scripts = ImmutableList.of(ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem()));
+        List<Script> scripts = ImmutableList.of(ScriptBuilder.createP2SHOutputScript(swap.getMultisigRedeem(!alice)));
         w.addWatchedScripts(scripts);
         WalletEventListener listener = new AbstractWalletEventListener() {
             @Override
@@ -432,7 +432,7 @@ public class AtomicSwapClient extends AtomicSwapController implements Connection
     private TransactionSignature createRefundSignature(boolean alice) {
         Transaction refund = createRefund(alice, true);
 
-        Script multisigRedeem = swap.getMultisigRedeem();
+        Script multisigRedeem = swap.getMultisigRedeem(alice);
         ECKey key = swap.getKeys(alice).get(0);
         Sha256Hash multisigSighash = refund.hashForSignature(0, multisigRedeem, Transaction.SigHash.ALL, false);
         return new TransactionSignature(key.sign(multisigSighash).toCanonicalised(), Transaction.SigHash.ALL, false);
