@@ -7,6 +7,12 @@ mercury
 
 A multi-coin wallet that supports trustless cross-chain trading.
 
+## Status
+
+Mercury is being actively developed, but I am moving from the current Java desktop application to a decentralized web app, built on [Webcoin](https://github.com/mappum/webcoin) (SPV client that uses WebRTC). The existing Java releases are available for testing, but will not be developed further.
+
+For further updates, please sign up for the mailing list here: http://mercuryex.com#emailupdates
+
 ## Download
 
 We recommend having [Java 8](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html) installed.
@@ -34,7 +40,7 @@ This will create the files you want to run in a directory called `target`. There
 
 ## Contributing
 
-Mercury is is need of testing and code contributions. Please feel free to file issues if you find any bugs. 
+Mercury is is need of testing and code contributions. Please feel free to file issues if you find any bugs.
 
 If any critical exploits are found in the cross-chain atomic swap implementation, we will gladly pay bounties if they are disclosed responsibly (there is bound to be some low-hanging fruit to find): https://www.crowdcurity.com/mercury
 
